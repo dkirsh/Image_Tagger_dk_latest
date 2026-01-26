@@ -28,6 +28,8 @@ export default function ExplorerApp() {
     const [seeding, setSeeding] = useState(false);
     const [seedError, setSeedError] = useState(null);
     const [seedMessage, setSeedMessage] = useState(null);
+    const [seedElapsed, setSeedElapsed] = useState(0);
+    const [seedSkipped, setSeedSkipped] = useState(false);
 
     useEffect(() => {
         loadAttributes();
@@ -99,20 +101,27 @@ export default function ExplorerApp() {
         }
     }
 
-    async function handleSeed() {
+    async function handleSeed(force = false) {
         setSeedError(null);
         setSeedMessage(null);
+        setSeedSkipped(false);
         const confirmed = window.confirm(
-            'Seed the bundled sample dataset (~9,497 entries)? This will add records to the database.'
+            force
+                ? 'Force seed the sample dataset? This may create duplicates. Continue?'
+                : 'Seed the bundled sample dataset (~9,497 entries)? This will add records to the database.'
         );
         if (!confirmed) return;
         setSeeding(true);
+        setSeedElapsed(0);
+        setSeedMessage('Seeding… this may take a few minutes.');
         try {
-            const result = await api.post('/seed', { force: false });
+            const result = await api.post('/seed', { force });
             if (result && result.skipped) {
                 setSeedMessage(result.message || 'Seeding skipped (already populated).');
+                setSeedSkipped(true);
             } else {
                 setSeedMessage(`Seeded ${result.created || 0} images.`);
+                setSeedSkipped(false);
             }
             await runSearch();
         } catch (err) {
@@ -121,6 +130,14 @@ export default function ExplorerApp() {
             setSeeding(false);
         }
     }
+
+    useEffect(() => {
+        if (!seeding) return;
+        const timer = setInterval(() => {
+            setSeedElapsed(prev => prev + 1);
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [seeding]);
 
     const handleQueryKeyDown = (e) => {
         if (e.key === 'Enter') {
@@ -391,10 +408,22 @@ export default function ExplorerApp() {
                                 Seed the bundled sample dataset to populate Explorer with example images.
                             </div>
                             <div className="flex items-center gap-3">
-                                <Button onClick={handleSeed} disabled={seeding}>
+                                <Button onClick={() => handleSeed(false)} disabled={seeding}>
                                     {seeding ? 'Seeding…' : 'Seed Sample Dataset'}
                                 </Button>
-                                {seedMessage && <span className="text-xs text-green-700">{seedMessage}</span>}
+                                {seedSkipped && (
+                                    <Button variant="secondary" onClick={() => handleSeed(true)} disabled={seeding}>
+                                        Force Seed
+                                    </Button>
+                                )}
+                                {seeding && (
+                                    <span className="text-xs text-blue-800">
+                                        {seedMessage} ({seedElapsed}s)
+                                    </span>
+                                )}
+                                {!seeding && seedMessage && (
+                                    <span className="text-xs text-green-700">{seedMessage}</span>
+                                )}
                                 {seedError && <span className="text-xs text-red-600">{seedError}</span>}
                             </div>
                         </div>
