@@ -25,6 +25,9 @@ export default function ExplorerApp() {
     const [loading, setLoading] = useState(false);
     const [attrLoading, setAttrLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [seeding, setSeeding] = useState(false);
+    const [seedError, setSeedError] = useState(null);
+    const [seedMessage, setSeedMessage] = useState(null);
 
     useEffect(() => {
         loadAttributes();
@@ -93,6 +96,29 @@ export default function ExplorerApp() {
             }
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function handleSeed() {
+        setSeedError(null);
+        setSeedMessage(null);
+        const confirmed = window.confirm(
+            'Seed the bundled sample dataset (~9,497 entries)? This will add records to the database.'
+        );
+        if (!confirmed) return;
+        setSeeding(true);
+        try {
+            const result = await api.post('/seed', { force: false });
+            if (result && result.skipped) {
+                setSeedMessage(result.message || 'Seeding skipped (already populated).');
+            } else {
+                setSeedMessage(`Seeded ${result.created || 0} images.`);
+            }
+            await runSearch();
+        } catch (err) {
+            setSeedError(err && err.message ? err.message : 'Seeding failed');
+        } finally {
+            setSeeding(false);
         }
     }
 
@@ -358,10 +384,19 @@ export default function ExplorerApp() {
                         </div>
                     )}
 
-                    {!error && !loading && images.length === 0 && (
-                        <div className="mb-4 text-xs text-gray-500">
-                            No data yet – run the seeding scripts and science pipeline
-                            (see README_v3.md “Quickstart & Seeding”) and then re-run this search.
+                    {!error && !loading && images.length <= 1 && !query && (!selectedTags || !selectedTags.length) && (
+                        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-900">
+                            <div className="font-semibold text-sm mb-1">No data yet</div>
+                            <div className="mb-2">
+                                Seed the bundled sample dataset to populate Explorer with example images.
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Button onClick={handleSeed} disabled={seeding}>
+                                    {seeding ? 'Seeding…' : 'Seed Sample Dataset'}
+                                </Button>
+                                {seedMessage && <span className="text-xs text-green-700">{seedMessage}</span>}
+                                {seedError && <span className="text-xs text-red-600">{seedError}</span>}
+                            </div>
                         </div>
                     )}
 

@@ -13,7 +13,8 @@ All endpoints are RBAC-protected for taggers (and above).
 
 from __future__ import annotations
 
-from typing import List
+from typing import List, Optional
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -24,6 +25,7 @@ from backend.services.training_export import TrainingExporter
 from backend.schemas.training import TrainingExample
 from backend.schemas.discovery import SearchQuery, ImageSearchResult, ExportRequest, AttributeRead
 from backend.models.attribute import Attribute
+from backend.models.assets import Image
 
 router = APIRouter(prefix="/v1/explorer", tags=["explorer"])
 
@@ -129,3 +131,34 @@ def list_attributes(
     """
     attrs = db.query(Attribute).order_by(Attribute.key).all()
     return [AttributeRead.model_validate(attr) for attr in attrs]
+
+
+@router.post("/seed")
+def seed_sample_images(
+    payload: Optional[dict] = None,
+    db: Session = Depends(get_db),
+    user=Depends(require_tagger),
+):
+    """Seed the DB with bundled sample image URLs from google_images_import.json.
+
+    This is an explicit, user-initiated action intended for empty or low-data installs.
+    """
+    payload = payload or {}
+    force = bool(payload.get("force"))
+    existing = db.query(Image).count()
+    if existing > 0 and not force:
+        return {
+            "ok": True,
+            "skipped": True,
+            "message": f"Database already has {existing} images; seeding skipped. Pass force=true to override.",
+        }
+
+    # Lazy import to avoid import-time DB setup costs
+    from backend.scripts.import_images_from_json import import_images
+
+    json_path = Path(__file__).resolve().parents[1] / "database" / "google_images_import.json"
+    if not json_path.exists():
+        raise HTTPException(status_code=500, detail=f"Seed file not found: {json_path}")
+
+    result = import_images(str(json_path))
+    return {"ok": True, "skipped": False, **result}
