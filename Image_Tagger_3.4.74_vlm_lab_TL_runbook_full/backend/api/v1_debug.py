@@ -22,6 +22,8 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from backend.science import pipeline as science_pipeline
 from backend.science.core import AnalysisFrame
 from backend.science.spatial.depth import DepthAnalyzer
+from backend.science.vision.segmentation import SegmentationAnalyzer
+from backend.science.vision.room_detection import RoomDetectionAnalyzer, COARSE_CATEGORIES
 from sqlalchemy.orm import Session
 
 from backend.database.core import get_db
@@ -266,6 +268,149 @@ def _compute_complexity_heatmap_bytes(
     return data
 
 
+def _compute_segmentation_overlay_bytes(
+    storage_path: str,
+    alpha: float = 0.5,
+    conf: float = 0.25,
+    show_labels: bool = True,
+) -> bytes:
+    """Compute an instance segmentation overlay PNG for the given image.
+
+    Uses YOLO11m-seg to detect and segment objects, then overlays colored
+    masks on the original image.
+    
+    Supports both local file paths and remote URLs.
+    
+    Args:
+        storage_path: Path to image (local or URL)
+        alpha: Mask transparency (0.0-1.0)
+        conf: Minimum detection confidence (0.0-1.0)
+        show_labels: Whether to draw class labels and confidence
+        
+    Returns:
+        PNG image bytes with segmentation overlay
+    """
+    if cv2 is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="cv2 (OpenCV) is not available; cannot compute segmentation.",
+        )
+
+    # Compute cache path
+    cache_root = os.getenv("IMAGE_SEGMENTATION_CACHE_ROOT") or os.path.join("backend", "data", "debug_segmentation")
+    cache_root_path = Path(cache_root)
+    cache_root_path.mkdir(parents=True, exist_ok=True)
+
+    cache_key = _get_cache_key(storage_path)
+    cache_name = f"{cache_key}_seg_{int(alpha*100)}_{int(conf*100)}_{1 if show_labels else 0}.png"
+    cache_path = cache_root_path / cache_name
+
+    if cache_path.is_file():
+        try:
+            return cache_path.read_bytes()
+        except Exception:
+            pass
+
+    # Load image from URL or local path (BGR format)
+    img_bgr = _load_image_from_url_or_path(storage_path)
+    
+    # Convert to RGB for YOLO/AnalysisFrame
+    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+    
+    # Create analysis frame and run segmentation
+    frame = AnalysisFrame(image_id=-1, original_image=img_rgb)
+    
+    try:
+        SegmentationAnalyzer.analyze(frame, confidence_threshold=conf)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Segmentation failed: {str(e)}. Ensure ultralytics is installed.",
+        )
+    
+    # Get segmentation masks from frame metadata
+    masks_data = frame.metadata.get("segmentation_masks", [])
+    
+    if not masks_data:
+        # No objects detected - return original image with info text
+        overlay = img_bgr.copy()
+        cv2.putText(
+            overlay, "No objects detected",
+            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2
+        )
+    else:
+        # Create overlay with colored masks
+        overlay = img_bgr.copy()
+        
+        # Generate distinct colors for each class
+        np.random.seed(42)  # Consistent colors
+        class_colors = {}
+        
+        for class_name, mask, confidence, bbox in masks_data:
+            # Get or generate color for this class
+            if class_name not in class_colors:
+                class_colors[class_name] = tuple(
+                    int(c) for c in np.random.randint(100, 255, 3)
+                )
+            color = class_colors[class_name]
+            
+            # Apply colored mask (BGR format)
+            colored_mask = np.zeros_like(overlay)
+            colored_mask[mask > 0] = color
+            overlay = cv2.addWeighted(overlay, 1, colored_mask, alpha, 0)
+            
+            # Draw bounding box
+            x1, y1, x2, y2 = [int(c) for c in bbox]
+            cv2.rectangle(overlay, (x1, y1), (x2, y2), color, 2)
+            
+            # Draw label
+            if show_labels:
+                label = f"{class_name} {confidence:.0%}"
+                    
+                # Label background
+                (label_w, label_h), baseline = cv2.getTextSize(
+                    label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1
+                )
+                cv2.rectangle(
+                    overlay, 
+                    (x1, y1 - label_h - baseline - 5),
+                    (x1 + label_w + 5, y1),
+                    color, 
+                    -1
+                )
+                # Label text
+                cv2.putText(
+                    overlay, label,
+                    (x1 + 2, y1 - baseline - 2),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (255, 255, 255), 1
+                )
+        
+        # Add summary text
+        total_objects = len(masks_data)
+        scene_coverage = frame.attributes.get("segmentation.scene_coverage", 0)
+        summary = f"Objects: {total_objects} | Coverage: {scene_coverage:.1%}"
+        cv2.putText(
+            overlay, summary,
+            (10, overlay.shape[0] - 10),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2
+        )
+
+    ok, buf = cv2.imencode(".png", overlay)
+    if not ok:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to encode segmentation overlay as PNG.",
+        )
+
+    data = buf.tobytes()
+    try:
+        cache_path.write_bytes(data)
+    except Exception:
+        pass
+    return data
+
+
 def _compute_depth_map_bytes(path: Path) -> bytes:
     """Compute a depth-map PNG for the given image path.
 
@@ -474,6 +619,198 @@ def get_image_complexity_heatmap(
     return Response(content=data, media_type="image/png")
 
 
+@router.get("/images/{image_id}/segmentation", summary="Return instance segmentation overlay for an image")
+def get_image_segmentation(
+    image_id: int,
+    alpha: float = 0.5,
+    conf: float = 0.25,
+    labels: bool = True,
+    db: Session = Depends(get_db),
+    user: CurrentUser = Depends(require_tagger),
+) -> Response:
+    """Serve a PNG instance segmentation overlay for the requested image.
+
+    This endpoint uses YOLO11m-seg to detect and segment objects in the image,
+    then overlays colored masks showing each detected instance.
+
+    The overlay includes:
+    - Colored masks for each detected object
+    - Bounding boxes around objects
+    - Class labels with confidence scores (optional)
+    - Summary of total objects and scene coverage
+
+    Supports both local file paths and remote URLs.
+
+    Parameters:
+    - alpha: Mask transparency (0.0-1.0, default 0.5)
+    - conf: Minimum detection confidence (0.0-1.0, default 0.25)
+    - labels: Whether to show class labels (default True)
+    """
+    image: Optional[Image] = db.query(Image).filter(Image.id == image_id).first()
+    if image is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
+
+    storage_path = getattr(image, "storage_path", None)
+    if not storage_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image has no storage_path configured",
+        )
+
+    data = _compute_segmentation_overlay_bytes(
+        storage_path,
+        alpha=alpha,
+        conf=conf,
+        show_labels=labels,
+    )
+    return Response(content=data, media_type="image/png")
+
+
+def _compute_room_detection_overlay_bytes(
+    storage_path: str,
+) -> bytes:
+    """Compute a room detection overlay PNG for the given image.
+
+    Uses Places365 classifier to identify room type and displays the
+    classification results overlaid on the original image.
+    
+    Args:
+        storage_path: Path to image (local or URL)
+        
+    Returns:
+        PNG image bytes with room detection overlay
+    """
+    if cv2 is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="cv2 (OpenCV) is not available; cannot compute room detection.",
+        )
+
+    # Load image from URL or local path (BGR format)
+    img_bgr = _load_image_from_url_or_path(storage_path)
+    
+    # Convert to RGB for analysis
+    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+    
+    # Create analysis frame and run room detection
+    frame = AnalysisFrame(image_id=-1, original_image=img_rgb)
+    
+    try:
+        result = RoomDetectionAnalyzer.analyze(frame, top_k=5, apply_object_consistency=False)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Room detection failed: {str(e)}. Ensure torch/torchvision is installed.",
+        )
+    
+    # Create overlay
+    overlay = img_bgr.copy()
+    h, w = overlay.shape[:2]
+    
+    # Semi-transparent background for text
+    panel_height = 180
+    panel = np.zeros((panel_height, w, 3), dtype=np.uint8)
+    panel[:] = (40, 40, 40)  # Dark gray
+    
+    # Blend panel at bottom
+    overlay[-panel_height:] = cv2.addWeighted(
+        overlay[-panel_height:], 0.3, panel, 0.7, 0
+    )
+    
+    # Draw coarse prediction (main result)
+    top_coarse = result.get("top_coarse", {})
+    coarse_label = top_coarse.get("label", "unknown")
+    coarse_prob = top_coarse.get("probability", 0.0)
+    
+    text = f"Room Type: {coarse_label.upper()}"
+    cv2.putText(overlay, text, (15, h - panel_height + 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+    
+    conf_text = f"Confidence: {coarse_prob:.1%}"
+    cv2.putText(overlay, conf_text, (15, h - panel_height + 60),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (180, 180, 180), 1)
+    
+    # Draw fine-grained top-5
+    cv2.putText(overlay, "Fine-grained predictions:", (15, h - panel_height + 90),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (150, 150, 150), 1)
+    
+    fine_preds = result.get("room_type_fine", [])[:5]
+    y_offset = h - panel_height + 110
+    for i, (label, prob) in enumerate(fine_preds):
+        text = f"{i+1}. {label}: {prob:.1%}"
+        cv2.putText(overlay, text, (25, y_offset + i * 18),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.45, (200, 200, 200), 1)
+    
+    # Draw coarse distribution bar chart on the right
+    coarse_probs = result.get("room_type_coarse", {})
+    sorted_coarse = sorted(coarse_probs.items(), key=lambda x: x[1], reverse=True)[:6]
+    
+    bar_x = w - 250
+    bar_y = h - panel_height + 25
+    bar_width = 200
+    bar_height = 15
+    
+    cv2.putText(overlay, "Coarse distribution:", (bar_x, bar_y - 5),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.45, (150, 150, 150), 1)
+    
+    for i, (cat, prob) in enumerate(sorted_coarse):
+        y = bar_y + 10 + i * 22
+        # Draw bar background
+        cv2.rectangle(overlay, (bar_x, y), (bar_x + bar_width, y + bar_height),
+                      (60, 60, 60), -1)
+        # Draw bar fill
+        fill_width = int(bar_width * prob)
+        color = (100, 200, 100) if i == 0 else (100, 150, 200)
+        cv2.rectangle(overlay, (bar_x, y), (bar_x + fill_width, y + bar_height),
+                      color, -1)
+        # Draw label
+        cv2.putText(overlay, f"{cat[:10]}: {prob:.0%}", (bar_x + 5, y + 12),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.35, (255, 255, 255), 1)
+
+    ok, buf = cv2.imencode(".png", overlay)
+    if not ok:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to encode room detection overlay as PNG.",
+        )
+
+    return buf.tobytes()
+
+
+@router.get("/images/{image_id}/room", summary="Return room type detection overlay for an image")
+def get_image_room_detection(
+    image_id: int,
+    db: Session = Depends(get_db),
+    user: CurrentUser = Depends(require_tagger),
+) -> Response:
+    """Serve a PNG room type detection overlay for the requested image.
+
+    This endpoint uses Places365 classifier to identify the room type,
+    then displays the results overlaid on the original image.
+
+    The overlay includes:
+    - Primary coarse room type (bathroom, bedroom, kitchen, etc.)
+    - Confidence score
+    - Top-5 fine-grained Places365 predictions
+    - Coarse category distribution bar chart
+
+    Supports both local file paths and remote URLs.
+    """
+    image: Optional[Image] = db.query(Image).filter(Image.id == image_id).first()
+    if image is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
+
+    storage_path = getattr(image, "storage_path", None)
+    if not storage_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image has no storage_path configured",
+        )
+
+    data = _compute_room_detection_overlay_bytes(storage_path)
+    return Response(content=data, media_type="image/png")
+
+
 @router.get("/pipeline_health")
 def pipeline_health() -> dict:
     """Return a lightweight view of the science pipeline health.
@@ -498,6 +835,8 @@ def pipeline_health() -> dict:
         "NaturalnessAnalyzer",
         "DepthAnalyzer",
         "CognitiveStateAnalyzer",
+        "SegmentationAnalyzer",
+        "RoomDetectionAnalyzer",
     ]
 
     analyzer_classes = []

@@ -9,7 +9,7 @@ logger = logging.getLogger("v3.science.objects")
 
 class ObjectAnalyzer:
     """
-    Wraps YOLOv8 for counting architectural elements (chairs, people, plants).
+    Wraps YOLOv26 for counting architectural elements (chairs, people, plants).
     Essential for 'Social Affordance' metrics.
     """
     
@@ -18,10 +18,10 @@ class ObjectAnalyzer:
         global YOLO_MODEL
         if YOLO_MODEL is None:
             from ultralytics import YOLO
-            # Downloads 'yolov8n.pt' (nano) automatically on first run (~6MB)
-            # Use 'yolov8x.pt' for production accuracy
-            logger.info("Loading YOLOv8 model")
-            YOLO_MODEL = YOLO("yolov8n.pt")
+            # Downloads 'yolov26n.pt' (nano) automatically on first run (~6MB)
+            # Use 'yolov26x.pt' for production accuracy
+            logger.info("Loading YOLOv26 model")
+            YOLO_MODEL = YOLO("yolo26l.pt")
             
     @staticmethod
     def analyze(frame: AnalysisFrame):

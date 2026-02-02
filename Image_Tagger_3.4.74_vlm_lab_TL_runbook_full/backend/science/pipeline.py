@@ -29,6 +29,7 @@ from backend.science.math.fluency import FluencyAnalyzer
 from backend.science.spatial.depth import DepthAnalyzer # Replaces Isovist
 from backend.science.context.cognitive import CognitiveStateAnalyzer
 from backend.science.semantics.semantic_tags_vlm import SemanticTagAnalyzer
+from backend.science.vision.segmentation import SegmentationAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,8 @@ class SciencePipelineConfig:
         # Expensive L2 analyzers are explicit opt-ins.
         self.enable_cognitive = False  # Cognitive VLM (Kaplan-style dimensions)
         self.enable_semantic = False   # Semantic VLM (style.*, room_function.*)
+        # Instance segmentation (YOLO11m-seg) - opt-in for object detection
+        self.enable_segmentation = False  # Instance segmentation with YOLO
 
 class SciencePipeline:
     def __init__(self, db: Optional[Session] = None, session: Optional[Session] = None, config: Optional[SciencePipelineConfig] = None):
@@ -60,6 +63,7 @@ class SciencePipeline:
         self.spatial = DepthAnalyzer() # The new Spatial Engine
         self.cognitive = CognitiveStateAnalyzer()
         self.semantic = SemanticTagAnalyzer()
+        self.segmentation = SegmentationAnalyzer()  # YOLO11m-seg instance segmentation
 
     def process_image(self, image_id: int) -> bool:
         image_record = self.db.query(Image).get(image_id)
@@ -88,6 +92,10 @@ class SciencePipeline:
             # L1: Perceptual (Dependent on L0)
             if self.config.enable_spatial:
                 self.fluency.analyze(frame)
+
+            # L1.5: Vision (Instance Segmentation)
+            if self.config.enable_segmentation:
+                self.segmentation.analyze(frame)
 
             # L2: Cognitive (VLM)
             if self.config.enable_cognitive:

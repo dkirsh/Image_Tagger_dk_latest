@@ -35,7 +35,8 @@ RUN pip install --no-cache-dir \
     openai==1.12.0 \
     anthropic==0.33.0 \
     google-generativeai==0.8.3 \
-    google-genai==0.1.0
+    google-genai==0.1.0 \
+    ultralytics>=8.3.0
 
 # Copy the backend code, scripts, tests, and contracts
 COPY backend /app/backend
