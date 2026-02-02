@@ -1,3 +1,6 @@
+import os
+from typing import Callable
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
@@ -15,6 +18,25 @@ from backend.api import (
 from backend.versioning import VERSION
 
 # v3 Enterprise Application Entry Point
+class PrefixStripMiddleware:
+    """Strip known prefixes from incoming paths while preserving routing."""
+
+    def __init__(self, app: Callable, prefixes: list[str]) -> None:
+        self.app = app
+        self.prefixes = [p.rstrip("/") for p in prefixes]
+
+    async def __call__(self, scope: dict, receive: Callable, send: Callable) -> None:
+        if scope["type"] in {"http", "websocket"}:
+            path = scope.get("path", "")
+            for prefix in self.prefixes:
+                if path == prefix or path.startswith(f"{prefix}/"):
+                    scope = dict(scope)
+                    scope["path"] = path[len(prefix):] or "/"
+                    scope["root_path"] = f"{scope.get('root_path', '')}{prefix}"
+                    break
+        await self.app(scope, receive, send)
+
+
 app = FastAPI(
     title=f"Image Tagger v3 (v{VERSION})",
     description="Unified API for Tagger Workbench, Supervisor, Admin, and Explorer.",
@@ -22,6 +44,15 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+if os.getenv("ENABLE_LEGACY_PREFIXES", "1").lower() not in {"0", "false"}:
+    app.add_middleware(
+        PrefixStripMiddleware,
+        prefixes=[
+            "/api/v1/tagger",
+            "/api",
+        ],
+    )
 
 # Router wiring
 app.include_router(v1_annotation.router)
