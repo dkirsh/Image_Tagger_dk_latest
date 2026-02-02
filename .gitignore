@@ -1,1 +1,22 @@
 .DS_Store
+
+# Agent/AI-related files
+.claude/
+CLAUDE.md
+claude.md
+AGENTS.md
+agents.md
+AGENT_INSTRUCTIONS.md
+agent_instructions.md
+AGENT_*.md
+agent_*.md
+SYSTEM_PROMPT.md
+system_prompt.md
+*PROMPT*.md
+*prompt*.md
+AI_*.md
+ai_*.md
+*LLM*.md
+*llm*.md
+*AI_COLLAB*.md
+*QUICKSTART*.md
