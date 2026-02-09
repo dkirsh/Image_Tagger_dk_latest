@@ -276,16 +276,16 @@ def _compute_segmentation_overlay_bytes(
 ) -> bytes:
     """Compute an instance segmentation overlay PNG for the given image.
 
-    Uses YOLO11m-seg to detect and segment objects, then overlays colored
-    masks on the original image.
+    Uses OneFormer to detect and segment objects, then overlays colored
+    masks on the original image with labels centered on each segment.
     
     Supports both local file paths and remote URLs.
     
     Args:
         storage_path: Path to image (local or URL)
-        alpha: Mask transparency (0.0-1.0)
+        alpha: Mask transparency (0.0-1.0, default 0.85 for very dark masks)
         conf: Minimum detection confidence (0.0-1.0)
-        show_labels: Whether to draw class labels and confidence
+        show_labels: Whether to draw class labels centered on segments
         
     Returns:
         PNG image bytes with segmentation overlay
@@ -314,18 +314,19 @@ def _compute_segmentation_overlay_bytes(
     # Load image from URL or local path (BGR format)
     img_bgr = _load_image_from_url_or_path(storage_path)
     
-    # Convert to RGB for YOLO/AnalysisFrame
+    # Convert to RGB for OneFormer/AnalysisFrame
     img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
     
     # Create analysis frame and run segmentation
     frame = AnalysisFrame(image_id=-1, original_image=img_rgb)
     
     try:
-        SegmentationAnalyzer.analyze(frame, confidence_threshold=conf)
+        # Run panoptic segmentation with OneFormer
+        SegmentationAnalyzer.analyze(frame, use_semantic=False, use_panoptic=True)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Segmentation failed: {str(e)}. Ensure ultralytics is installed.",
+            detail=f"Segmentation failed: {str(e)}. Ensure torch/transformers is installed.",
         )
     
     # Get segmentation masks from frame metadata
@@ -342,54 +343,98 @@ def _compute_segmentation_overlay_bytes(
         # Create overlay with colored masks
         overlay = img_bgr.copy()
         
-        # Generate distinct colors for each class
+        # Generate VIBRANT distinct colors for each class
         np.random.seed(42)  # Consistent colors
         class_colors = {}
         
-        for class_name, mask, confidence, bbox in masks_data:
-            # Get or generate color for this class
+        # Filter masks based on confidence if needed
+        color_idx = 0
+        for class_name, mask, confidence, bbox, is_thing in masks_data:
+            # Skip low-confidence detections
+            if confidence < conf:
+                continue
+            
+            # Get or generate VIBRANT color for this class
             if class_name not in class_colors:
+                rng = np.random.default_rng(abs(hash(class_name)) % (2**32))
                 class_colors[class_name] = tuple(
-                    int(c) for c in np.random.randint(100, 255, 3)
+                    int(c) for c in rng.integers(128, 256, size=3)
                 )
+
             color = class_colors[class_name]
             
-            # Apply colored mask (BGR format)
-            colored_mask = np.zeros_like(overlay)
-            colored_mask[mask > 0] = color
-            overlay = cv2.addWeighted(overlay, 1, colored_mask, alpha, 0)
+            mask_bool = mask > 0
+
+            overlay[mask_bool] = (
+                (1 - alpha) * overlay[mask_bool] +
+                alpha * np.array(color, dtype=np.uint8)
+            )
+
             
-            # Draw bounding box
-            x1, y1, x2, y2 = [int(c) for c in bbox]
-            cv2.rectangle(overlay, (x1, y1), (x2, y2), color, 2)
-            
-            # Draw label
+            # Draw label centered on segment (NO bounding box)
             if show_labels:
-                label = f"{class_name} {confidence:.0%}"
+                # Find center of mask
+                ys, xs = np.where(mask_bool)
+                if len(ys) > 0:
+                    center_x = int(xs.mean())
+                    center_y = int(ys.mean())
                     
-                # Label background
-                (label_w, label_h), baseline = cv2.getTextSize(
-                    label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1
-                )
-                cv2.rectangle(
-                    overlay, 
-                    (x1, y1 - label_h - baseline - 5),
-                    (x1 + label_w + 5, y1),
-                    color, 
-                    -1
-                )
-                # Label text
-                cv2.putText(
-                    overlay, label,
-                    (x1 + 2, y1 - baseline - 2),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (255, 255, 255), 1
-                )
+                    # Format label
+                    label = f"{class_name} {confidence:.0%}"
+                    
+                    # Get text size
+                    (label_w, label_h), baseline = cv2.getTextSize(
+                        label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2
+                    )
+                    
+                    # Calculate position to center text
+                    text_x = center_x - label_w // 2
+                    text_y = center_y + label_h // 2
+                    
+                    # Draw text background using VIBRANT color (80% brightness)
+                    bg_color = tuple(int(c * 0.8) for c in color)
+                    padding = 6
+                    cv2.rectangle(
+                        overlay,
+                        (text_x - padding, text_y - label_h - baseline - padding),
+                        (text_x + label_w + padding, text_y + baseline + padding),
+                        bg_color,
+                        -1
+                    )
+                    
+                    # Add a subtle border around the label box
+                    cv2.rectangle(
+                        overlay,
+                        (text_x - padding, text_y - label_h - baseline - padding),
+                        (text_x + label_w + padding, text_y + baseline + padding),
+                        (255, 255, 255),
+                        1
+                    )
+                    
+                    # Draw text in white for contrast
+                    cv2.putText(
+                        overlay, label,
+                        (text_x, text_y),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.6, (255, 255, 255), 2
+                    )
         
-        # Add summary text
-        total_objects = len(masks_data)
+        # Add summary text at bottom
+        total_objects = frame.attributes.get("segmentation.total_objects", len(masks_data))
         scene_coverage = frame.attributes.get("segmentation.scene_coverage", 0)
         summary = f"Objects: {total_objects} | Coverage: {scene_coverage:.1%}"
+        
+        # Background for summary
+        (sum_w, sum_h), sum_baseline = cv2.getTextSize(
+            summary, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2
+        )
+        cv2.rectangle(
+            overlay,
+            (5, overlay.shape[0] - sum_h - sum_baseline - 15),
+            (sum_w + 15, overlay.shape[0] - 5),
+            (0, 0, 0),
+            -1
+        )
         cv2.putText(
             overlay, summary,
             (10, overlay.shape[0] - 10),
@@ -622,7 +667,7 @@ def get_image_complexity_heatmap(
 @router.get("/images/{image_id}/segmentation", summary="Return instance segmentation overlay for an image")
 def get_image_segmentation(
     image_id: int,
-    alpha: float = 0.5,
+    alpha: float = 0.6,
     conf: float = 0.25,
     labels: bool = True,
     db: Session = Depends(get_db),
@@ -630,7 +675,7 @@ def get_image_segmentation(
 ) -> Response:
     """Serve a PNG instance segmentation overlay for the requested image.
 
-    This endpoint uses YOLO11m-seg to detect and segment objects in the image,
+    This endpoint uses OneFormer to detect and segment objects in the image,
     then overlays colored masks showing each detected instance.
 
     The overlay includes:

@@ -1,14 +1,16 @@
 """
-Instance Segmentation Analyzer using YOLO11m-seg.
+Instance and Semantic Segmentation Analyzer using OneFormer.
 
-This module provides instance segmentation capabilities for the science pipeline,
-identifying and segmenting individual objects within architectural/interior images.
+This module provides comprehensive segmentation capabilities for the science pipeline,
+identifying and segmenting individual objects and semantic regions within architectural/interior images.
 
-The segmentation model detects objects and provides pixel-level masks for each
-instance, enabling detailed spatial analysis of scenes.
+The OneFormer model provides:
+- Semantic segmentation (scene understanding)
+- Instance segmentation (individual object detection)
+- Panoptic segmentation (combined semantic + instance)
 
 Architecture:
-- Uses YOLOv11 medium segmentation model (yolo11m-seg.pt)
+- Uses Hugging Face OneFormer model (shi-labs/oneformer_ade20k_swin_large)
 - Lazy loading pattern to minimize startup overhead
 - Integrates with AnalysisFrame for pipeline compatibility
 - Stores both counts and coverage metrics as attributes
@@ -16,192 +18,266 @@ Architecture:
 
 import logging
 from typing import Dict, List, Optional, Tuple, Any
+from collections import defaultdict
 import numpy as np
+from PIL import Image
 
 from backend.science.core import AnalysisFrame
 
-# Lazy load ultralytics to keep startup fast if not used
-YOLO_SEG_MODEL = None
+# Lazy load transformers and torch to keep startup fast
+ONEFORMER_MODEL = None
+ONEFORMER_PROCESSOR = None
 
 logger = logging.getLogger("v3.science.segmentation")
 
 
 class SegmentationAnalyzer:
     """
-    Instance Segmentation Analyzer using YOLO11m-seg.
+    Segmentation Analyzer using OneFormer.
     
-    Performs instance segmentation on images to:
-    1. Identify objects with pixel-level masks
-    2. Compute coverage metrics (what % of image is occupied by each class)
-    3. Extract object counts by class
-    4. Store segmentation masks for downstream analysis
+    Performs semantic and instance segmentation on images to:
+    1. Identify semantic regions (walls, floors, ceilings, furniture)
+    2. Detect individual object instances with pixel-level masks
+    3. Compute coverage metrics (what % of image is occupied by each class)
+    4. Extract object counts by class
+    5. Store segmentation masks for downstream analysis
+    
+    All class labels are dynamically determined from model.config.id2label.
+    No hardcoded class lists or groupings.
     
     Attributes computed:
     - segmentation.{class_name}_count: Number of instances of each class
     - segmentation.{class_name}_coverage: Fraction of image covered by class
-    - segmentation.total_objects: Total number of detected objects
+    - segmentation.total_objects: Total number of detected instances
     - segmentation.scene_coverage: Total fraction of image with detected objects
+    - segmentation.semantic_*: Semantic region metrics
     """
-    
-    # COCO classes relevant to interior/architectural analysis
-    ARCHITECTURAL_CLASSES = {
-        'chair', 'couch', 'bed', 'dining table', 'toilet', 'tv', 'laptop',
-        'refrigerator', 'oven', 'sink', 'potted plant', 'vase', 'clock',
-        'book', 'bottle', 'cup', 'bowl', 'person', 'dog', 'cat', 'backpack',
-        'umbrella', 'handbag', 'tie', 'suitcase', 'bench'
-    }
-    
-    # Mapping to semantic groups for aggregation
-    CLASS_GROUPS = {
-        'seating': ['chair', 'couch', 'bench'],
-        'surfaces': ['dining table', 'bed'],
-        'appliances': ['refrigerator', 'oven', 'sink', 'tv', 'laptop'],
-        'biophilia': ['potted plant', 'vase'],
-        'occupants': ['person'],
-        'pets': ['dog', 'cat'],
-        'decor': ['clock', 'book', 'bottle', 'cup', 'bowl'],
-    }
 
     @staticmethod
     def load_model():
         """
-        Load the YOLO segmentation model (lazy loading).
+        Load the OneFormer model (lazy loading).
         
-        Uses yolo11m-seg (medium size) for a balance of accuracy and speed.
-        The model will be downloaded automatically on first use (~50MB).
+        Uses shi-labs/oneformer_ade20k_swin_large for high-quality segmentation.
+        The model will be downloaded automatically on first use (~1.5GB).
+        
+        Alternative models:
+        - shi-labs/oneformer_ade20k_swin_tiny (faster, smaller)
+        - shi-labs/oneformer_coco_swin_large (COCO dataset)
         """
-        global YOLO_SEG_MODEL
-        if YOLO_SEG_MODEL is None:
-            from ultralytics import YOLO
-            # yolo11m-seg provides good accuracy while being reasonably fast
-            # Use 'yolo26x-seg' for maximum accuracy (slower, ~130MB)
-            # Use 'yolo26n-seg' for fastest inference (~12MB)
-            logger.info("Loading YOLO26l-seg model for instance segmentation...")
-            YOLO_SEG_MODEL = YOLO("yolo26l-seg.pt")
-            logger.info("YOLO26m-seg model loaded successfully")
+        global ONEFORMER_MODEL, ONEFORMER_PROCESSOR
+        if ONEFORMER_MODEL is None:
+            from transformers import OneFormerProcessor, OneFormerForUniversalSegmentation
+            
+            model_name = "shi-labs/oneformer_ade20k_swin_tiny"
+            logger.info(f"Loading OneFormer model: {model_name}")
+            
+            ONEFORMER_PROCESSOR = OneFormerProcessor.from_pretrained(model_name)
+            ONEFORMER_MODEL = OneFormerForUniversalSegmentation.from_pretrained(model_name)
+            
+            logger.info("OneFormer model loaded successfully")
     
     @staticmethod
-    def analyze(frame: AnalysisFrame, confidence_threshold: float = 0.25) -> Dict[str, Any]:
+    def _semantic_to_metrics(semantic_map: np.ndarray, id2label: Dict) -> Tuple[Dict, Dict]:
         """
-        Run instance segmentation on the image and extract metrics.
+        Convert semantic segmentation map to counts and coverage metrics.
+        
+        Args:
+            semantic_map: HxW array of class IDs
+            id2label: Mapping from class ID to label name
+            
+        Returns:
+            counts: Dict of class -> count (always 1 for semantic)
+            coverages: Dict of class -> coverage fraction
+        """
+        unique_classes = np.unique(semantic_map)
+        total_pixels = semantic_map.size
+        
+        counts = {}
+        coverages = {}
+        
+        for class_id in unique_classes:
+            mask = (semantic_map == class_id)
+            pixel_count = mask.sum()
+            
+            if pixel_count > 100:  # Filter tiny segments
+                class_name = id2label.get(int(class_id), f'class_{class_id}')
+                counts[class_name] = 1  # Semantic only has one segment per class
+                coverages[class_name] = pixel_count / total_pixels
+        
+        return counts, coverages
+    
+    @staticmethod
+    def _panoptic_to_metrics(panoptic_result: Dict, id2label: Dict) -> Tuple[Dict, Dict, List]:
+        """
+        Convert panoptic segmentation to instance counts and coverage metrics.
+        
+        Args:
+            panoptic_result: Panoptic segmentation result from processor
+            id2label: Mapping from class ID to label name
+            
+        Returns:
+            counts: Dict of class -> instance count
+            coverages: Dict of class -> total coverage fraction
+            masks_data: List of (class_name, mask, confidence, bbox, is_thing)
+        """
+        seg_map = panoptic_result['segmentation'].numpy()
+        segments = panoptic_result['segments_info']
+        total_pixels = seg_map.size
+        
+        counts = {}
+        coverages = {}
+        masks_data = []
+        
+        for segment in segments:
+            mask = (seg_map == segment['id'])
+            pixel_count = mask.sum()
+            
+            if pixel_count > 100:  # Filter tiny segments
+                class_name = id2label.get(segment['label_id'], f"class_{segment['label_id']}")
+                is_thing = segment.get('isthing', True)
+                confidence = segment.get('score', 1.0)
+                
+                # Update counts (only for instances, not stuff)
+                if is_thing:
+                    counts[class_name] = counts.get(class_name, 0) + 1
+                else:
+                    counts[class_name] = counts.get(class_name, 0)
+                
+                # Update coverage (accumulate for multiple instances)
+                coverage = pixel_count / total_pixels
+                coverages[class_name] = coverages.get(class_name, 0.0) + coverage
+                
+                # Compute bounding box
+                ys, xs = np.where(mask)
+                if len(ys) > 0:
+                    bbox = [float(xs.min()), float(ys.min()), 
+                           float(xs.max()), float(ys.max())]
+                else:
+                    bbox = [0, 0, 0, 0]
+                
+                masks_data.append((class_name, mask.astype(np.uint8), confidence, bbox, is_thing))
+        
+        return counts, coverages, masks_data
+    
+    @staticmethod
+    def analyze(frame: AnalysisFrame, use_semantic: bool = True, use_panoptic: bool = True) -> Dict[str, Any]:
+        """
+        Run segmentation on the image and extract metrics.
         
         Args:
             frame: AnalysisFrame containing the image to analyze
-            confidence_threshold: Minimum confidence for detections (0.0-1.0)
+            use_semantic: Whether to run semantic segmentation
+            use_panoptic: Whether to run panoptic (instance) segmentation
             
         Returns:
             Dictionary containing:
-            - counts: Dict of class -> count
-            - coverages: Dict of class -> coverage fraction
-            - masks: List of (class_name, mask_array, confidence, bbox) tuples
-            - total_objects: Total number of detected objects
-            - scene_coverage: Total image coverage by detected objects
+            - semantic_counts: Dict of class -> 1 (semantic regions)
+            - semantic_coverages: Dict of class -> coverage fraction
+            - instance_counts: Dict of class -> instance count
+            - instance_coverages: Dict of class -> coverage fraction
+            - masks: List of mask data tuples
+            - total_instances: Total number of detected instances
+            - scene_coverage: Total image coverage
         """
         SegmentationAnalyzer.load_model()
         
-        # Run inference
-        results = YOLO_SEG_MODEL(
-            frame.original_image, 
-            verbose=False,
-            conf=confidence_threshold
-        )
+        # Convert numpy array to PIL Image if needed
+        if isinstance(frame.original_image, np.ndarray):
+            image_pil = Image.fromarray(frame.original_image)
+        else:
+            image_pil = frame.original_image
         
-        # Initialize metrics
-        counts: Dict[str, int] = {}
-        coverages: Dict[str, float] = {}
-        masks_data: List[Tuple[str, np.ndarray, float, List[float]]] = []
+        id2label = ONEFORMER_MODEL.config.id2label
+        results = {}
         
-        img_h, img_w = frame.original_image.shape[:2]
-        total_pixels = img_h * img_w
-        
-        # Combined mask for computing total scene coverage
-        combined_mask = np.zeros((img_h, img_w), dtype=np.uint8)
-        
-        # Process results
-        for result in results:
-            if result.masks is None:
-                continue
-                
-            masks = result.masks.data.cpu().numpy()  # (N, H, W)
-            boxes = result.boxes
+        # Semantic segmentation
+        if use_semantic:
+            logger.info("Running semantic segmentation...")
+            semantic_inputs = ONEFORMER_PROCESSOR(
+                images=image_pil, 
+                task_inputs=["semantic"], 
+                return_tensors="pt"
+            )
             
-            for i, (mask, box) in enumerate(zip(masks, boxes)):
-                cls_id = int(box.cls[0])
-                confidence = float(box.conf[0])
-                class_name = YOLO_SEG_MODEL.names[cls_id]
-                
-                # Skip low-relevance classes if not in our architectural set
-                # (we still detect them, just don't aggregate)
-                
-                # Resize mask to image dimensions if needed
-                if mask.shape != (img_h, img_w):
-                    import cv2
-                    mask = cv2.resize(
-                        mask.astype(np.float32), 
-                        (img_w, img_h), 
-                        interpolation=cv2.INTER_LINEAR
-                    )
-                    mask = (mask > 0.5).astype(np.uint8)
-                else:
-                    mask = (mask > 0.5).astype(np.uint8)
-                
-                # Update counts
-                counts[class_name] = counts.get(class_name, 0) + 1
-                
-                # Update coverage (accumulate for multiple instances)
-                mask_pixels = np.count_nonzero(mask)
-                coverage = mask_pixels / total_pixels
-                coverages[class_name] = coverages.get(class_name, 0.0) + coverage
-                
-                # Update combined mask
-                combined_mask = np.maximum(combined_mask, mask)
-                
-                # Store mask data for potential visualization
-                bbox = box.xyxy[0].cpu().numpy().tolist()
-                masks_data.append((class_name, mask, confidence, bbox))
+            import torch
+            with torch.no_grad():
+                semantic_outputs = ONEFORMER_MODEL(**semantic_inputs)
+            
+            semantic_map = ONEFORMER_PROCESSOR.post_process_semantic_segmentation(
+                semantic_outputs, target_sizes=[image_pil.size[::-1]]
+            )[0]
+            
+            semantic_counts, semantic_coverages = SegmentationAnalyzer._semantic_to_metrics(
+                semantic_map.numpy(), id2label
+            )
+            
+            results['semantic_counts'] = semantic_counts
+            results['semantic_coverages'] = semantic_coverages
+            results['semantic_map'] = semantic_map.numpy()
+            
+            # Store semantic metrics in frame
+            for class_name, coverage in semantic_coverages.items():
+                safe_name = class_name.replace(' ', '_')
+                frame.add_attribute(f"segmentation.semantic_{safe_name}_coverage", coverage)
         
-        # Compute total scene coverage
-        scene_coverage = np.count_nonzero(combined_mask) / total_pixels
-        total_objects = sum(counts.values())
+        # Panoptic segmentation (for instances)
+        if use_panoptic:
+            logger.info("Running panoptic segmentation...")
+            panoptic_inputs = ONEFORMER_PROCESSOR(
+                images=image_pil,
+                task_inputs=["panoptic"],
+                return_tensors="pt"
+            )
+            
+            import torch
+            with torch.no_grad():
+                panoptic_outputs = ONEFORMER_MODEL(**panoptic_inputs)
+            
+            panoptic_result = ONEFORMER_PROCESSOR.post_process_panoptic_segmentation(
+                panoptic_outputs,
+                target_sizes=[image_pil.size[::-1]],
+                label_ids_to_fuse=set()
+            )[0]
+            
+            instance_counts, instance_coverages, masks_data = SegmentationAnalyzer._panoptic_to_metrics(
+                panoptic_result, id2label
+            )
+            
+            results['instance_counts'] = instance_counts
+            results['instance_coverages'] = instance_coverages
+            results['masks'] = masks_data
+            
+            # Compute combined mask for scene coverage
+            seg_map = panoptic_result['segmentation'].numpy()
+            combined_mask = (seg_map > 0).astype(np.uint8)
+            scene_coverage = combined_mask.sum() / combined_mask.size
+            
+            results['total_instances'] = sum(instance_counts.values())
+            results['scene_coverage'] = scene_coverage
+            
+            # Store instance metrics in frame
+            for class_name, count in instance_counts.items():
+                safe_name = class_name.replace(' ', '_')
+                frame.add_attribute(f"segmentation.{safe_name}_count", count)
+            
+            for class_name, coverage in instance_coverages.items():
+                safe_name = class_name.replace(' ', '_')
+                frame.add_attribute(f"segmentation.{safe_name}_coverage", coverage)
+            
+            frame.add_attribute("segmentation.total_objects", results['total_instances'])
+            frame.add_attribute("segmentation.scene_coverage", scene_coverage)
+            
+            # Store masks in frame metadata
+            frame.metadata["segmentation_masks"] = masks_data
+            frame.metadata["segmentation_combined_mask"] = combined_mask
+            
+            logger.info(
+                f"Segmentation complete: {results['total_instances']} instances, "
+                f"{scene_coverage:.1%} scene coverage"
+            )
         
-        # Store results in frame attributes
-        # Object counts
-        for class_name, count in counts.items():
-            safe_name = class_name.replace(' ', '_')
-            frame.add_attribute(f"segmentation.{safe_name}_count", count)
-        
-        # Coverage metrics
-        for class_name, coverage in coverages.items():
-            safe_name = class_name.replace(' ', '_')
-            frame.add_attribute(f"segmentation.{safe_name}_coverage", coverage)
-        
-        # Aggregate metrics
-        frame.add_attribute("segmentation.total_objects", total_objects)
-        frame.add_attribute("segmentation.scene_coverage", scene_coverage)
-        
-        # Compute group-level metrics
-        for group_name, class_list in SegmentationAnalyzer.CLASS_GROUPS.items():
-            group_count = sum(counts.get(c, 0) for c in class_list)
-            group_coverage = sum(coverages.get(c, 0.0) for c in class_list)
-            frame.add_attribute(f"segmentation.group_{group_name}_count", group_count)
-            frame.add_attribute(f"segmentation.group_{group_name}_coverage", group_coverage)
-        
-        # Store masks in frame metadata for downstream use
-        frame.metadata["segmentation_masks"] = masks_data
-        frame.metadata["segmentation_combined_mask"] = combined_mask
-        
-        logger.info(
-            f"Segmentation complete: {total_objects} objects, "
-            f"{scene_coverage:.1%} scene coverage"
-        )
-        
-        return {
-            "counts": counts,
-            "coverages": coverages,
-            "masks": masks_data,
-            "total_objects": total_objects,
-            "scene_coverage": scene_coverage,
-        }
+        return results
     
     @staticmethod
     def get_segmentation_overlay(
@@ -209,6 +285,7 @@ class SegmentationAnalyzer:
         alpha: float = 0.5,
         show_labels: bool = True,
         show_confidence: bool = True,
+        filter_stuff: bool = False
     ) -> Optional[np.ndarray]:
         """
         Generate a visualization overlay showing segmentation masks.
@@ -218,6 +295,7 @@ class SegmentationAnalyzer:
             alpha: Transparency of mask overlay (0.0-1.0)
             show_labels: Whether to draw class labels
             show_confidence: Whether to show confidence scores
+            filter_stuff: Only show instance segments (not semantic stuff)
             
         Returns:
             RGB image with segmentation overlay, or None if no masks
@@ -225,17 +303,21 @@ class SegmentationAnalyzer:
         masks_data = frame.metadata.get("segmentation_masks")
         if not masks_data:
             return None
-            
+        
         import cv2
         
         # Create overlay image
         overlay = frame.original_image.copy()
         
         # Generate distinct colors for each class
-        np.random.seed(42)  # Consistent colors across runs
+        np.random.seed(42)
         class_colors = {}
         
-        for class_name, mask, confidence, bbox in masks_data:
+        for class_name, mask, confidence, bbox, is_thing in masks_data:
+            # Skip stuff categories if filtering
+            if filter_stuff and not is_thing:
+                continue
+            
             # Get or generate color for this class
             if class_name not in class_colors:
                 class_colors[class_name] = tuple(
@@ -248,34 +330,35 @@ class SegmentationAnalyzer:
             colored_mask[mask > 0] = color
             overlay = cv2.addWeighted(overlay, 1, colored_mask, alpha, 0)
             
-            # Draw bounding box
-            x1, y1, x2, y2 = [int(c) for c in bbox]
-            cv2.rectangle(overlay, (x1, y1), (x2, y2), color, 2)
-            
-            # Draw label
-            if show_labels:
-                label = class_name
-                if show_confidence:
-                    label = f"{class_name} {confidence:.0%}"
+            # Draw bounding box (only for instances)
+            if is_thing:
+                x1, y1, x2, y2 = [int(c) for c in bbox]
+                cv2.rectangle(overlay, (x1, y1), (x2, y2), color, 2)
+                
+                # Draw label
+                if show_labels:
+                    label = class_name
+                    if show_confidence:
+                        label = f"{class_name} {confidence:.0%}"
                     
-                # Label background
-                (label_w, label_h), baseline = cv2.getTextSize(
-                    label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1
-                )
-                cv2.rectangle(
-                    overlay, 
-                    (x1, y1 - label_h - baseline - 5),
-                    (x1 + label_w + 5, y1),
-                    color, 
-                    -1
-                )
-                # Label text
-                cv2.putText(
-                    overlay, label,
-                    (x1 + 2, y1 - baseline - 2),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (255, 255, 255), 1
-                )
+                    # Label background
+                    (label_w, label_h), baseline = cv2.getTextSize(
+                        label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1
+                    )
+                    cv2.rectangle(
+                        overlay,
+                        (x1, y1 - label_h - baseline - 5),
+                        (x1 + label_w + 5, y1),
+                        color,
+                        -1
+                    )
+                    # Label text
+                    cv2.putText(
+                        overlay, label,
+                        (x1 + 2, y1 - baseline - 2),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5, (255, 255, 255), 1
+                    )
         
         return overlay
 
