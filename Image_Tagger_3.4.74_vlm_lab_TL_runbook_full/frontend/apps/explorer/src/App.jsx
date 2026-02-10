@@ -206,20 +206,20 @@ export default function ExplorerApp() {
                 </div>
             )}
 
-{/* Quick Help */}
-<div className="border-b border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-900 flex gap-3 items-start">
-    <HelpCircle className="mt-0.5 flex-shrink-0" size={18} />
-    <div>
-        <div className="font-semibold text-sm mb-1">How to use Explorer</div>
-        <ol className="list-decimal ml-4 space-y-0.5">
-            <li>Start with a search query, or leave it blank to browse recent images.</li>
-            <li>Use <span className="font-semibold">Filters</span> to narrow by attributes, tags, or source.</li>
-            <li>Click image thumbnails to inspect their tags and attributes.</li>
-            <li>Use the checkbox on each card to add images to your export cart.</li>
-            <li>Click <span className="font-semibold">Export Dataset</span> to download a JSON file for training or analysis.</li>
-        </ol>
-    </div>
-</div>
+            {/* Quick Help */}
+            <div className="border-b border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-900 flex gap-3 items-start">
+                <HelpCircle className="mt-0.5 flex-shrink-0" size={18} />
+                <div>
+                    <div className="font-semibold text-sm mb-1">How to use Explorer</div>
+                    <ol className="list-decimal ml-4 space-y-0.5">
+                        <li>Start with a search query, or leave it blank to browse recent images.</li>
+                        <li>Use <span className="font-semibold">Filters</span> to narrow by attributes, tags, or source.</li>
+                        <li>Click image thumbnails to inspect their tags and attributes.</li>
+                        <li>Use the checkbox on each card to add images to your export cart.</li>
+                        <li>Click <span className="font-semibold">Export Dataset</span> to download a JSON file for training or analysis.</li>
+                    </ol>
+                </div>
+            </div>
 
             {/* Toolbar */}
             <div className="border-b border-gray-200 p-4 flex gap-4 bg-gray-50 items-center z-20 shadow-sm">
@@ -337,7 +337,7 @@ export default function ExplorerApp() {
                                 />
                                 <span className="text-xs text-black w-8">{Math.round(segmentationConf * 100)}%</span>
                                 <span className="text-xs text-black hidden lg:inline ml-2">
-                                    YOLO26l-seg instance segmentation
+                                    OneFormer-seg instance segmentation
                                 </span>
                             </>
                         )}
@@ -482,11 +482,10 @@ export default function ExplorerApp() {
                             return (
                                 <div
                                     key={img.id}
-                                    className={`break-inside-avoid group relative rounded-xl overflow-hidden border border-gray-200 shadow-sm cursor-pointer bg-white transition-all duration-200 ${
-                                        cart.includes(img.id)
+                                    className={`break-inside-avoid group relative rounded-xl overflow-hidden border border-gray-200 shadow-sm cursor-pointer bg-white transition-all duration-200 ${cart.includes(img.id)
                                             ? 'ring-2 ring-blue-500 transform scale-[1.02]'
                                             : 'hover:shadow-xl hover:-translate-y-1'
-                                    }`}
+                                        }`}
                                     onClick={() => toggleCart(img.id)}
                                 >
                                     {/* Image */}

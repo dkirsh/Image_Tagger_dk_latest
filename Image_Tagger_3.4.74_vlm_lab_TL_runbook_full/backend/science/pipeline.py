@@ -1,6 +1,6 @@
 """
-Science Pipeline Orchestrator v3.3 (Grand Jury Edition).
-Integrates DepthAnalyzer and removed IsovistAnalyzer.
+Science Pipeline Orchestrator v3.4 (OneFormer Edition).
+Integrates DepthAnalyzer and updated SegmentationAnalyzer using OneFormer.
 """
 import logging
 from typing import Optional
@@ -18,7 +18,7 @@ from backend.models.assets import Image
 from backend.models.annotation import Validation
 from backend.science.core import AnalysisFrame
 
-# v3.3 Modular Imports
+# v3.4 Modular Imports
 from backend.science.math.color import ColorAnalyzer
 from backend.science.math.complexity import ComplexityAnalyzer
 from backend.science.math.glcm import TextureAnalyzer
@@ -26,13 +26,14 @@ from backend.science.math.fractals import FractalAnalyzer
 from backend.science.math.symmetry import SymmetryAnalyzer
 from backend.science.math.naturalness import NaturalnessAnalyzer
 from backend.science.math.fluency import FluencyAnalyzer
-from backend.science.spatial.depth import DepthAnalyzer # Replaces Isovist
+from backend.science.spatial.depth import DepthAnalyzer  # Replaces Isovist
 from backend.science.context.cognitive import CognitiveStateAnalyzer
 from backend.science.semantics.semantic_tags_vlm import SemanticTagAnalyzer
-from backend.science.vision.segmentation import SegmentationAnalyzer
+from backend.science.vision.segmentation import SegmentationAnalyzer  # Now uses OneFormer
 from backend.science.vision.materials import GeminiMaterialAnalyzer
 
 logger = logging.getLogger(__name__)
+
 
 class SciencePipelineConfig:
     def __init__(self, enable_all: bool = True):
@@ -46,11 +47,14 @@ class SciencePipelineConfig:
         self.enable_semantic = False   # Semantic VLM (style.*, room_function.*)
         # Instance segmentation (YOLO11m-seg) - opt-in for object detection
         self.enable_segmentation = False  # Instance segmentation with YOLO
-        # Material detection via Gemini Flash VLM - opt-in (requires API key)
-        self.enable_materials_vlm = False  # Gemini Flash material detection
 
 class SciencePipeline:
-    def __init__(self, db: Optional[Session] = None, session: Optional[Session] = None, config: Optional[SciencePipelineConfig] = None):
+    def __init__(
+        self, 
+        db: Optional[Session] = None, 
+        session: Optional[Session] = None, 
+        config: Optional[SciencePipelineConfig] = None
+    ):
         self.db = db or session or SessionLocal()
         self._owns_session = (db is None and session is None)
         self.config = config or SciencePipelineConfig()
@@ -63,11 +67,10 @@ class SciencePipeline:
         self.symmetry = SymmetryAnalyzer()
         self.naturalness = NaturalnessAnalyzer()
         self.fluency = FluencyAnalyzer()
-        self.spatial = DepthAnalyzer() # The new Spatial Engine
+        self.spatial = DepthAnalyzer()  # The new Spatial Engine
         self.cognitive = CognitiveStateAnalyzer()
         self.semantic = SemanticTagAnalyzer()
         self.segmentation = SegmentationAnalyzer()  # YOLO11m-seg instance segmentation
-        self.materials_vlm = GeminiMaterialAnalyzer()  # Gemini Flash material detection
 
     def process_image(self, image_id: int) -> bool:
         image_record = self.db.query(Image).get(image_id)
@@ -77,29 +80,38 @@ class SciencePipeline:
 
         # Load Image
         rgb = self._load_image(image_record)
-        if rgb is None: return False
+        if rgb is None:
+            return False
 
         # Init Frame
         frame = AnalysisFrame(image_id=image_id, original_image=rgb)
 
         try:
             # L0: Physics & Basic Stats
-            if self.config.enable_color: self.color.analyze(frame)
-            if self.config.enable_complexity: self.complexity.analyze(frame)
-            if self.config.enable_texture: self.texture.analyze(frame)
-            if self.config.enable_fractals: self.fractals.analyze(frame)
-            if self.config.enable_spatial: 
+            if self.config.enable_color:
+                self.color.analyze(frame)
+            if self.config.enable_complexity:
+                self.complexity.analyze(frame)
+            if self.config.enable_texture:
+                self.texture.analyze(frame)
+            if self.config.enable_fractals:
+                self.fractals.analyze(frame)
+            if self.config.enable_spatial:
                 self.symmetry.analyze(frame)
                 self.naturalness.analyze(frame)
-                self.spatial.analyze(frame) # Runs Depth/Clutter
+                self.spatial.analyze(frame)  # Runs Depth/Clutter
 
             # L1: Perceptual (Dependent on L0)
             if self.config.enable_spatial:
                 self.fluency.analyze(frame)
 
-            # L1.5: Vision (Instance Segmentation)
+            # L1.5: Vision (Semantic + Instance Segmentation with OneFormer)
             if self.config.enable_segmentation:
-                self.segmentation.analyze(frame)
+                self.segmentation.analyze(
+                    frame,
+                    use_semantic=self.config.segmentation_use_semantic,
+                    use_panoptic=self.config.segmentation_use_panoptic
+                )
 
             # L1.6: Materials (Gemini Flash VLM)
             if self.config.enable_materials_vlm:
@@ -120,19 +132,22 @@ class SciencePipeline:
         # Simple local loader
         import os
         path = f"data_store/{image_record.storage_path}"
-        if not os.path.exists(path): return None
+        if not os.path.exists(path):
+            return None
         bgr = cv2.imread(path)
-        if bgr is None: return None
+        if bgr is None:
+            return None
         return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
 
     def _save_results(self, image_id: int, attributes: dict) -> None:
         for key, value in attributes.items():
-            if value != value: value = 0.0 # NaN check
+            if value != value:  # NaN check
+                value = 0.0
             val = Validation(
                 image_id=image_id,
                 attribute_key=key,
                 value=float(value),
-                source="science_pipeline_v3.3"
+                source="science_pipeline_v3.4"
             )
             self.db.add(val)
         self.db.commit()
