@@ -1,4 +1,6 @@
+# macOS system files
 .DS_Store
+**/.DS_Store
 
 # Agent/AI-related files
 .claude/
