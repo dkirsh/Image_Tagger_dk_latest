@@ -216,7 +216,7 @@ class AnthropicEngine(VLMEngine):
 class GeminiEngine(VLMEngine):
     """Adapter for Google Gemini (e.g. 1.5 Flash / Pro) vision models."""
 
-    def __init__(self, api_key: str, model: str = "gemini-1.5-flash"):
+    def __init__(self, api_key: str, model: str = "gemini-3.0-flash"):
         if genai is None:
             raise RuntimeError(
                 "google.generativeai package is not installed in this environment."

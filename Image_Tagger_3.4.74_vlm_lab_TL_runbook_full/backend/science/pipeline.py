@@ -30,6 +30,7 @@ from backend.science.spatial.depth import DepthAnalyzer # Replaces Isovist
 from backend.science.context.cognitive import CognitiveStateAnalyzer
 from backend.science.semantics.semantic_tags_vlm import SemanticTagAnalyzer
 from backend.science.vision.segmentation import SegmentationAnalyzer
+from backend.science.vision.materials import GeminiMaterialAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,8 @@ class SciencePipelineConfig:
         self.enable_semantic = False   # Semantic VLM (style.*, room_function.*)
         # Instance segmentation (YOLO11m-seg) - opt-in for object detection
         self.enable_segmentation = False  # Instance segmentation with YOLO
+        # Material detection via Gemini Flash VLM - opt-in (requires API key)
+        self.enable_materials_vlm = False  # Gemini Flash material detection
 
 class SciencePipeline:
     def __init__(self, db: Optional[Session] = None, session: Optional[Session] = None, config: Optional[SciencePipelineConfig] = None):
@@ -64,6 +67,7 @@ class SciencePipeline:
         self.cognitive = CognitiveStateAnalyzer()
         self.semantic = SemanticTagAnalyzer()
         self.segmentation = SegmentationAnalyzer()  # YOLO11m-seg instance segmentation
+        self.materials_vlm = GeminiMaterialAnalyzer()  # Gemini Flash material detection
 
     def process_image(self, image_id: int) -> bool:
         image_record = self.db.query(Image).get(image_id)
@@ -96,6 +100,10 @@ class SciencePipeline:
             # L1.5: Vision (Instance Segmentation)
             if self.config.enable_segmentation:
                 self.segmentation.analyze(frame)
+
+            # L1.6: Materials (Gemini Flash VLM)
+            if self.config.enable_materials_vlm:
+                self.materials_vlm.analyze(frame)
 
             # L2: Cognitive (VLM)
             if self.config.enable_cognitive:

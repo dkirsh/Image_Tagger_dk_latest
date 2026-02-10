@@ -13,7 +13,7 @@ const api = new ApiClient('/api/v1/explorer');
 
 export default function ExplorerApp() {
     const [cart, setCart] = useState([]);
-    const [debugMode, setDebugMode] = useState('none'); // 'none' | 'edges' | 'overlay' | 'depth' | 'complexity' | 'segmentation' | 'room'
+    const [debugMode, setDebugMode] = useState('none'); // 'none' | 'edges' | 'overlay' | 'depth' | 'complexity' | 'segmentation' | 'room' | 'materials'
     const [segmentationConf, setSegmentationConf] = useState(0.25); // Segmentation confidence threshold
     const [overlayOpacity, setOverlayOpacity] = useState(0.5);
     const [edgeThresholds, setEdgeThresholds] = useState({ low: 50, high: 150 });
@@ -254,7 +254,9 @@ export default function ExplorerApp() {
                                             ? 'segmentation'
                                             : debugMode === 'segmentation'
                                                 ? 'room'
-                                                : 'none';
+                                                : debugMode === 'room'
+                                                    ? 'materials'
+                                                    : 'none';
                         setDebugMode(next);
                     }}
                 >
@@ -271,9 +273,11 @@ export default function ExplorerApp() {
                                         ? 'Debug: Complexity'
                                         : debugMode === 'segmentation'
                                             ? 'Debug: Segmentation'
-                                            : 'Debug: Room'}
+                                            : debugMode === 'room'
+                                                ? 'Debug: Room'
+                                                : 'Debug: Materials'}
                 </Button>
-                {(debugMode === 'edges' || debugMode === 'overlay' || debugMode === 'depth' || debugMode === 'complexity' || debugMode === 'segmentation' || debugMode === 'room') && (
+                {(debugMode === 'edges' || debugMode === 'overlay' || debugMode === 'depth' || debugMode === 'complexity' || debugMode === 'segmentation' || debugMode === 'room' || debugMode === 'materials') && (
                     <div className="flex items-center gap-2 ml-3">
                         {(debugMode === 'edges' || debugMode === 'overlay' || debugMode === 'complexity') && (
                             <>
@@ -340,6 +344,11 @@ export default function ExplorerApp() {
                         {debugMode === 'room' && (
                             <span className="text-xs text-black hidden md:inline">
                                 Places365 room type classification
+                            </span>
+                        )}
+                        {debugMode === 'materials' && (
+                            <span className="text-xs text-black hidden md:inline">
+                                Gemini Flash material detection (VLM)
                             </span>
                         )}
                     </div>
@@ -508,7 +517,9 @@ export default function ExplorerApp() {
                                                             ? `/api/v1/debug/images/${img.id}/segmentation?conf=${segmentationConf}`
                                                             : debugMode === 'room'
                                                                 ? `/api/v1/debug/images/${img.id}/room`
-                                                                : img.url}
+                                                                : debugMode === 'materials'
+                                                                    ? `/api/v1/debug/images/${img.id}/materials`
+                                                                    : img.url}
                                             alt={img.meta_data && img.meta_data.filename ? img.meta_data.filename : `Image ${img.id}`}
                                             className="w-full h-auto block"
                                             loading="lazy"

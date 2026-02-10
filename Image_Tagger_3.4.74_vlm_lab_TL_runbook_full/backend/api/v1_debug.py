@@ -24,6 +24,7 @@ from backend.science.core import AnalysisFrame
 from backend.science.spatial.depth import DepthAnalyzer
 from backend.science.vision.segmentation import SegmentationAnalyzer
 from backend.science.vision.room_detection import RoomDetectionAnalyzer, COARSE_CATEGORIES
+from backend.science.vision.materials import GeminiMaterialAnalyzer
 from sqlalchemy.orm import Session
 
 from backend.database.core import get_db
@@ -811,6 +812,299 @@ def get_image_room_detection(
     return Response(content=data, media_type="image/png")
 
 
+def _compute_material_detection_overlay_bytes(
+    storage_path: str,
+) -> bytes:
+    """Compute a material detection overlay PNG for the given image.
+
+    Uses Gemini Flash VLM to identify materials, finishes, and textures,
+    then displays the results overlaid on the original image.
+
+    Args:
+        storage_path: Path to image (local or URL)
+
+    Returns:
+        PNG image bytes with material detection overlay
+    """
+    if cv2 is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="cv2 (OpenCV) is not available; cannot compute material detection.",
+        )
+
+    # Check cache first
+    cache_root = os.getenv("IMAGE_MATERIALS_CACHE_ROOT") or os.path.join("backend", "data", "debug_materials")
+    cache_root_path = Path(cache_root)
+    cache_root_path.mkdir(parents=True, exist_ok=True)
+
+    cache_key = _get_cache_key(storage_path)
+    cache_name = f"{cache_key}_materials.png"
+    cache_path = cache_root_path / cache_name
+
+    if cache_path.is_file():
+        try:
+            return cache_path.read_bytes()
+        except Exception:
+            pass
+
+    # Load image from URL or local path (BGR format)
+    img_bgr = _load_image_from_url_or_path(storage_path)
+
+    # Convert to RGB for analysis
+    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+
+    # Create analysis frame and run material detection
+    frame = AnalysisFrame(image_id=-1, original_image=img_rgb)
+
+    try:
+        result = GeminiMaterialAnalyzer.analyze(frame)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Material detection failed: {str(e)}. Ensure GEMINI_API_KEY is set.",
+        )
+
+    # Create overlay
+    overlay = img_bgr.copy()
+    h, w = overlay.shape[:2]
+
+    is_stub = result.get("stub", False)
+    error_msg = result.get("error", "")
+
+    if is_stub:
+        # VLM not configured or API error - show a helpful message
+        panel_height = 100
+        panel = np.zeros((panel_height, w, 3), dtype=np.uint8)
+        panel[:] = (40, 40, 60)
+        overlay[-panel_height:] = cv2.addWeighted(
+            overlay[-panel_height:], 0.3, panel, 0.7, 0
+        )
+
+        if "RESOURCE_EXHAUSTED" in str(error_msg) or "429" in str(error_msg):
+            cv2.putText(overlay, "Material Detection: API Quota Exhausted",
+                         (15, h - panel_height + 28),
+                         cv2.FONT_HERSHEY_SIMPLEX, 0.65, (100, 150, 255), 2)
+            cv2.putText(overlay, "Gemini API free-tier rate limit reached. Wait or upgrade billing.",
+                         (15, h - panel_height + 55),
+                         cv2.FONT_HERSHEY_SIMPLEX, 0.42, (180, 180, 200), 1)
+            cv2.putText(overlay, "See: https://ai.google.dev/gemini-api/docs/rate-limits",
+                         (15, h - panel_height + 78),
+                         cv2.FONT_HERSHEY_SIMPLEX, 0.38, (140, 140, 170), 1)
+        elif error_msg and result.get("engine") != "StubEngine":
+            cv2.putText(overlay, "Material Detection: API Error",
+                         (15, h - panel_height + 28),
+                         cv2.FONT_HERSHEY_SIMPLEX, 0.65, (100, 150, 255), 2)
+            # Truncate error for display
+            short_err = str(error_msg)[:90]
+            cv2.putText(overlay, short_err,
+                         (15, h - panel_height + 55),
+                         cv2.FONT_HERSHEY_SIMPLEX, 0.38, (180, 180, 200), 1)
+        else:
+            cv2.putText(overlay, "Material Detection: No VLM Configured",
+                         (15, h - panel_height + 28),
+                         cv2.FONT_HERSHEY_SIMPLEX, 0.65, (100, 150, 255), 2)
+            cv2.putText(overlay, "Set GEMINI_API_KEY to enable Gemini Flash material analysis",
+                         (15, h - panel_height + 55),
+                         cv2.FONT_HERSHEY_SIMPLEX, 0.42, (180, 180, 200), 1)
+
+        # Do NOT cache error/stub results so they refresh on retry
+        ok, buf = cv2.imencode(".png", overlay)
+        if not ok:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to encode material detection overlay as PNG.",
+            )
+        return buf.tobytes()
+    else:
+        # Full material detection result
+        materials = result.get("materials", [])
+        dominant = result.get("dominant_material", "unknown")
+        palette = result.get("material_palette", [])
+        style_note = result.get("style_note", "")
+
+        # Calculate panel height based on content
+        num_materials = min(len(materials), 8)
+        panel_height = max(180, 70 + num_materials * 24 + 40)
+        panel = np.zeros((panel_height, w, 3), dtype=np.uint8)
+        panel[:] = (35, 35, 45)
+
+        overlay[-panel_height:] = cv2.addWeighted(
+            overlay[-panel_height:], 0.25, panel, 0.75, 0
+        )
+
+        # Title
+        cv2.putText(overlay, f"Dominant: {dominant.upper()}",
+                     (15, h - panel_height + 28),
+                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+
+        # Palette
+        if palette:
+            palette_text = "Palette: " + ", ".join(palette[:5])
+            cv2.putText(overlay, palette_text,
+                         (15, h - panel_height + 52),
+                         cv2.FONT_HERSHEY_SIMPLEX, 0.45, (180, 200, 180), 1)
+
+        # Material details
+        y_start = h - panel_height + 75
+        for i, mat in enumerate(materials[:8]):
+            mat_name = mat.get("material", "unknown")
+            location = mat.get("location", "")
+            coverage = mat.get("coverage", 0.0)
+            confidence = mat.get("confidence", 0.0)
+            finish = mat.get("finish", "")
+
+            # Coverage bar
+            bar_x = 15
+            bar_y = y_start + i * 24
+            bar_width = 120
+            bar_height = 14
+
+            # Bar background
+            cv2.rectangle(overlay, (bar_x, bar_y), (bar_x + bar_width, bar_y + bar_height),
+                          (60, 60, 70), -1)
+
+            # Bar fill based on coverage
+            fill_width = int(bar_width * min(coverage, 1.0))
+            # Color based on confidence
+            if confidence >= 0.8:
+                bar_color = (100, 220, 100)  # Green for high confidence
+            elif confidence >= 0.5:
+                bar_color = (100, 180, 220)  # Blue for medium
+            else:
+                bar_color = (180, 140, 100)  # Orange for lower
+
+            cv2.rectangle(overlay, (bar_x, bar_y), (bar_x + fill_width, bar_y + bar_height),
+                          bar_color, -1)
+
+            # Material label
+            conf_pct = int(confidence * 100)
+            cov_pct = int(coverage * 100)
+            label = f"{mat_name}"
+            if finish and finish not in ("", "unknown", "None"):
+                label += f" ({finish})"
+            label += f" - {location}" if location else ""
+
+            cv2.putText(overlay, label,
+                         (bar_x + bar_width + 10, bar_y + 11),
+                         cv2.FONT_HERSHEY_SIMPLEX, 0.38, (220, 220, 220), 1)
+
+            # Coverage/confidence text on bar
+            cv2.putText(overlay, f"{cov_pct}%",
+                         (bar_x + 3, bar_y + 11),
+                         cv2.FONT_HERSHEY_SIMPLEX, 0.32, (255, 255, 255), 1)
+
+        # Style note at the bottom
+        if style_note:
+            style_y = h - 15
+            # Truncate if too long
+            if len(style_note) > 80:
+                style_note = style_note[:77] + "..."
+            cv2.putText(overlay, style_note,
+                         (15, style_y),
+                         cv2.FONT_HERSHEY_SIMPLEX, 0.38, (160, 160, 180), 1)
+
+        # Engine label in top-right
+        engine_name = result.get("engine", "Gemini Flash")
+        cv2.putText(overlay, f"VLM: {engine_name}",
+                     (w - 200, h - panel_height + 20),
+                     cv2.FONT_HERSHEY_SIMPLEX, 0.35, (140, 140, 160), 1)
+
+    ok, buf = cv2.imencode(".png", overlay)
+    if not ok:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to encode material detection overlay as PNG.",
+        )
+
+    data = buf.tobytes()
+    try:
+        cache_path.write_bytes(data)
+    except Exception:
+        pass
+    return data
+
+
+@router.get("/images/{image_id}/materials", summary="Return material detection overlay for an image")
+def get_image_materials(
+    image_id: int,
+    db: Session = Depends(get_db),
+    user: CurrentUser = Depends(require_tagger),
+) -> Response:
+    """Serve a PNG material detection overlay for the requested image.
+
+    This endpoint uses Gemini Flash VLM to identify materials, finishes,
+    and textures in the image, then displays the results overlaid on
+    the original image.
+
+    The overlay includes:
+    - Dominant material identification
+    - Material palette summary
+    - Individual material coverage bars with confidence
+    - Finish and location details
+    - Style note describing the overall material palette
+
+    Requires GEMINI_API_KEY environment variable to be set.
+    Falls back to a helpful message when no VLM is configured.
+
+    Supports both local file paths and remote URLs.
+    """
+    image: Optional[Image] = db.query(Image).filter(Image.id == image_id).first()
+    if image is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
+
+    storage_path = getattr(image, "storage_path", None)
+    if not storage_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image has no storage_path configured",
+        )
+
+    data = _compute_material_detection_overlay_bytes(storage_path)
+    return Response(content=data, media_type="image/png")
+
+
+@router.get("/images/{image_id}/materials/json", summary="Return material detection JSON for an image")
+def get_image_materials_json(
+    image_id: int,
+    db: Session = Depends(get_db),
+    user: CurrentUser = Depends(require_tagger),
+) -> dict:
+    """Return the raw material detection JSON for the requested image.
+
+    Useful for programmatic access to material detection results without
+    the overlay visualization.
+
+    Requires GEMINI_API_KEY environment variable to be set.
+    """
+    image: Optional[Image] = db.query(Image).filter(Image.id == image_id).first()
+    if image is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
+
+    storage_path = getattr(image, "storage_path", None)
+    if not storage_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image has no storage_path configured",
+        )
+
+    # Load image
+    img_bgr = _load_image_from_url_or_path(storage_path)
+    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+
+    # Run analysis
+    frame = AnalysisFrame(image_id=image_id, original_image=img_rgb)
+
+    try:
+        result = GeminiMaterialAnalyzer.analyze(frame)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Material detection failed: {str(e)}",
+        )
+
+    return result
+
+
 @router.get("/pipeline_health")
 def pipeline_health() -> dict:
     """Return a lightweight view of the science pipeline health.
@@ -837,6 +1131,7 @@ def pipeline_health() -> dict:
         "CognitiveStateAnalyzer",
         "SegmentationAnalyzer",
         "RoomDetectionAnalyzer",
+        "GeminiMaterialAnalyzer",
     ]
 
     analyzer_classes = []

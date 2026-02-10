@@ -46,8 +46,10 @@ COARSE_CATEGORIES = [
     "other",
 ]
 
-# Mapping from Places365 labels to coarse categories
-# Places365 has 365 scene categories - we map the most relevant interior ones
+# Mapping from Places365 labels to coarse categories.
+# Labels are stored WITHOUT _indoor/_outdoor/_interior/_exterior suffixes.
+# The matching logic strips these suffixes before lookup, so "pub_indoor"
+# matches "pub", "library_indoor" matches "library", etc.
 PLACES365_TO_COARSE = {
     # Bathroom
     "bathroom": "bathroom",
@@ -55,7 +57,7 @@ PLACES365_TO_COARSE = {
     "sauna": "bathroom",
     "locker_room": "bathroom",
     "dressing_room": "bathroom",
-    
+
     # Bedroom
     "bedroom": "bedroom",
     "hotel_room": "bedroom",
@@ -63,15 +65,22 @@ PLACES365_TO_COARSE = {
     "nursery": "bedroom",
     "childs_room": "bedroom",
     "dormitory": "bedroom",
-    
+    "dorm_room": "bedroom",
+    "berth": "bedroom",
+
     # Corridor
     "corridor": "corridor",
     "hallway": "corridor",
     "staircase": "corridor",
     "elevator_lobby": "corridor",
+    "elevator_door": "corridor",
+    "elevator": "corridor",
     "entrance_hall": "corridor",
     "fire_escape": "corridor",
-    
+    "escalator": "corridor",
+    "doorway": "corridor",
+    "mezzanine": "corridor",
+
     # Dining
     "dining_room": "dining",
     "banquet_hall": "dining",
@@ -88,14 +97,20 @@ PLACES365_TO_COARSE = {
     "bar": "dining",
     "pub": "dining",
     "beer_hall": "dining",
-    
+    "delicatessen": "dining",
+    "ice_cream_parlor": "dining",
+    "wet_bar": "dining",
+    "wine_cellar": "dining",
+    "discotheque": "dining",
+
     # Kitchen
     "kitchen": "kitchen",
     "kitchenette": "kitchen",
     "galley": "kitchen",
     "bakery": "kitchen",
     "butchers_shop": "kitchen",
-    
+    "pantry": "kitchen",
+
     # Living
     "living_room": "living",
     "home_theater": "living",
@@ -103,17 +118,28 @@ PLACES365_TO_COARSE = {
     "recreation_room": "living",
     "game_room": "living",
     "playroom": "living",
-    "music_studio": "living",
     "attic": "living",
     "basement": "living",
     "loft": "living",
     "parlor": "living",
     "waiting_room": "living",
-    
+    "closet": "living",
+    "bow_window": "living",
+    "alcove": "living",
+    "ball_pit": "living",
+    "mansion": "living",
+    "manufactured_home": "living",
+    "house": "living",
+    "chalet": "living",
+    "cottage": "living",
+    "cabin": "living",
+    "igloo": "living",
+
     # Office
     "office": "office",
     "home_office": "office",
     "office_building": "office",
+    "office_cubicles": "office",
     "conference_room": "office",
     "conference_center": "office",
     "cubicle": "office",
@@ -121,15 +147,28 @@ PLACES365_TO_COARSE = {
     "server_room": "office",
     "reception": "office",
     "clean_room": "office",
-    
+    "television_studio": "office",
+    "legislative_chamber": "office",
+    "embassy": "office",
+    "courthouse": "office",
+    "veterinarians_office": "office",
+    "hospital": "office",
+    "hospital_room": "office",
+    "operating_room": "office",
+    "nursing_home": "office",
+
     # Lobby
     "lobby": "lobby",
     "hotel_lobby": "lobby",
     "apartment_building_lobby": "lobby",
-    "entrance_hall": "lobby",
     "foyer": "lobby",
     "vestibule": "lobby",
-    
+    "atrium_public": "lobby",
+    "ballroom": "lobby",
+    "throne_room": "lobby",
+    "palace": "lobby",
+    "castle": "lobby",
+
     # Retail
     "shopping_mall": "retail",
     "shoe_shop": "retail",
@@ -139,6 +178,7 @@ PLACES365_TO_COARSE = {
     "gift_shop": "retail",
     "toyshop": "retail",
     "pharmacy": "retail",
+    "drugstore": "retail",
     "supermarket": "retail",
     "grocery_store": "retail",
     "market": "retail",
@@ -146,8 +186,17 @@ PLACES365_TO_COARSE = {
     "florist_shop": "retail",
     "beauty_salon": "retail",
     "barbershop": "retail",
-    
-    # Classroom
+    "candy_store": "retail",
+    "department_store": "retail",
+    "fabric_store": "retail",
+    "flea_market": "retail",
+    "general_store": "retail",
+    "hardware_store": "retail",
+    "pet_shop": "retail",
+    "shopfront": "retail",
+    "auto_showroom": "retail",
+
+    # Classroom / Cultural
     "classroom": "classroom",
     "kindergarden_classroom": "classroom",
     "lecture_room": "classroom",
@@ -159,9 +208,22 @@ PLACES365_TO_COARSE = {
     "physics_laboratory": "classroom",
     "art_studio": "classroom",
     "art_school": "classroom",
+    "art_gallery": "classroom",
     "music_studio": "classroom",
     "gymnasium": "classroom",
-    
+    "martial_arts_gym": "classroom",
+    "schoolhouse": "classroom",
+    "museum": "classroom",
+    "natural_history_museum": "classroom",
+    "science_museum": "classroom",
+    "archive": "classroom",
+    "church": "classroom",
+    "mosque": "classroom",
+    "synagogue": "classroom",
+    "temple_asia": "classroom",
+    "catacomb": "classroom",
+    "burial_chamber": "classroom",
+
     # Industrial
     "warehouse": "industrial",
     "factory": "industrial",
@@ -177,7 +239,17 @@ PLACES365_TO_COARSE = {
     "engine_room": "industrial",
     "garage": "industrial",
     "parking_garage": "industrial",
-    
+    "loading_dock": "industrial",
+    "industrial_area": "industrial",
+    "storage_room": "industrial",
+    "shed": "industrial",
+    "stable": "industrial",
+    "hangar": "industrial",
+    "construction_site": "industrial",
+    "oilrig": "industrial",
+    "landfill": "industrial",
+    "junkyard": "industrial",
+
     # Outdoor Adjacent
     "patio": "outdoor_adjacent",
     "veranda": "outdoor_adjacent",
@@ -193,9 +265,31 @@ PLACES365_TO_COARSE = {
     "solarium": "outdoor_adjacent",
     "pool": "outdoor_adjacent",
     "swimming_pool": "outdoor_adjacent",
+    "swimming_hole": "outdoor_adjacent",
     "jacuzzi": "outdoor_adjacent",
     "spa": "outdoor_adjacent",
+    "water_park": "outdoor_adjacent",
+    "pavilion": "outdoor_adjacent",
+    "roof_garden": "outdoor_adjacent",
+    "botanical_garden": "outdoor_adjacent",
+    "formal_garden": "outdoor_adjacent",
+    "japanese_garden": "outdoor_adjacent",
+    "zen_garden": "outdoor_adjacent",
+    "topiary_garden": "outdoor_adjacent",
+    "vegetable_garden": "outdoor_adjacent",
+    "yard": "outdoor_adjacent",
+    "lawn": "outdoor_adjacent",
+    "driveway": "outdoor_adjacent",
+    "inn": "outdoor_adjacent",
+    "motel": "outdoor_adjacent",
+    "hotel": "outdoor_adjacent",
+    "beach_house": "outdoor_adjacent",
 }
+
+# Suffixes to strip from Places365 labels before coarse mapping lookup
+_LABEL_SUFFIXES_TO_STRIP = [
+    "_indoor", "_outdoor", "_interior", "_exterior",
+]
 
 
 class RoomDetectionAnalyzer:
@@ -420,35 +514,56 @@ class RoomDetectionAnalyzer:
         return results
     
     @staticmethod
+    def _normalize_label(label: str) -> str:
+        """Normalize a Places365 label for coarse mapping lookup.
+
+        Strips _indoor/_outdoor/_interior/_exterior suffixes so that e.g.
+        "pub_indoor" matches the mapping key "pub".
+        """
+        clean = label.lower().replace(" ", "_").replace("-", "_")
+        for suffix in _LABEL_SUFFIXES_TO_STRIP:
+            if clean.endswith(suffix):
+                clean = clean[: -len(suffix)]
+                break
+        return clean
+
+    @staticmethod
     def _map_to_coarse(
         fine_predictions: List[Tuple[str, float]]
     ) -> Dict[str, float]:
         """
         Map fine-grained Places365 predictions to coarse taxonomy.
-        
-        Aggregates probabilities from fine labels that map to the same coarse category.
-        
+
+        Aggregates probabilities from fine labels that map to the same
+        coarse category.  Labels are normalized (suffix-stripped) before
+        lookup so that "library_indoor" matches "library", etc.
+
         Args:
             fine_predictions: List of (fine_label, probability) from Places365
-            
+
         Returns:
             Dictionary of coarse_category -> aggregated_probability
         """
         coarse_probs = {cat: 0.0 for cat in COARSE_CATEGORIES}
-        
+
         for label, prob in fine_predictions:
-            # Clean label for matching
-            clean_label = label.lower().replace(" ", "_").replace("-", "_")
-            
-            # Find coarse mapping
-            coarse = PLACES365_TO_COARSE.get(clean_label, "other")
+            normalized = RoomDetectionAnalyzer._normalize_label(label)
+
+            # Try exact match first, then try without suffix
+            coarse = PLACES365_TO_COARSE.get(normalized)
+
+            if coarse is None:
+                # Last resort: check if any mapping key is a substring
+                # e.g. "hunting_lodge_outdoor" -> try "hunting_lodge" -> not found -> "other"
+                coarse = "other"
+
             coarse_probs[coarse] += prob
-        
+
         # Normalize probabilities
         total = sum(coarse_probs.values())
         if total > 0:
             coarse_probs = {k: v / total for k, v in coarse_probs.items()}
-        
+
         return coarse_probs
     
     @staticmethod
@@ -556,14 +671,17 @@ class RoomDetectionAnalyzer:
         """
         RoomDetectionAnalyzer.load_model()
         
-        # Step 1: Run Places365 classifier
-        fine_predictions = RoomDetectionAnalyzer._classify_places365(
+        # Step 1: Run Places365 classifier — get ALL predictions in one pass
+        # We need all 365 for accurate coarse mapping (using only top-k
+        # leaves most probability mass in "other").
+        all_predictions = RoomDetectionAnalyzer._classify_places365(
             frame.original_image,
-            top_k=top_k
+            top_k=365
         )
+        fine_predictions = all_predictions[:top_k]  # Top-k for display / tags
         
-        # Step 2: Map to coarse taxonomy
-        coarse_probs = RoomDetectionAnalyzer._map_to_coarse(fine_predictions)
+        # Step 2: Map ALL 365 predictions to coarse taxonomy
+        coarse_probs = RoomDetectionAnalyzer._map_to_coarse(all_predictions)
         
         # Step 3: Optional object consistency check
         if apply_object_consistency:
