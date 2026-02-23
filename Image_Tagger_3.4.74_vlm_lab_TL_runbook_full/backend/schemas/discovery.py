@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from typing import List, Dict, Any, Optional
+from datetime import datetime
 
 class SearchQuery(BaseModel):
     """Contract for Complex Search"""
@@ -32,3 +33,42 @@ class AttributeRead(BaseModel):
     notes: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class AttributeValue(BaseModel):
+    """A single science-pipeline computed value for the detail view."""
+    key: str
+    name: str
+    category: Optional[str] = None
+    value: float
+    source: str
+
+
+class HumanValidation(BaseModel):
+    """A single human-annotated validation record for the detail view."""
+    user_id: Optional[int] = None
+    username: Optional[str] = None
+    attribute_key: str
+    value: float
+    duration_ms: Optional[int] = None
+    created_at: Optional[datetime] = None
+
+
+class TagInfo(BaseModel):
+    """A single tag with provenance information for the detail view."""
+    label: str
+    source: str          # "preloaded" | "science_pipeline"
+    source_label: str    # Human-readable: "Imported with dataset", "Semantic Tagger (VLM)", etc.
+    confidence: Optional[float] = None   # 0.0–1.0, only for pipeline-derived tags
+    attribute_key: Optional[str] = None  # e.g. "style.modern", only for pipeline-derived tags
+
+
+class ImageDetailResult(BaseModel):
+    """Full detail payload for the single-image viewer modal."""
+    id: int
+    url: str
+    filename: str
+    tags: List[TagInfo] = []
+    meta_data: Dict[str, Any] = {}
+    science_attributes: List[AttributeValue] = []
+    human_validations: List[HumanValidation] = []

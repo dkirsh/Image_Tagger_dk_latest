@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Header, Button, ApiClient } from '@shared';
 import { Search, Filter, Download, Image as ImageIcon, CheckSquare, SlidersHorizontal, HelpCircle } from 'lucide-react';
+import ImageDetailModal from './ImageDetailModal';
 
 // Fallback demo data (used only if backend returns nothing)
 const SAMPLE_IMAGES = Array.from({ length: 12 }).map((_, i) => ({
@@ -31,6 +32,7 @@ export default function ExplorerApp() {
     const [seedMessage, setSeedMessage] = useState(null);
     const [seedElapsed, setSeedElapsed] = useState(0);
     const [seedSkipped, setSeedSkipped] = useState(false);
+    const [detailIndex, setDetailIndex] = useState(null); // index into images[] for detail modal
 
     useEffect(() => {
         loadAttributes();
@@ -193,6 +195,7 @@ export default function ExplorerApp() {
     const maintenanceMessage = isMaintenance ? error.replace('__MAINTENANCE__:', '') : null;
 
     return (
+        <>
         <div className="relative flex flex-col h-screen bg-white">
             <Header appName="Explorer" title="Research Discovery" />
 
@@ -214,8 +217,8 @@ export default function ExplorerApp() {
                     <ol className="list-decimal ml-4 space-y-0.5">
                         <li>Start with a search query, or leave it blank to browse recent images.</li>
                         <li>Use <span className="font-semibold">Filters</span> to narrow by attributes, tags, or source.</li>
-                        <li>Click image thumbnails to inspect their tags and attributes.</li>
-                        <li>Use the checkbox on each card to add images to your export cart.</li>
+                        <li>Click any image to open the <span className="font-semibold">Detail View</span> — see full resolution, science attributes, debug modes, and human validations.</li>
+                        <li>Use the <span className="font-semibold">checkbox button</span> (top-left of each card, visible on hover) to add images to your export cart.</li>
                         <li>Click <span className="font-semibold">Export Dataset</span> to download a JSON file for training or analysis.</li>
                     </ol>
                 </div>
@@ -477,23 +480,27 @@ export default function ExplorerApp() {
                     )}
 
                     <div className="columns-1 sm:columns-2 md:columns-3 xl:columns-4 gap-6 space-y-6 pb-20">
-                        {images.map(img => {
+                        {images.map((img, idx) => {
                             const tags = Array.isArray(img.tags) ? img.tags : [];
+                            const inCart = cart.includes(img.id);
+                            const altText = img.meta_data && img.meta_data.filename ? img.meta_data.filename : `Image ${img.id}`;
                             return (
                                 <div
                                     key={img.id}
-                                    className={`break-inside-avoid group relative rounded-xl overflow-hidden border border-gray-200 shadow-sm cursor-pointer bg-white transition-all duration-200 ${cart.includes(img.id)
+                                    className={`break-inside-avoid group relative rounded-xl overflow-hidden border border-gray-200 shadow-sm cursor-pointer bg-white transition-all duration-200 ${
+                                        inCart
                                             ? 'ring-2 ring-blue-500 transform scale-[1.02]'
                                             : 'hover:shadow-xl hover:-translate-y-1'
-                                        }`}
-                                    onClick={() => toggleCart(img.id)}
+                                    }`}
+                                    onClick={() => setDetailIndex(idx)}
+                                    title="Click to inspect"
                                 >
                                     {/* Image */}
                                     {debugMode === 'overlay' ? (
                                         <div className="relative w-full">
                                             <img
                                                 src={img.url}
-                                                alt={img.meta_data && img.meta_data.filename ? img.meta_data.filename : `Image ${img.id}`}
+                                                alt={altText}
                                                 className="w-full h-auto block"
                                                 loading="lazy"
                                             />
@@ -519,24 +526,34 @@ export default function ExplorerApp() {
                                                                 : debugMode === 'materials'
                                                                     ? `/api/v1/debug/images/${img.id}/materials`
                                                                     : img.url}
-                                            alt={img.meta_data && img.meta_data.filename ? img.meta_data.filename : `Image ${img.id}`}
+                                            alt={altText}
                                             className="w-full h-auto block"
                                             loading="lazy"
                                         />
                                     )}
 
-                                    {/* Overlay Info */}
+                                    {/* Tag count badge */}
                                     <div className="absolute top-2 right-2 bg-black/60 backdrop-blur text-white text-xs font-semibold px-2 py-1 rounded">
                                         {tags.length} tags
                                     </div>
 
-                                    {/* Selection State */}
-                                    {cart.includes(img.id) && (
-                                        <div className="absolute inset-0 bg-blue-900/10 flex items-center justify-center backdrop-contrast-125">
-                                            <div className="bg-blue-600 text-white p-3 rounded-full shadow-lg">
-                                                <CheckSquare size={24} />
-                                            </div>
-                                        </div>
+                                    {/* Explicit cart checkbox — stopPropagation so it doesn't open the modal */}
+                                    <button
+                                        className={`absolute top-2 left-2 flex items-center justify-center w-7 h-7 rounded-full shadow-lg border-2 transition-colors ${
+                                            inCart
+                                                ? 'bg-blue-600 border-blue-600 text-white'
+                                                : 'bg-white/80 border-gray-300 text-gray-400 opacity-0 group-hover:opacity-100'
+                                        }`}
+                                        onClick={e => { e.stopPropagation(); toggleCart(img.id); }}
+                                        title={inCart ? 'Remove from cart' : 'Add to cart'}
+                                        aria-label={inCart ? 'Remove from cart' : 'Add to cart'}
+                                    >
+                                        <CheckSquare size={14} />
+                                    </button>
+
+                                    {/* Cart ring highlight */}
+                                    {inCart && (
+                                        <div className="absolute inset-0 ring-inset ring-2 ring-blue-500 pointer-events-none rounded-xl" />
                                     )}
 
                                     {/* Tags */}
@@ -559,5 +576,21 @@ export default function ExplorerApp() {
                 </main>
             </div>
         </div>
+
+        {/* Image detail modal */}
+        {detailIndex !== null && images.length > 0 && (
+            <ImageDetailModal
+                images={images}
+                initialIndex={detailIndex}
+                debugMode={debugMode}
+                edgeThresholds={edgeThresholds}
+                overlayOpacity={overlayOpacity}
+                segmentationConf={segmentationConf}
+                onClose={() => setDetailIndex(null)}
+                onAddToCart={toggleCart}
+                cart={cart}
+            />
+        )}
+        </>
     );
 }

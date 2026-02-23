@@ -23,7 +23,10 @@ from backend.database.core import get_db
 from backend.services.auth import require_tagger
 from backend.services.training_export import TrainingExporter
 from backend.schemas.training import TrainingExample
-from backend.schemas.discovery import SearchQuery, ImageSearchResult, ExportRequest, AttributeRead
+from backend.schemas.discovery import (
+    SearchQuery, ImageSearchResult, ExportRequest, AttributeRead,
+    AttributeValue, HumanValidation, ImageDetailResult, TagInfo,
+)
 from backend.models.attribute import Attribute
 from backend.models.assets import Image
 
@@ -131,6 +134,148 @@ def list_attributes(
     """
     attrs = db.query(Attribute).order_by(Attribute.key).all()
     return [AttributeRead.model_validate(attr) for attr in attrs]
+
+
+@router.get("/images/{image_id}/detail", response_model=ImageDetailResult)
+def get_image_detail(
+    image_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(require_tagger),
+) -> ImageDetailResult:
+    """Return the full detail payload for the single-image viewer modal.
+
+    Fetches the image record, all Validation rows for that image, and the
+    Attribute registry in a single pass. Returns science-pipeline attributes
+    and human validations as separate lists, ready for the frontend to render.
+    """
+    from backend.models.annotation import Validation  # avoid circular import
+    from backend.models.users import User
+
+    image = db.query(Image).filter(Image.id == image_id).first()
+    if image is None:
+        raise HTTPException(status_code=404, detail="Image not found")
+
+    # Build URL (same logic as search_images)
+    storage_path = getattr(image, "storage_path", None)
+    if storage_path and storage_path.startswith("http"):
+        url = storage_path
+    else:
+        thumb_name = getattr(image, "thumbnail_path", None) or f"image_{image_id}.jpg"
+        url = f"/static/thumbnails/{thumb_name}"
+
+    # Fetch all validations for this image
+    validations = (
+        db.query(Validation)
+        .filter(Validation.image_id == image_id)
+        .order_by(Validation.attribute_key)
+        .all()
+    )
+
+    # Load attribute registry for name/category lookup
+    attr_registry = {a.key: a for a in db.query(Attribute).all()}
+
+    # Load user map for username lookup (single query for all users needed)
+    user_ids = {v.user_id for v in validations if v.user_id is not None}
+    if user_ids:
+        users = db.query(User).filter(User.id.in_(user_ids)).all()
+        user_map = {u.id: u.username for u in users}
+    else:
+        user_map = {}
+
+    science_attributes: list[AttributeValue] = []
+    human_validations: list[HumanValidation] = []
+
+    for v in validations:
+        attr = attr_registry.get(v.attribute_key)
+        is_science = bool(v.source and v.source.startswith("science_pipeline"))
+
+        if is_science:
+            science_attributes.append(AttributeValue(
+                key=v.attribute_key,
+                name=attr.name if attr else v.attribute_key,
+                category=attr.category if attr else None,
+                value=float(v.value),
+                source=v.source,
+            ))
+        else:
+            human_validations.append(HumanValidation(
+                user_id=v.user_id,
+                username=user_map.get(v.user_id) if v.user_id else None,
+                attribute_key=v.attribute_key,
+                value=float(v.value),
+                duration_ms=v.duration_ms if v.duration_ms else None,
+                created_at=v.created_at,
+            ))
+
+    meta = getattr(image, "meta_data", {}) or {}
+    raw_tags = meta.get("tags", []) if isinstance(meta, dict) else []
+    filename = getattr(image, "filename", None) or meta.get("filename", f"image_{image_id}")
+
+    # ── Build tag provenance ──────────────────────────────────────────────────
+    # Map attribute key namespace prefix → human-readable analyzer name.
+    _NAMESPACE_SOURCE: dict[str, str] = {
+        "style":       "Semantic Tagger · VLM",
+        "cognitive":   "Cognitive Analyzer · VLM",
+        "color":       "Color Analyzer · CIELAB",
+        "texture":     "Texture Analyzer · GLCM",
+        "fractal":     "Fractal Dimension Analyzer",
+        "symmetry":    "Symmetry Analyzer",
+        "naturalness": "Naturalness Analyzer",
+        "fluency":     "Fluency Analyzer",
+        "spatial":     "Depth / Spatial Analyzer",
+        "segmentation":"Segmentation · OneFormer",
+        "science":     "Complexity Analyzer · Canny",
+    }
+
+    def _key_to_label(key: str) -> str:
+        """'style.minimalist' → 'Minimalist',  'spatial.room_function.home_office' → 'Home Office'"""
+        last = key.rsplit(".", 1)[-1]
+        return " ".join(w.capitalize() for w in last.split("_"))
+
+    def _source_label_for(key: str) -> str:
+        if "room_function" in key:
+            return "Room Classifier · VLM"
+        ns = key.split(".")[0]
+        return _NAMESPACE_SOURCE.get(ns, "Science Pipeline")
+
+    # Preloaded tags (from meta_data.tags at import/upload time)
+    tag_infos: list[TagInfo] = [
+        TagInfo(label=t, source="preloaded", source_label="Imported with dataset")
+        for t in raw_tags
+    ]
+
+    # Derive additional tags from high-confidence science attributes.
+    # We only promote categorical/semantic attributes to tags (style.*, room_function.*, cognitive.*).
+    _TAG_THRESHOLD = 0.5
+    _TAG_NAMESPACES = ("style.", "cognitive.")
+    preloaded_lower = {t.label.lower() for t in tag_infos}
+
+    for sa in science_attributes:
+        key = sa.key
+        is_tag_attr = (
+            any(key.startswith(ns) for ns in _TAG_NAMESPACES)
+            or "room_function" in key
+        )
+        if is_tag_attr and sa.value >= _TAG_THRESHOLD:
+            label = _key_to_label(key)
+            if label.lower() not in preloaded_lower:
+                tag_infos.append(TagInfo(
+                    label=label,
+                    source="science_pipeline",
+                    source_label=_source_label_for(key),
+                    confidence=sa.value,
+                    attribute_key=key,
+                ))
+
+    return ImageDetailResult(
+        id=image.id,
+        url=url,
+        filename=filename,
+        tags=tag_infos,
+        meta_data=meta,
+        science_attributes=science_attributes,
+        human_validations=human_validations,
+    )
 
 
 @router.post("/seed")
