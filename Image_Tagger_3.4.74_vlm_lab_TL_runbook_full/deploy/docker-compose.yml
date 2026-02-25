@@ -42,6 +42,7 @@ services:
     volumes:
       # Mount the old v2 logic folder so we don't have to copy it into the docker image manually
       - ../backend/image_tagger:/app/backend/image_tagger
+      - image_data:/app/data_store
 
   # 3. The User Interface (Frontend Gateway)
   frontend:
@@ -58,6 +59,7 @@ services:
 
 volumes:
   postgres_data:
+  image_data:
 
 networks:
   tagger-net:
