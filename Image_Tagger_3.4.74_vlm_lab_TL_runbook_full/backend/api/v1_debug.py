@@ -35,6 +35,22 @@ from backend.services.auth import CurrentUser, require_tagger
 router = APIRouter(prefix="/v1/debug", tags=["Debug / Science"])
 
 
+_MATERIALS2_PIPELINE: Optional[MaterialIdentificationPipeline] = None
+
+
+def _get_materials2_pipeline() -> MaterialIdentificationPipeline:
+    """
+    Return a lazily-instantiated singleton MaterialIdentificationPipeline instance.
+
+    This avoids repeatedly loading heavy OneFormer + SigLIP2 weights for each
+    /materials2 debug request.
+    """
+    global _MATERIALS2_PIPELINE
+    if _MATERIALS2_PIPELINE is None:
+        _MATERIALS2_PIPELINE = MaterialIdentificationPipeline.from_pretrained()
+    return _MATERIALS2_PIPELINE
+
+
 def _is_url(path: str) -> bool:
     """Check if the path is a URL."""
     return path.startswith("http://") or path.startswith("https://")
@@ -1202,8 +1218,8 @@ def _compute_materials2_overlay_bytes(storage_path: str) -> bytes:
     img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
 
     try:
-        pipeline = MaterialIdentificationPipeline.from_pretrained()
         from PIL import Image as PILImage
+        pipeline = _get_materials2_pipeline()
         results  = pipeline.run(PILImage.fromarray(img_rgb), show_voting_report=False)
     except Exception as e:
         raise HTTPException(
@@ -1373,7 +1389,7 @@ def get_image_materials2_json(
 
     try:
         from PIL import Image as PILImage
-        pipeline = MaterialIdentificationPipeline.from_pretrained()
+        pipeline = _get_materials2_pipeline()
         results  = pipeline.run(PILImage.fromarray(img_rgb), show_voting_report=False)
     except Exception as e:
         raise HTTPException(

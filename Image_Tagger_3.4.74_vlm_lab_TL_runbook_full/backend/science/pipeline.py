@@ -137,13 +137,14 @@ class SciencePipeline:
                     )
                     self.segmentation.analyze(frame, use_semantic=True, use_panoptic=True)
                 from backend.science.vision.clip_material import MaterialIdentificationPipeline
-                from PIL import Image as PILImage
                 if self._clip_material_pipeline is None:
                     self._clip_material_pipeline = MaterialIdentificationPipeline.from_frame_models(frame)
                     if self._clip_material_pipeline is None:
                         self._clip_material_pipeline = MaterialIdentificationPipeline.from_pretrained()
-                mat_results = self._clip_material_pipeline.run_from_frame(frame, show_voting_report=False)
-                # Store top material per instance as pipeline attributes
+                mat_results = self._clip_material_pipeline.run_from_frame(
+                    frame, show_voting_report=False
+                )
+                # Store top material score per instance as pipeline attributes
                 for r in mat_results:
                     safe = r["class_name"].replace(" ", "_")
                     frame.add_attribute(
