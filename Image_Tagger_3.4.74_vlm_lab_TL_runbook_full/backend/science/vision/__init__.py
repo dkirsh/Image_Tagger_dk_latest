@@ -3,6 +3,7 @@
 from backend.science.vision.segmentation import SegmentationAnalyzer
 from backend.science.vision.room_detection import RoomDetectionAnalyzer
 from backend.science.vision.materials import MaterialAnalyzer, GeminiMaterialAnalyzer
+from backend.science.vision.clip_material import MaterialIdentificationPipeline
 
 __all__ = [
     "ObjectAnalyzer",
@@ -10,4 +11,5 @@ __all__ = [
     "RoomDetectionAnalyzer",
     "MaterialAnalyzer",
     "GeminiMaterialAnalyzer",
+    "MaterialIdentificationPipeline",
 ]

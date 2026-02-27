@@ -24,6 +24,7 @@ from backend.science.core import AnalysisFrame
 from backend.science.spatial.depth import DepthAnalyzer
 from backend.science.vision.segmentation import SegmentationAnalyzer
 from backend.science.vision.room_detection import RoomDetectionAnalyzer, COARSE_CATEGORIES
+from backend.science.vision.clip_material import MaterialIdentificationPipeline
 from backend.science.vision.materials import GeminiMaterialAnalyzer
 from sqlalchemy.orm import Session
 
@@ -274,20 +275,23 @@ def _compute_segmentation_overlay_bytes(
     alpha: float = 0.5,
     conf: float = 0.25,
     show_labels: bool = True,
+    overlay_type: str = "panoptic",  # "semantic" | "panoptic"
 ) -> bytes:
-    """Compute an instance segmentation overlay PNG for the given image.
+    """Compute a segmentation overlay PNG using OneFormerVisualizer.
 
-    Uses OneFormer to detect and segment objects, then overlays colored
-    masks on the original image with labels centered on each segment.
-    
+    Runs the full OneFormer semantic+panoptic merge pipeline and returns either:
+      - "panoptic"  : labeled instance overlay (class + confidence per segment)
+      - "semantic"  : flat class-coloured mask overlay (no labels)
+
     Supports both local file paths and remote URLs.
-    
+
     Args:
-        storage_path: Path to image (local or URL)
-        alpha: Mask transparency (0.0-1.0, default 0.85 for very dark masks)
-        conf: Minimum detection confidence (0.0-1.0)
-        show_labels: Whether to draw class labels centered on segments
-        
+        storage_path : Path to image (local) or URL
+        alpha        : Mask transparency (0.0–1.0)
+        conf         : Minimum detection confidence for display (0.0–1.0)
+        show_labels  : Whether to draw class labels (panoptic mode only)
+        overlay_type : "panoptic" (default) or "semantic"
+
     Returns:
         PNG image bytes with segmentation overlay
     """
@@ -297,13 +301,17 @@ def _compute_segmentation_overlay_bytes(
             detail="cv2 (OpenCV) is not available; cannot compute segmentation.",
         )
 
-    # Compute cache path
-    cache_root = os.getenv("IMAGE_SEGMENTATION_CACHE_ROOT") or os.path.join("backend", "data", "debug_segmentation")
+    cache_root      = os.getenv("IMAGE_SEGMENTATION_CACHE_ROOT") or os.path.join(
+        "backend", "data", "debug_segmentation"
+    )
     cache_root_path = Path(cache_root)
     cache_root_path.mkdir(parents=True, exist_ok=True)
 
-    cache_key = _get_cache_key(storage_path)
-    cache_name = f"{cache_key}_seg_{int(alpha*100)}_{int(conf*100)}_{1 if show_labels else 0}.png"
+    cache_key  = _get_cache_key(storage_path)
+    cache_name = (
+        f"{cache_key}_seg_{overlay_type}_{int(alpha * 100)}_"
+        f"{int(conf * 100)}_{1 if show_labels else 0}.png"
+    )
     cache_path = cache_root_path / cache_name
 
     if cache_path.is_file():
@@ -312,137 +320,52 @@ def _compute_segmentation_overlay_bytes(
         except Exception:
             pass
 
-    # Load image from URL or local path (BGR format)
     img_bgr = _load_image_from_url_or_path(storage_path)
-    
-    # Convert to RGB for OneFormer/AnalysisFrame
     img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
-    
-    # Create analysis frame and run segmentation
+
     frame = AnalysisFrame(image_id=-1, original_image=img_rgb)
-    
+
     try:
-        # Run panoptic segmentation with OneFormer
-        SegmentationAnalyzer.analyze(frame, use_semantic=False, use_panoptic=True)
+        SegmentationAnalyzer.analyze(frame, use_semantic=True, use_panoptic=True)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Segmentation failed: {str(e)}. Ensure torch/transformers is installed.",
         )
-    
-    # Get segmentation masks from frame metadata
-    masks_data = frame.metadata.get("segmentation_masks", [])
-    
-    if not masks_data:
-        # No objects detected - return original image with info text
-        overlay = img_bgr.copy()
+
+    # Use OneFormerVisualizer overlay methods via SegmentationAnalyzer
+    overlay_rgb = SegmentationAnalyzer.get_segmentation_overlay(
+        frame, alpha=alpha, overlay_type=overlay_type
+    )
+
+    if overlay_rgb is None:
+        # No detections — annotate original
+        overlay_rgb = img_rgb.copy()
         cv2.putText(
-            overlay, "No objects detected",
-            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2
-        )
-    else:
-        # Create overlay with colored masks
-        overlay = img_bgr.copy()
-        
-        # Generate VIBRANT distinct colors for each class
-        np.random.seed(42)  # Consistent colors
-        class_colors = {}
-        
-        # Filter masks based on confidence if needed
-        color_idx = 0
-        for class_name, mask, confidence, bbox, is_thing in masks_data:
-            # Skip low-confidence detections
-            if confidence < conf:
-                continue
-            
-            # Get or generate VIBRANT color for this class
-            if class_name not in class_colors:
-                rng = np.random.default_rng(abs(hash(class_name)) % (2**32))
-                class_colors[class_name] = tuple(
-                    int(c) for c in rng.integers(128, 256, size=3)
-                )
-
-            color = class_colors[class_name]
-            
-            mask_bool = mask > 0
-
-            overlay[mask_bool] = (
-                (1 - alpha) * overlay[mask_bool] +
-                alpha * np.array(color, dtype=np.uint8)
-            )
-
-            
-            # Draw label centered on segment (NO bounding box)
-            if show_labels:
-                # Find center of mask
-                ys, xs = np.where(mask_bool)
-                if len(ys) > 0:
-                    center_x = int(xs.mean())
-                    center_y = int(ys.mean())
-                    
-                    # Format label
-                    label = f"{class_name} {confidence:.0%}"
-                    
-                    # Get text size
-                    (label_w, label_h), baseline = cv2.getTextSize(
-                        label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2
-                    )
-                    
-                    # Calculate position to center text
-                    text_x = center_x - label_w // 2
-                    text_y = center_y + label_h // 2
-                    
-                    # Draw text background using VIBRANT color (80% brightness)
-                    bg_color = tuple(int(c * 0.8) for c in color)
-                    padding = 6
-                    cv2.rectangle(
-                        overlay,
-                        (text_x - padding, text_y - label_h - baseline - padding),
-                        (text_x + label_w + padding, text_y + baseline + padding),
-                        bg_color,
-                        -1
-                    )
-                    
-                    # Add a subtle border around the label box
-                    cv2.rectangle(
-                        overlay,
-                        (text_x - padding, text_y - label_h - baseline - padding),
-                        (text_x + label_w + padding, text_y + baseline + padding),
-                        (255, 255, 255),
-                        1
-                    )
-                    
-                    # Draw text in white for contrast
-                    cv2.putText(
-                        overlay, label,
-                        (text_x, text_y),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.6, (255, 255, 255), 2
-                    )
-        
-        # Add summary text at bottom
-        total_objects = frame.attributes.get("segmentation.total_objects", len(masks_data))
-        scene_coverage = frame.attributes.get("segmentation.scene_coverage", 0)
-        summary = f"Objects: {total_objects} | Coverage: {scene_coverage:.1%}"
-        
-        # Background for summary
-        (sum_w, sum_h), sum_baseline = cv2.getTextSize(
-            summary, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2
-        )
-        cv2.rectangle(
-            overlay,
-            (5, overlay.shape[0] - sum_h - sum_baseline - 15),
-            (sum_w + 15, overlay.shape[0] - 5),
-            (0, 0, 0),
-            -1
-        )
-        cv2.putText(
-            overlay, summary,
-            (10, overlay.shape[0] - 10),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2
+            overlay_rgb, "No objects detected",
+            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2,
         )
 
-    ok, buf = cv2.imencode(".png", overlay)
+    # Add summary footer (objects + coverage)
+    total_objects  = frame.attributes.get("segmentation.total_objects", 0)
+    scene_coverage = frame.attributes.get("segmentation.scene_coverage", 0.0)
+    summary        = f"OneFormer {overlay_type} | Objects: {total_objects} | Coverage: {scene_coverage:.1%}"
+    (sum_w, sum_h), sum_bl = cv2.getTextSize(summary, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 2)
+    cv2.rectangle(
+        overlay_rgb,
+        (5, overlay_rgb.shape[0] - sum_h - sum_bl - 14),
+        (sum_w + 14, overlay_rgb.shape[0] - 4),
+        (0, 0, 0), -1,
+    )
+    cv2.putText(
+        overlay_rgb, summary,
+        (10, overlay_rgb.shape[0] - 8),
+        cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 2,
+    )
+
+    # Back to BGR for imencode
+    overlay_bgr = cv2.cvtColor(overlay_rgb, cv2.COLOR_RGB2BGR)
+    ok, buf = cv2.imencode(".png", overlay_bgr)
     if not ok:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -455,6 +378,13 @@ def _compute_segmentation_overlay_bytes(
     except Exception:
         pass
     return data
+
+
+def _compute_panoptic_overlay_bytes(storage_path: str, alpha: float = 0.4) -> bytes:
+    """Convenience wrapper: panoptic (labeled) overlay via OneFormerVisualizer."""
+    return _compute_segmentation_overlay_bytes(
+        storage_path, alpha=alpha, conf=0.0, show_labels=True, overlay_type="panoptic"
+    )
 
 
 def _compute_depth_map_bytes(path: Path) -> bytes:
@@ -665,32 +595,25 @@ def get_image_complexity_heatmap(
     return Response(content=data, media_type="image/png")
 
 
-@router.get("/images/{image_id}/segmentation", summary="Return instance segmentation overlay for an image")
+@router.get("/images/{image_id}/segmentation", summary="Return semantic segmentation overlay (OneFormerVisualizer)")
 def get_image_segmentation(
     image_id: int,
-    alpha: float = 0.6,
+    alpha: float = 0.5,
     conf: float = 0.25,
     labels: bool = True,
     db: Session = Depends(get_db),
     user: CurrentUser = Depends(require_tagger),
 ) -> Response:
-    """Serve a PNG instance segmentation overlay for the requested image.
+    """Serve a PNG semantic mask overlay produced by OneFormerVisualizer.
 
-    This endpoint uses OneFormer to detect and segment objects in the image,
-    then overlays colored masks showing each detected instance.
-
-    The overlay includes:
-    - Colored masks for each detected object
-    - Bounding boxes around objects
-    - Class labels with confidence scores (optional)
-    - Summary of total objects and scene coverage
-
-    Supports both local file paths and remote URLs.
+    Runs the full semantic + panoptic merge pipeline and returns flat
+    class-coloured masks (no per-instance labels).  Use the /segmentation/panoptic
+    endpoint for labelled instance overlays.
 
     Parameters:
-    - alpha: Mask transparency (0.0-1.0, default 0.5)
-    - conf: Minimum detection confidence (0.0-1.0, default 0.25)
-    - labels: Whether to show class labels (default True)
+    - alpha  : Mask transparency (0.0-1.0, default 0.5)
+    - conf   : Minimum detection confidence (0.0-1.0, default 0.25)
+    - labels : Ignored for semantic mode; kept for API compatibility
     """
     image: Optional[Image] = db.query(Image).filter(Image.id == image_id).first()
     if image is None:
@@ -704,11 +627,42 @@ def get_image_segmentation(
         )
 
     data = _compute_segmentation_overlay_bytes(
-        storage_path,
-        alpha=alpha,
-        conf=conf,
-        show_labels=labels,
+        storage_path, alpha=alpha, conf=conf, show_labels=False, overlay_type="semantic"
     )
+    return Response(content=data, media_type="image/png")
+
+
+@router.get(
+    "/images/{image_id}/segmentation/panoptic",
+    summary="Return panoptic (labeled instance) overlay via OneFormerVisualizer",
+)
+def get_image_segmentation_panoptic(
+    image_id: int,
+    alpha: float = 0.4,
+    db: Session = Depends(get_db),
+    user: CurrentUser = Depends(require_tagger),
+) -> Response:
+    """Serve a PNG panoptic overlay: merged semantic-panoptic instance masks with labels.
+
+    Each segment is annotated with its class name and confidence score.
+    This view corresponds directly to Panel 2 ("Labeled Overlay") of the
+    OneFormerVisualizer 4-panel figure.
+
+    Parameters:
+    - alpha : Mask transparency (0.0-1.0, default 0.4)
+    """
+    image: Optional[Image] = db.query(Image).filter(Image.id == image_id).first()
+    if image is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
+
+    storage_path = getattr(image, "storage_path", None)
+    if not storage_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image has no storage_path configured",
+        )
+
+    data = _compute_panoptic_overlay_bytes(storage_path, alpha=alpha)
     return Response(content=data, media_type="image/png")
 
 
@@ -1207,3 +1161,224 @@ def pipeline_health() -> dict:
         summary["analyzers_by_tier"].setdefault(tier, []).append(entry)
 
     return summary
+
+
+# =============================================================================
+# /materials2  — OneFormer + SigLIP2 (clip_material) pipeline
+# =============================================================================
+
+def _compute_materials2_overlay_bytes(storage_path: str) -> bytes:
+    """
+    Run the MaterialIdentificationPipeline and render a confidence overlay PNG.
+
+    Layout:
+      - Coloured instance masks (same palette as segmentation panoptic overlay)
+      - Per-instance label: class name / top material / confidence bar
+      - Footer: total instances, indeterminate count
+    """
+    if cv2 is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="cv2 (OpenCV) is not available.",
+        )
+
+    cache_root      = os.getenv("IMAGE_MATERIALS2_CACHE_ROOT") or os.path.join(
+        "backend", "data", "debug_materials2"
+    )
+    cache_root_path = Path(cache_root)
+    cache_root_path.mkdir(parents=True, exist_ok=True)
+
+    cache_key  = _get_cache_key(storage_path)
+    cache_name = f"{cache_key}_materials2.png"
+    cache_path = cache_root_path / cache_name
+
+    if cache_path.is_file():
+        try:
+            return cache_path.read_bytes()
+        except Exception:
+            pass
+
+    img_bgr = _load_image_from_url_or_path(storage_path)
+    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+
+    try:
+        pipeline = MaterialIdentificationPipeline.from_pretrained()
+        from PIL import Image as PILImage
+        results  = pipeline.run(PILImage.fromarray(img_rgb), show_voting_report=False)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Material identification pipeline failed: {str(e)}",
+        )
+
+    overlay = img_rgb.copy()
+    h, w    = overlay.shape[:2]
+
+    # Assign a consistent colour per class_id
+    np.random.seed(42)
+    class_colors: dict = {}
+
+    for r in results:
+        cls_id = r["class_id"]
+        if cls_id not in class_colors:
+            rng = np.random.default_rng(abs(hash(r["class_name"])) % (2 ** 32))
+            class_colors[cls_id] = tuple(int(c) for c in rng.integers(120, 240, size=3))
+        color    = class_colors[cls_id]
+        mask     = r["mask"]
+        top_mat  = r["top_material"]
+        top_sc   = r["top_score"]
+        is_indet = top_mat == "Indeterminate Material"
+
+        # Semi-transparent fill
+        colored              = np.zeros_like(overlay)
+        colored[mask]        = color
+        overlay              = cv2.addWeighted(overlay, 1.0, colored, 0.45, 0)
+
+        # Label block centred on mask
+        ys, xs = np.where(mask)
+        if len(xs) == 0:
+            continue
+        cx, cy = int(xs.mean()), int(ys.mean())
+
+        cls_label = r["class_name"]
+        mat_label = top_mat if not is_indet else "Indeterminate"
+        conf_pct  = f"{top_sc:.0%}" if not is_indet else "—"
+        line1     = f"#{r['instance_idx']} {cls_label}"
+        line2     = f"{mat_label} {conf_pct}"
+
+        font      = cv2.FONT_HERSHEY_SIMPLEX
+        scale     = 0.42
+        thick     = 1
+        pad       = 4
+
+        (w1, h1), _ = cv2.getTextSize(line1, font, scale, thick)
+        (w2, h2), _ = cv2.getTextSize(line2, font, scale, thick)
+        bw = max(w1, w2) + pad * 2
+        bh = h1 + h2 + pad * 3
+
+        bx = max(0, cx - bw // 2)
+        by = max(0, cy - bh // 2)
+
+        bg_color = (40, 40, 40) if is_indet else tuple(int(c * 0.65) for c in color)
+        cv2.rectangle(overlay, (bx, by), (bx + bw, by + bh), bg_color, -1)
+        cv2.rectangle(overlay, (bx, by), (bx + bw, by + bh), color, 1)
+
+        cv2.putText(overlay, line1, (bx + pad, by + pad + h1),
+                    font, scale, (255, 255, 255), thick)
+
+        # Confidence bar behind line 2
+        bar_y = by + pad * 2 + h1
+        if not is_indet:
+            bar_len = int((bw - pad * 2) * min(top_sc, 1.0))
+            cv2.rectangle(overlay, (bx + pad, bar_y),
+                          (bx + pad + bar_len, bar_y + h2), color, -1)
+        cv2.putText(overlay, line2, (bx + pad, bar_y + h2),
+                    font, scale, (255, 255, 255), thick)
+
+    # Footer
+    total    = len(results)
+    indet    = sum(1 for r in results if r["top_material"] == "Indeterminate Material")
+    footer   = f"OneFormer + SigLIP2 | {total} instances | {indet} indeterminate"
+    (fw, fh), fbl = cv2.getTextSize(footer, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)
+    cv2.rectangle(overlay, (4, h - fh - fbl - 12), (fw + 14, h - 4), (0, 0, 0), -1)
+    cv2.putText(overlay, footer, (9, h - 8),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+
+    overlay_bgr = cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR)
+    ok, buf = cv2.imencode(".png", overlay_bgr)
+    if not ok:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to encode materials2 overlay as PNG.",
+        )
+
+    data = buf.tobytes()
+    try:
+        cache_path.write_bytes(data)
+    except Exception:
+        pass
+    return data
+
+
+@router.get(
+    "/images/{image_id}/materials2",
+    summary="Return OneFormer + SigLIP2 material confidence overlay",
+)
+def get_image_materials2(
+    image_id: int,
+    db: Session = Depends(get_db),
+    user: CurrentUser = Depends(require_tagger),
+) -> Response:
+    """Serve a PNG overlay showing per-instance material predictions from the
+    OneFormer + SigLIP2 pipeline.
+
+    Each detected segment is annotated with:
+      - Instance index and semantic class name
+      - Top predicted material and SigLIP2 confidence score
+      - A confidence bar proportional to the sigmoid score
+      - Indeterminate flag when the top-2 margin is below threshold
+
+    The footer shows the pipeline name and a summary of indeterminate instances.
+
+    Requires torch + transformers (OneFormer) and a SigLIP2-compatible
+    transformers build (google/siglip2-so400m-patch16-naflex).
+    """
+    image: Optional[Image] = db.query(Image).filter(Image.id == image_id).first()
+    if image is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
+
+    storage_path = getattr(image, "storage_path", None)
+    if not storage_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image has no storage_path configured",
+        )
+
+    data = _compute_materials2_overlay_bytes(storage_path)
+    return Response(content=data, media_type="image/png")
+
+
+@router.get(
+    "/images/{image_id}/materials2/json",
+    summary="Return raw JSON from OneFormer + SigLIP2 material identification",
+)
+def get_image_materials2_json(
+    image_id: int,
+    db: Session = Depends(get_db),
+    user: CurrentUser = Depends(require_tagger),
+) -> list:
+    """Return the full per-instance material identification results as JSON.
+
+    Each item in the returned list contains:
+      instance_idx, class_id, class_name, seg_confidence,
+      material_group, top_material, top_score, margin,
+      material_scores (top-10 candidates with scores),
+      vote_source (set if spatial voting overrode an Indeterminate result)
+
+    Masks and PIL crops are stripped for JSON serialisability.
+    """
+    image: Optional[Image] = db.query(Image).filter(Image.id == image_id).first()
+    if image is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
+
+    storage_path = getattr(image, "storage_path", None)
+    if not storage_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image has no storage_path configured",
+        )
+
+    img_bgr = _load_image_from_url_or_path(storage_path)
+    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+
+    try:
+        from PIL import Image as PILImage
+        pipeline = MaterialIdentificationPipeline.from_pretrained()
+        results  = pipeline.run(PILImage.fromarray(img_rgb), show_voting_report=False)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Material identification pipeline failed: {str(e)}",
+        )
+
+    return MaterialIdentificationPipeline.to_json_safe(results)
