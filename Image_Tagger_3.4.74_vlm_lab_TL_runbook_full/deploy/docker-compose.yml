@@ -29,7 +29,7 @@ services:
       DATABASE_URL: postgresql://tagger:tagger_pass@db:5432/image_tagger_v3
       SECRET_KEY: "production_secret_key_change_me_in_prod"
       # VLM API keys (pass through from host environment)
-      GEMINI_API_KEY: "AIzaSyDkQ57_3if5gunQcRTQ14Jr-8Y3kOFO6UY"
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
