@@ -45,8 +45,15 @@ class SciencePipelineConfig:
         # Expensive L2 analyzers are explicit opt-ins.
         self.enable_cognitive = False  # Cognitive VLM (Kaplan-style dimensions)
         self.enable_semantic = False   # Semantic VLM (style.*, room_function.*)
-        # Instance segmentation (YOLO11m-seg) - opt-in for object detection
-        self.enable_segmentation = False  # Instance segmentation with YOLO
+        # OneFormer segmentation — opt-in (runs full semantic+panoptic merge pipeline)
+        self.enable_segmentation = False
+        self.segmentation_use_semantic = True   # include semantic coverage metrics
+        self.segmentation_use_panoptic = True   # include instance metrics + merged masks
+        # Gemini Flash material detection (VLM) — opt-in
+        self.enable_materials_vlm = False
+        # OneFormer + SigLIP2 material identification — opt-in
+        # Requires enable_segmentation=True (reuses cached detections from frame.metadata)
+        self.enable_clip_materials = False
 
 class SciencePipeline:
     def __init__(
@@ -70,7 +77,10 @@ class SciencePipeline:
         self.spatial = DepthAnalyzer()  # The new Spatial Engine
         self.cognitive = CognitiveStateAnalyzer()
         self.semantic = SemanticTagAnalyzer()
-        self.segmentation = SegmentationAnalyzer()  # YOLO11m-seg instance segmentation
+        self.segmentation = SegmentationAnalyzer()  # OneFormer semantic+panoptic
+        self.materials_vlm = GeminiMaterialAnalyzer()
+        # clip_material is instantiated lazily on first use (heavy model load)
+        self._clip_material_pipeline = None
 
     def process_image(self, image_id: int) -> bool:
         image_record = self.db.query(Image).get(image_id)
@@ -105,17 +115,41 @@ class SciencePipeline:
             if self.config.enable_spatial:
                 self.fluency.analyze(frame)
 
-            # L1.5: Vision (Semantic + Instance Segmentation with OneFormer)
+            # L1.5: Vision (OneFormer semantic + panoptic segmentation)
             if self.config.enable_segmentation:
                 self.segmentation.analyze(
                     frame,
                     use_semantic=self.config.segmentation_use_semantic,
-                    use_panoptic=self.config.segmentation_use_panoptic
+                    use_panoptic=self.config.segmentation_use_panoptic,
                 )
 
-            # L1.6: Materials (Gemini Flash VLM)
+            # L1.6: Materials — Gemini Flash VLM
             if self.config.enable_materials_vlm:
                 self.materials_vlm.analyze(frame)
+
+            # L1.7: Materials — OneFormer + SigLIP2 (clip_material pipeline)
+            # Reuses cached OneFormer detections from L1.5; skips re-inference.
+            if self.config.enable_clip_materials:
+                if not self.config.enable_segmentation:
+                    logger.warning(
+                        "enable_clip_materials=True but enable_segmentation=False; "
+                        "running segmentation first."
+                    )
+                    self.segmentation.analyze(frame, use_semantic=True, use_panoptic=True)
+                from backend.science.vision.clip_material import MaterialIdentificationPipeline
+                if self._clip_material_pipeline is None:
+                    self._clip_material_pipeline = MaterialIdentificationPipeline.from_frame_models(frame)
+                    if self._clip_material_pipeline is None:
+                        self._clip_material_pipeline = MaterialIdentificationPipeline.from_pretrained()
+                mat_results = self._clip_material_pipeline.run_from_frame(
+                    frame, show_voting_report=False
+                )
+                # Store top material score per instance as pipeline attributes
+                for r in mat_results:
+                    safe = r["class_name"].replace(" ", "_")
+                    frame.add_attribute(
+                        f"material.{safe}_{r['instance_idx']}_top", r["top_score"]
+                    )
 
             # L2: Cognitive (VLM)
             if self.config.enable_cognitive:
