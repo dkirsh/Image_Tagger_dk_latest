@@ -20,6 +20,14 @@ const DEBUG_MODES = [
     { key: 'materials',    label: 'Materials',     shortcut: '8', hasEdgeSliders: false, hasOverlaySlider: false, hasSegSlider: false },
 ];
 
+const AFFORDANCE_SHORT_LABELS = {
+    L059: 'Sleep',
+    L079: 'Cook',
+    L091: 'Work',
+    L130: 'Talk',
+    L141: 'Yoga',
+};
+
 function buildDebugSrc(img, mode, edgeLow, edgeHigh, segConf) {
     if (!img) return '';
     const id = img.id;
@@ -155,6 +163,44 @@ function TagBadge({ tag }) {
     );
 }
 
+function AffordancePanel({ scores, method }) {
+    if (!scores?.length) return null;
+
+    return (
+        <div className="p-3 border-b border-gray-700">
+            <div className="flex items-center justify-between mb-2">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                    Affordance Ratings
+                </div>
+                {method && (
+                    <div className="text-[9px] text-gray-500">
+                        {method === 'indicator_lgbm_runtime_vlm' ? 'Model D' : 'Raw LGBM'}
+                    </div>
+                )}
+            </div>
+            <div className="space-y-2">
+                {scores.map(item => {
+                    const pct = ((Number(item.score) - 1) / 6) * 100;
+                    return (
+                        <div key={item.id}>
+                            <div className="flex items-center justify-between text-xs mb-1">
+                                <span className="text-gray-200">{AFFORDANCE_SHORT_LABELS[item.id] || item.label}</span>
+                                <span className="font-mono text-blue-300">{Number(item.score).toFixed(1)} / 7</span>
+                            </div>
+                            <div className="h-1.5 rounded-full bg-gray-800 overflow-hidden">
+                                <div
+                                    className="h-full rounded-full bg-blue-500"
+                                    style={{ width: `${Math.max(0, Math.min(100, pct))}%` }}
+                                />
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function ImageDetailModal({
@@ -178,9 +224,14 @@ export default function ImageDetailModal({
     const [detail, setDetail] = useState(null);
     const [detailLoading, setDetailLoading] = useState(false);
     const [detailError, setDetailError] = useState(null);
+    const [affordanceDetail, setAffordanceDetail] = useState(null);
+    const [affordanceLoading, setAffordanceLoading] = useState(false);
+    const [affordanceError, setAffordanceError] = useState(null);
 
     const [imgLoading, setImgLoading] = useState(true);
     const [imgError, setImgError] = useState(false);
+    const [scienceOpen, setScienceOpen] = useState(true);
+    const [humanOpen, setHumanOpen] = useState(true);
 
     const img = images[currentIndex] ?? null;
 
@@ -196,6 +247,21 @@ export default function ImageDetailModal({
             .then(data => { if (!cancelled) setDetail(data); })
             .catch(err => { if (!cancelled) setDetailError(err?.message || 'Failed to load details'); })
             .finally(() => { if (!cancelled) setDetailLoading(false); });
+
+        return () => { cancelled = true; };
+    }, [img?.id]);
+
+    useEffect(() => {
+        if (!img) return;
+        let cancelled = false;
+        setAffordanceDetail(null);
+        setAffordanceLoading(true);
+        setAffordanceError(null);
+
+        api.get(`/images/${img.id}/affordance`)
+            .then(data => { if (!cancelled) setAffordanceDetail(data); })
+            .catch(err => { if (!cancelled) setAffordanceError(err?.message || 'Failed to load affordance ratings'); })
+            .finally(() => { if (!cancelled) setAffordanceLoading(false); });
 
         return () => { cancelled = true; };
     }, [img?.id]);
@@ -254,6 +320,8 @@ export default function ImageDetailModal({
     // detail.tags is TagInfo[] from the API; img.tags is string[] from the grid search result (fallback).
     const tags = detail?.tags
         ?? (img?.tags ?? []).map(t => ({ label: t, source: 'preloaded', source_label: 'Imported with dataset' }));
+    const affordanceScores = affordanceDetail?.affordance_scores ?? detail?.affordance_scores ?? [];
+    const affordanceMethod = affordanceDetail?.affordance_method ?? detail?.affordance_method;
 
     const groupedAttrs = useMemo(() => {
         if (!detail?.science_attributes?.length) return [];
@@ -267,6 +335,39 @@ export default function ImageDetailModal({
 
     const hasScienceData = groupedAttrs.length > 0;
     const hasHumanData = (detail?.human_validations?.length ?? 0) > 0;
+    const bothBottomPanelsCollapsed = !scienceOpen && !humanOpen;
+    const scienceRun = detail?.science_run ?? null;
+    const canonicalAvailable = detail?.canonical_outputs_available ?? false;
+
+    function scienceEmptyMessage() {
+        if (!scienceRun) {
+            return 'Canonical science outputs have not been generated for this image yet. Explorer bootstrap will queue it for background processing.';
+        }
+        switch (scienceRun.status) {
+            case 'PENDING':  return 'Science run is queued and will begin shortly.';
+            case 'RUNNING':  return 'Science run is in progress — attributes will appear when complete.';
+            case 'FAILED':   return `Science run failed: ${scienceRun.error_message || 'unknown error'}.`;
+            case 'STALE':    return 'Science outputs are stale and will be re-processed on the next bootstrap.';
+            default:         return 'No science attributes have been recorded for this image.';
+        }
+    }
+
+    function scienceRunBadge() {
+        if (!scienceRun) return null;
+        const colours = {
+            PENDING:   'bg-yellow-100 text-yellow-800 border-yellow-300',
+            RUNNING:   'bg-blue-100 text-blue-800 border-blue-300',
+            COMPLETED: 'bg-green-100 text-green-800 border-green-300',
+            FAILED:    'bg-red-100 text-red-800 border-red-300',
+            STALE:     'bg-gray-100 text-gray-600 border-gray-300',
+        };
+        const cls = colours[scienceRun.status] || colours.STALE;
+        return (
+            <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border ${cls}`}>
+                {scienceRun.status}
+            </span>
+        );
+    }
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
@@ -504,6 +605,21 @@ export default function ImageDetailModal({
                         )}
                     </div>
 
+                    {affordanceLoading && (
+                        <div className="p-3 border-b border-gray-700 text-xs text-gray-400 flex items-center gap-2">
+                            <Loader2 className="animate-spin" size={12} />
+                            Loading affordance ratings…
+                        </div>
+                    )}
+                    {!affordanceLoading && affordanceError && (
+                        <div className="p-3 border-b border-gray-700 text-xs text-red-400">
+                            {affordanceError}
+                        </div>
+                    )}
+                    {!affordanceLoading && !affordanceError && (
+                        <AffordancePanel scores={affordanceScores} method={affordanceMethod} />
+                    )}
+
                     {/* Tags */}
                     {tags.length > 0 && (
                         <div className="p-3 border-b border-gray-700">
@@ -543,17 +659,26 @@ export default function ImageDetailModal({
             </div>
 
             {/* ── Bottom panels: science attributes + human validations ────── */}
-            <div className="flex-shrink-0 h-56 flex bg-white border-t border-gray-200 overflow-hidden">
+            <div className={`flex-shrink-0 flex bg-white border-t border-gray-200 overflow-hidden ${bothBottomPanelsCollapsed ? 'h-11' : 'h-56'}`}>
 
                 {/* Science attributes */}
-                <div className="flex-1 flex flex-col min-w-0 border-r border-gray-200">
+                <div className={`flex-1 flex flex-col min-w-0 border-r border-gray-200 ${scienceOpen ? 'h-full' : 'self-start'}`}>
                     <div className="px-3 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
-                        <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">
-                            Science Attributes
-                        </h3>
+                        <button
+                            type="button"
+                            onClick={() => setScienceOpen(v => !v)}
+                            aria-expanded={scienceOpen}
+                            className="flex items-center gap-2 text-left"
+                        >
+                            <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+                                Science Attributes
+                            </h3>
+                            {scienceOpen ? <ChevronUp size={12} className="text-gray-400" /> : <ChevronDown size={12} className="text-gray-400" />}
+                        </button>
                         <div className="flex items-center gap-2">
                             {detailLoading && <Loader2 className="animate-spin text-gray-400" size={12} />}
-                            {!detailLoading && detail && (
+                            {!detailLoading && scienceRunBadge()}
+                            {!detailLoading && detail && hasScienceData && (
                                 <span className="text-[10px] text-gray-400">
                                     {detail.science_attributes.length} values · {groupedAttrs.length} groups
                                 </span>
@@ -561,43 +686,53 @@ export default function ImageDetailModal({
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-2">
-                        {detailLoading && (
-                            <div className="flex items-center justify-center h-full text-gray-400">
-                                <Loader2 className="animate-spin mr-2" size={14} />
-                                <span className="text-xs">Loading…</span>
-                            </div>
-                        )}
+                    {scienceOpen && (
+                        <div className="flex-1 overflow-y-auto p-2">
+                            {detailLoading && (
+                                <div className="flex items-center justify-center h-full text-gray-400">
+                                    <Loader2 className="animate-spin mr-2" size={14} />
+                                    <span className="text-xs">Loading…</span>
+                                </div>
+                            )}
 
-                        {detailError && !detailLoading && (
-                            <div className="flex items-center gap-2 text-red-500 text-xs p-2">
-                                <AlertCircle size={14} /> {detailError}
-                            </div>
-                        )}
+                            {detailError && !detailLoading && (
+                                <div className="flex items-center gap-2 text-red-500 text-xs p-2">
+                                    <AlertCircle size={14} /> {detailError}
+                                </div>
+                            )}
 
-                        {!detailLoading && !detailError && !hasScienceData && (
-                            <p className="text-xs text-gray-400 italic p-2">
-                                No science attributes yet. Run the pipeline on this image.
-                            </p>
-                        )}
+                            {!detailLoading && !detailError && !hasScienceData && (
+                                <p className="text-xs text-gray-400 italic p-2">
+                                    {scienceEmptyMessage()}
+                                </p>
+                            )}
 
-                        {!detailLoading && !detailError && groupedAttrs.map(([prefix, attrs]) => (
-                            <AttributeGroup
-                                key={prefix}
-                                prefix={prefix}
-                                attrs={attrs}
-                                defaultOpen={groupedAttrs.length <= 4}
-                            />
-                        ))}
-                    </div>
+                            {!detailLoading && !detailError && groupedAttrs.map(([prefix, attrs]) => (
+                                <AttributeGroup
+                                    key={prefix}
+                                    prefix={prefix}
+                                    attrs={attrs}
+                                    defaultOpen={groupedAttrs.length <= 4}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Human validations */}
-                <div className="w-72 flex-shrink-0 flex flex-col">
+                <div className={`w-72 flex-shrink-0 flex flex-col ${humanOpen ? 'h-full' : 'self-start'}`}>
                     <div className="px-3 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
-                        <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">
-                            Human Validations
-                        </h3>
+                        <button
+                            type="button"
+                            onClick={() => setHumanOpen(v => !v)}
+                            aria-expanded={humanOpen}
+                            className="flex items-center gap-2 text-left"
+                        >
+                            <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+                                Human Validations
+                            </h3>
+                            {humanOpen ? <ChevronUp size={12} className="text-gray-400" /> : <ChevronDown size={12} className="text-gray-400" />}
+                        </button>
                         {!detailLoading && detail && (
                             <span className="text-[10px] text-gray-400">
                                 {detail.human_validations.length} records
@@ -605,44 +740,46 @@ export default function ImageDetailModal({
                         )}
                     </div>
 
-                    <div className="flex-1 overflow-y-auto">
-                        {detailLoading && (
-                            <div className="flex items-center justify-center h-full text-gray-400">
-                                <Loader2 className="animate-spin mr-2" size={14} />
-                                <span className="text-xs">Loading…</span>
-                            </div>
-                        )}
+                    {humanOpen && (
+                        <div className="flex-1 overflow-y-auto">
+                            {detailLoading && (
+                                <div className="flex items-center justify-center h-full text-gray-400">
+                                    <Loader2 className="animate-spin mr-2" size={14} />
+                                    <span className="text-xs">Loading…</span>
+                                </div>
+                            )}
 
-                        {!detailLoading && !hasHumanData && !detailError && (
-                            <p className="text-xs text-gray-400 italic p-3">
-                                No human validations yet.
-                            </p>
-                        )}
+                            {!detailLoading && !hasHumanData && !detailError && (
+                                <p className="text-xs text-gray-400 italic p-3">
+                                    No human validations yet.
+                                </p>
+                            )}
 
-                        {!detailLoading && detail?.human_validations?.map((v, i) => (
-                            <div key={i} className="px-3 py-2 border-b border-gray-100 hover:bg-gray-50">
-                                <div className="flex items-center justify-between mb-0.5">
-                                    <span className="text-xs font-semibold text-gray-700 truncate">
-                                        {v.username ?? (v.user_id != null ? `user_${v.user_id}` : 'Pipeline')}
-                                    </span>
-                                    <span className="text-xs font-mono font-bold text-blue-700 flex-shrink-0">
-                                        {v.value.toFixed(2)}
-                                    </span>
+                            {!detailLoading && detail?.human_validations?.map((v, i) => (
+                                <div key={i} className="px-3 py-2 border-b border-gray-100 hover:bg-gray-50">
+                                    <div className="flex items-center justify-between mb-0.5">
+                                        <span className="text-xs font-semibold text-gray-700 truncate">
+                                            {v.username ?? (v.user_id != null ? `user_${v.user_id}` : 'Pipeline')}
+                                        </span>
+                                        <span className="text-xs font-mono font-bold text-blue-700 flex-shrink-0">
+                                            {v.value.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="text-[10px] text-gray-500 font-mono truncate mb-0.5">
+                                        {v.attribute_key}
+                                    </div>
+                                    <div className="flex gap-3 text-[10px] text-gray-400">
+                                        {v.duration_ms != null && v.duration_ms > 0 && (
+                                            <span>{v.duration_ms.toLocaleString()}ms</span>
+                                        )}
+                                        {v.created_at && (
+                                            <span>{new Date(v.created_at).toLocaleDateString()}</span>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="text-[10px] text-gray-500 font-mono truncate mb-0.5">
-                                    {v.attribute_key}
-                                </div>
-                                <div className="flex gap-3 text-[10px] text-gray-400">
-                                    {v.duration_ms != null && v.duration_ms > 0 && (
-                                        <span>{v.duration_ms.toLocaleString()}ms</span>
-                                    )}
-                                    {v.created_at && (
-                                        <span>{new Date(v.created_at).toLocaleDateString()}</span>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

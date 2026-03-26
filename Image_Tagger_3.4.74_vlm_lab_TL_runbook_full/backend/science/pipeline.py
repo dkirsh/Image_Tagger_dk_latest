@@ -28,11 +28,14 @@ from backend.science.math.naturalness import NaturalnessAnalyzer
 from backend.science.math.fluency import FluencyAnalyzer
 from backend.science.spatial.depth import DepthAnalyzer  # Replaces Isovist
 from backend.science.context.cognitive import CognitiveStateAnalyzer
+from backend.science.context.affordance import AffordanceAnalyzer
 from backend.science.semantics.semantic_tags_vlm import SemanticTagAnalyzer
 from backend.science.vision.segmentation import SegmentationAnalyzer  # Now uses OneFormer
 from backend.science.vision.materials import GeminiMaterialAnalyzer
 
 logger = logging.getLogger(__name__)
+
+SCIENCE_SOURCE = "science_pipeline_v3.4"
 
 
 class SciencePipelineConfig:
@@ -54,6 +57,9 @@ class SciencePipelineConfig:
         # OneFormer + SigLIP2 material identification — opt-in
         # Requires enable_segmentation=True (reuses cached detections from frame.metadata)
         self.enable_clip_materials = False
+        # Affordance prediction (environmental activity suitability) — opt-in
+        # Prefers Mask2Former COCO panoptic segmentation; falls back to OneFormer.
+        self.enable_affordance = False
 
 class SciencePipeline:
     def __init__(
@@ -79,6 +85,7 @@ class SciencePipeline:
         self.semantic = SemanticTagAnalyzer()
         self.segmentation = SegmentationAnalyzer()  # OneFormer semantic+panoptic
         self.materials_vlm = GeminiMaterialAnalyzer()
+        self.affordance = AffordanceAnalyzer()
         # clip_material is instantiated lazily on first use (heavy model load)
         self._clip_material_pipeline = None
 
@@ -151,6 +158,10 @@ class SciencePipeline:
                         f"material.{safe}_{r['instance_idx']}_top", r["top_score"]
                     )
 
+            # L1.8: Affordance prediction (requires L1.5 segmentation)
+            if self.config.enable_affordance:
+                self.affordance.analyze(frame)
+
             # L2: Cognitive (VLM)
             if self.config.enable_cognitive:
                 self.cognitive.analyze(frame)
@@ -174,14 +185,207 @@ class SciencePipeline:
         return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
 
     def _save_results(self, image_id: int, attributes: dict) -> None:
+        from backend.models.attribute import Attribute
+        # Fetch valid attribute keys to avoid FK violations
+        valid_keys = {
+            row[0] for row in self.db.query(Attribute.key).all()
+        }
         for key, value in attributes.items():
+            if key not in valid_keys:
+                logger.debug("Skipping unknown attribute key: %s", key)
+                continue
             if value != value:  # NaN check
                 value = 0.0
             val = Validation(
                 image_id=image_id,
                 attribute_key=key,
                 value=float(value),
-                source="science_pipeline_v3.4"
+                source=SCIENCE_SOURCE,
             )
             self.db.add(val)
         self.db.commit()
+
+    def process_image_canonical(
+        self,
+        image_id: int,
+        trigger_source: str = "manual_admin",
+    ) -> bool:
+        """Run canonical science pipeline and persist structured outputs.
+
+        Unlike process_image(), this method:
+        - Creates / updates a ScienceRun lifecycle record.
+        - Runs affordance and room detection in addition to the core analyzers.
+        - Derives canonical tags (affordance, room type, semantic attributes).
+        - Persists structured summaries as ScienceArtifacts.
+        - Persists canonical tags to ScienceTags.
+        - Returns True on success, False on failure.
+        """
+        from backend.science.run_context import ScienceRunContext
+        from backend.science.tag_derivation import derive_all_tags
+        from backend.services.science_runs import (
+            ACTIVE_SCIENCE_VERSION,
+            get_config_fingerprint,
+            ensure_science_run,
+            mark_run_started,
+            mark_run_completed,
+            mark_run_failed,
+            persist_science_tags,
+            persist_science_artifact,
+            CANONICAL_CONFIG,
+        )
+
+        # ── 1. Ensure a run record exists ──────────────────────────────────
+        run = ensure_science_run(self.db, image_id, trigger_source=trigger_source)
+        if run.status == "COMPLETED":
+            logger.info("Image %d already has a completed canonical run.", image_id)
+            return True
+
+        mark_run_started(self.db, run.id)
+
+        try:
+            image_record = self.db.query(Image).get(image_id)
+            if not image_record:
+                mark_run_failed(self.db, run.id, f"Image {image_id} not found")
+                return False
+
+            rgb = self._load_image(image_record)
+            if rgb is None:
+                mark_run_failed(self.db, run.id, "Could not load image file")
+                return False
+
+            frame = AnalysisFrame(image_id=image_id, original_image=rgb)
+
+            # ── 2. Core analyzers (same as process_image) ─────────────────
+            if self.config.enable_color:
+                self.color.analyze(frame)
+            if self.config.enable_complexity:
+                self.complexity.analyze(frame)
+            if self.config.enable_texture:
+                self.texture.analyze(frame)
+            if self.config.enable_fractals:
+                self.fractals.analyze(frame)
+            if self.config.enable_spatial:
+                self.symmetry.analyze(frame)
+                self.naturalness.analyze(frame)
+                self.spatial.analyze(frame)
+                self.fluency.analyze(frame)
+
+            if self.config.enable_segmentation:
+                self.segmentation.analyze(
+                    frame,
+                    use_semantic=self.config.segmentation_use_semantic,
+                    use_panoptic=self.config.segmentation_use_panoptic,
+                )
+
+            if self.config.enable_materials_vlm:
+                self.materials_vlm.analyze(frame)
+
+            if self.config.enable_cognitive:
+                self.cognitive.analyze(frame)
+
+            if self.config.enable_semantic:
+                self.semantic.analyze(frame)
+
+            # ── 3. Canonical: affordance ───────────────────────────────────
+            affordance_summary: dict | None = None
+            self.affordance.analyze(frame)
+            if any(f"affordance.{aff}" in frame.attributes for aff in ["L059", "L079", "L091", "L130", "L141"]):
+                from backend.science.context.affordance import AFFORDANCE_IDS, AFFORDANCE_NAMES
+                scores = {
+                    aff: frame.attributes.get(f"affordance.{aff}", 0.0)
+                    for aff in AFFORDANCE_IDS
+                    if f"affordance.{aff}" in frame.attributes
+                }
+                affordance_summary = {
+                    "scores": {k: round(float(v), 3) for k, v in scores.items()},
+                    "method": frame.metadata.get("affordance.method", "unknown"),
+                    "n_segments": frame.metadata.get("affordance.n_segments", 0),
+                    "segment_classes": frame.metadata.get("affordance.segment_classes", []),
+                    "segmentation_backend": frame.metadata.get("affordance.segmentation_backend", "unknown"),
+                }
+
+            # ── 4. Canonical: room detection ───────────────────────────────
+            room_summary: dict | None = None
+            try:
+                from backend.science.vision.room_detection import RoomDetectionAnalyzer
+                room_result = RoomDetectionAnalyzer.analyze(frame, top_k=5)
+                if room_result:
+                    top_coarse = room_result.get("top_coarse")
+                    room_summary = {
+                        "top_coarse": (
+                            [top_coarse[0], float(top_coarse[1])]
+                            if top_coarse else None
+                        ),
+                        "top_fine": (
+                            [room_result["top_fine"][0], float(room_result["top_fine"][1])]
+                            if room_result.get("top_fine") else None
+                        ),
+                        "coarse_probs": {
+                            k: round(float(v), 4)
+                            for k, v in room_result.get("room_type_coarse", {}).items()
+                        },
+                        "fine_predictions": [
+                            [label, round(float(prob), 4)]
+                            for label, prob in room_result.get("room_type_fine", [])
+                        ],
+                    }
+            except Exception as exc:
+                logger.info("Room detection skipped: %s", exc)
+
+            # ── 5. Persist scalar attributes to Validation ─────────────────
+            self._save_results(image_id, frame.attributes)
+
+            # ── 6. Build and persist canonical artifacts ───────────────────
+            ctx = ScienceRunContext(
+                image_id=image_id,
+                science_version=ACTIVE_SCIENCE_VERSION,
+                config_fingerprint=get_config_fingerprint(CANONICAL_CONFIG),
+            )
+
+            if affordance_summary:
+                persist_science_artifact(
+                    self.db,
+                    run_id=run.id,
+                    image_id=image_id,
+                    artifact_type="affordance_json",
+                    meta_json=affordance_summary,
+                    content_type="application/json",
+                )
+
+            if room_summary:
+                persist_science_artifact(
+                    self.db,
+                    run_id=run.id,
+                    image_id=image_id,
+                    artifact_type="room_json",
+                    meta_json=room_summary,
+                    content_type="application/json",
+                )
+
+            # ── 7. Derive and persist canonical tags ───────────────────────
+            derive_all_tags(
+                attributes=frame.attributes,
+                affordance_summary=affordance_summary,
+                room_summary=room_summary,
+                segmentation_summary=None,  # segmentation off by default
+                ctx=ctx,
+            )
+
+            persist_science_tags(
+                self.db,
+                run_id=run.id,
+                image_id=image_id,
+                tags=[t.as_dict() for t in ctx.tags],
+            )
+
+            mark_run_completed(self.db, run.id)
+            logger.info(
+                "Canonical run %d complete for image %d: %d tags, %d artifacts.",
+                run.id, image_id, len(ctx.tags), len(ctx.artifacts),
+            )
+            return True
+
+        except Exception as exc:
+            logger.exception("Canonical pipeline failed for image %d", image_id)
+            mark_run_failed(self.db, run.id, str(exc))
+            return False

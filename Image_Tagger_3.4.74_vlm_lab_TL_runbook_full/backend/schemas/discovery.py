@@ -2,6 +2,39 @@ from pydantic import BaseModel, ConfigDict
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
+
+class ScienceRunInfo(BaseModel):
+    """Canonical pipeline run state for this image."""
+    status: str                          # PENDING | RUNNING | COMPLETED | FAILED | STALE
+    science_version: Optional[str] = None
+    config_fingerprint: Optional[str] = None
+    queued_at: Optional[datetime] = None
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    error_message: Optional[str] = None
+    trigger_source: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class BootstrapResponse(BaseModel):
+    science_version: str
+    queued: int
+    already_current: int
+    running: int
+    failed: int
+    total_images: int
+
+
+class ScienceStatusResponse(BaseModel):
+    science_version: str
+    config_fingerprint: str
+    current_completed: int
+    pending: int
+    running: int
+    failed: int
+    total_images: int
+
 class SearchQuery(BaseModel):
     """Contract for Complex Search"""
     query_string: str = ""
@@ -15,6 +48,8 @@ class ImageSearchResult(BaseModel):
     url: str
     tags: List[str] = []
     meta_data: Dict[str, Any] = {}
+    affordance_scores: List["AffordanceScore"] = []
+    affordance_method: Optional[str] = None
     
 class ExportRequest(BaseModel):
     """Contract for Dataset Export"""
@@ -63,6 +98,13 @@ class TagInfo(BaseModel):
     attribute_key: Optional[str] = None  # e.g. "style.modern", only for pipeline-derived tags
 
 
+class AffordanceScore(BaseModel):
+    """Ordered affordance score for UI display."""
+    id: str
+    label: str
+    score: float
+
+
 class ImageDetailResult(BaseModel):
     """Full detail payload for the single-image viewer modal."""
     id: int
@@ -70,5 +112,10 @@ class ImageDetailResult(BaseModel):
     filename: str
     tags: List[TagInfo] = []
     meta_data: Dict[str, Any] = {}
+    affordance_scores: List[AffordanceScore] = []
+    affordance_method: Optional[str] = None
     science_attributes: List[AttributeValue] = []
     human_validations: List[HumanValidation] = []
+    # Canonical pipeline run state
+    science_run: Optional[ScienceRunInfo] = None
+    canonical_outputs_available: bool = False

@@ -13,24 +13,135 @@ All endpoints are RBAC-protected for taggers (and above).
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+import logging
+import os
+import threading
 from typing import List, Optional
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException
+import cv2
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+import numpy as np
+import requests
 from sqlalchemy.orm import Session
 
-from backend.database.core import get_db
+from backend.database.core import get_db, SessionLocal
 from backend.services.auth import require_tagger
 from backend.services.training_export import TrainingExporter
 from backend.schemas.training import TrainingExample
 from backend.schemas.discovery import (
     SearchQuery, ImageSearchResult, ExportRequest, AttributeRead,
-    AttributeValue, HumanValidation, ImageDetailResult, TagInfo,
+    AttributeValue, HumanValidation, ImageDetailResult, TagInfo, AffordanceScore,
+    ScienceRunInfo, BootstrapResponse, ScienceStatusResponse,
 )
 from backend.models.attribute import Attribute
 from backend.models.assets import Image
+from backend.science.context.affordance import (
+    AFFORDANCE_IDS,
+    AFFORDANCE_NAMES,
+    predict_affordances_with_metadata_from_image,
+)
+
+logger = logging.getLogger("v3.api.discovery")
 
 router = APIRouter(prefix="/v1/explorer", tags=["explorer"])
+
+
+_AFFORDANCE_CACHE_KEY = "affordance_runtime_v1"
+
+
+def _is_url(path: str) -> bool:
+    return path.startswith("http://") or path.startswith("https://")
+
+
+def _resolve_path(storage_path: str) -> Path:
+    raw = Path(storage_path)
+    if raw.is_file():
+        return raw
+    root = Path("data_store")
+    candidate = root / storage_path
+    if candidate.is_file():
+        return candidate
+    env_root_value = os.getenv("IMAGE_STORAGE_ROOT", "")
+    if env_root_value:
+        env_root = Path(env_root_value)
+        env_candidate = env_root / storage_path
+        if env_candidate.is_file():
+            return env_candidate
+    return raw
+
+
+def _load_image_rgb(storage_path: str) -> np.ndarray:
+    if _is_url(storage_path):
+        resp = requests.get(storage_path, timeout=15)
+        resp.raise_for_status()
+        arr = np.frombuffer(resp.content, dtype=np.uint8)
+        bgr = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    else:
+        path = _resolve_path(storage_path)
+        if not path.is_file():
+            raise FileNotFoundError(f"Image file not found: {path}")
+        bgr = cv2.imread(str(path))
+    if bgr is None:
+        raise ValueError(f"Could not load image: {storage_path}")
+    return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+
+
+def _score_list_from_map(score_map: dict | None) -> list[AffordanceScore]:
+    score_map = score_map or {}
+    out: list[AffordanceScore] = []
+    for aff_id in AFFORDANCE_IDS:
+        if aff_id not in score_map:
+            continue
+        out.append(AffordanceScore(
+            id=aff_id,
+            label=AFFORDANCE_NAMES.get(aff_id, aff_id),
+            score=float(score_map[aff_id]),
+        ))
+    return out
+
+
+def _get_cached_affordance_payload(image: Image) -> dict | None:
+    meta = getattr(image, "meta_data", {}) or {}
+    payload = meta.get(_AFFORDANCE_CACHE_KEY)
+    if isinstance(payload, dict) and isinstance(payload.get("scores"), dict):
+        scores = payload.get("scores") or {}
+        if any((not isinstance(v, (int, float))) or float(v) < 1.0 or float(v) > 7.0 for v in scores.values()):
+            return None
+        return payload
+    return None
+
+
+def _compute_and_cache_affordance_payload(image: Image, db: Session) -> dict:
+    try:
+        rgb = _load_image_rgb(image.storage_path)
+        predicted = predict_affordances_with_metadata_from_image(rgb)
+        payload = {
+            "scores": {k: round(float(v), 3) for k, v in predicted.get("scores", {}).items()},
+            "method": predicted.get("method"),
+            "computed_at": datetime.now(timezone.utc).isoformat(),
+        }
+    except Exception:
+        payload = {
+            "scores": {},
+            "method": "unavailable",
+            "computed_at": datetime.now(timezone.utc).isoformat(),
+        }
+    meta = dict(getattr(image, "meta_data", {}) or {})
+    meta[_AFFORDANCE_CACHE_KEY] = payload
+    image.meta_data = meta
+    db.add(image)
+    db.commit()
+    db.refresh(image)
+    return payload
+
+
+def _get_or_compute_affordance_payload(image: Image, db: Session) -> dict:
+    cached = _get_cached_affordance_payload(image)
+    if cached is not None:
+        return cached
+    return _compute_and_cache_affordance_payload(image, db)
 
 
 @router.post("/search", response_model=List[ImageSearchResult])
@@ -93,7 +204,15 @@ def search_images(
         meta = getattr(img, "meta_data", {}) or {}
         tags = meta.get("tags", []) if isinstance(meta, dict) else []
         
-        res = ImageSearchResult(id=image_id, url=url, tags=tags, meta_data=meta)
+        affordance_payload = _get_cached_affordance_payload(img)
+        res = ImageSearchResult(
+            id=image_id,
+            url=url,
+            tags=tags,
+            meta_data=meta,
+            affordance_scores=_score_list_from_map((affordance_payload or {}).get("scores")),
+            affordance_method=(affordance_payload or {}).get("method"),
+        )
         results.append(res)
 
     return results
@@ -208,6 +327,7 @@ def get_image_detail(
             ))
 
     meta = getattr(image, "meta_data", {}) or {}
+    affordance_payload = _get_cached_affordance_payload(image) or {}
     raw_tags = meta.get("tags", []) if isinstance(meta, dict) else []
     filename = getattr(image, "filename", None) or meta.get("filename", f"image_{image_id}")
 
@@ -238,34 +358,93 @@ def get_image_detail(
         ns = key.split(".")[0]
         return _NAMESPACE_SOURCE.get(ns, "Science Pipeline")
 
-    # Preloaded tags (from meta_data.tags at import/upload time)
+    # ── Load canonical science run state ─────────────────────────────────────
+    from backend.services.science_runs import (
+        get_current_run_for_image,
+        get_science_tags_for_run,
+    )
+
+    current_run = get_current_run_for_image(db, image_id)
+    run_info: ScienceRunInfo | None = None
+    canonical_tags: list[TagInfo] = []
+    canonical_outputs_available = False
+
+    if current_run is not None:
+        run_info = ScienceRunInfo(
+            status=current_run.status,
+            science_version=current_run.science_version,
+            config_fingerprint=current_run.config_fingerprint,
+            queued_at=current_run.queued_at,
+            started_at=current_run.started_at,
+            completed_at=current_run.completed_at,
+            error_message=current_run.error_message,
+            trigger_source=current_run.trigger_source,
+        )
+
+        if current_run.status == "COMPLETED":
+            canonical_outputs_available = True
+            science_tags = get_science_tags_for_run(db, current_run.id, image_id)
+            canonical_tags = [
+                TagInfo(
+                    label=st.label,
+                    source="science_pipeline",
+                    source_label=_source_label_for(st.attribute_key or st.tag_key),
+                    confidence=st.confidence,
+                    attribute_key=st.attribute_key or st.tag_key,
+                )
+                for st in science_tags
+            ]
+
+    # ── Build tag list: preloaded first, then canonical (preferred) or legacy ─
     tag_infos: list[TagInfo] = [
         TagInfo(label=t, source="preloaded", source_label="Imported with dataset")
         for t in raw_tags
     ]
 
-    # Derive additional tags from high-confidence science attributes.
-    # We only promote categorical/semantic attributes to tags (style.*, room_function.*, cognitive.*).
-    _TAG_THRESHOLD = 0.5
-    _TAG_NAMESPACES = ("style.", "cognitive.")
-    preloaded_lower = {t.label.lower() for t in tag_infos}
+    if canonical_outputs_available and canonical_tags:
+        # Use canonical pipeline tags from the science_tags table
+        existing_labels_lower = {t.label.lower() for t in tag_infos}
+        for ct in canonical_tags:
+            if ct.label.lower() not in existing_labels_lower:
+                tag_infos.append(ct)
+    else:
+        # Legacy fallback: promote high-confidence science attributes to tags
+        # (used when canonical run hasn't completed yet)
+        _TAG_THRESHOLD = 0.5
+        _TAG_NAMESPACES = ("style.", "cognitive.")
+        preloaded_lower = {t.label.lower() for t in tag_infos}
 
-    for sa in science_attributes:
-        key = sa.key
-        is_tag_attr = (
-            any(key.startswith(ns) for ns in _TAG_NAMESPACES)
-            or "room_function" in key
+        for sa in science_attributes:
+            key = sa.key
+            is_tag_attr = (
+                any(key.startswith(ns) for ns in _TAG_NAMESPACES)
+                or "room_function" in key
+            )
+            if is_tag_attr and sa.value >= _TAG_THRESHOLD:
+                label = _key_to_label(key)
+                if label.lower() not in preloaded_lower:
+                    tag_infos.append(TagInfo(
+                        label=label,
+                        source="science_pipeline",
+                        source_label=_source_label_for(key),
+                        confidence=sa.value,
+                        attribute_key=key,
+                    ))
+
+    # ── Affordance scores: prefer canonical artifact, fall back to cache ──────
+    aff_payload = affordance_payload
+    if current_run is not None and current_run.status == "COMPLETED":
+        from backend.models.science_runs import ScienceArtifact
+        aff_artifact = (
+            db.query(ScienceArtifact)
+            .filter(
+                ScienceArtifact.science_run_id == current_run.id,
+                ScienceArtifact.artifact_type == "affordance_json",
+            )
+            .first()
         )
-        if is_tag_attr and sa.value >= _TAG_THRESHOLD:
-            label = _key_to_label(key)
-            if label.lower() not in preloaded_lower:
-                tag_infos.append(TagInfo(
-                    label=label,
-                    source="science_pipeline",
-                    source_label=_source_label_for(key),
-                    confidence=sa.value,
-                    attribute_key=key,
-                ))
+        if aff_artifact and aff_artifact.meta_json:
+            aff_payload = aff_artifact.meta_json
 
     return ImageDetailResult(
         id=image.id,
@@ -273,9 +452,118 @@ def get_image_detail(
         filename=filename,
         tags=tag_infos,
         meta_data=meta,
+        affordance_scores=_score_list_from_map((aff_payload or {}).get("scores")),
+        affordance_method=(aff_payload or {}).get("method"),
         science_attributes=science_attributes,
         human_validations=human_validations,
+        science_run=run_info,
+        canonical_outputs_available=canonical_outputs_available,
     )
+
+
+@router.post("/science/bootstrap", response_model=BootstrapResponse)
+def bootstrap_science(
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    user=Depends(require_tagger),
+) -> BootstrapResponse:
+    """Queue missing canonical science runs for all images.
+
+    Called once per Explorer session on app mount. Returns immediately with
+    a summary of what was queued. Actual pipeline processing runs in a
+    background thread so the UI is never blocked.
+    """
+    from backend.services.science_runs import queue_missing_science_runs
+
+    summary = queue_missing_science_runs(
+        db,
+        trigger_source="explorer_bootstrap",
+        limit=500,
+    )
+
+    # Spawn a background thread to work through the queue.
+    # Uses its own DB session to avoid sharing the request session.
+    background_tasks.add_task(_run_pending_science_jobs)
+
+    return BootstrapResponse(**summary)
+
+
+@router.get("/science/status", response_model=ScienceStatusResponse)
+def science_status(
+    db: Session = Depends(get_db),
+    user=Depends(require_tagger),
+) -> ScienceStatusResponse:
+    """Return aggregate progress for the active canonical science version."""
+    from backend.services.science_runs import get_science_status
+
+    status = get_science_status(db)
+    return ScienceStatusResponse(**status)
+
+
+def _run_pending_science_jobs() -> None:
+    """Background worker: process PENDING science runs one at a time.
+
+    Uses its own DB session so it does not interfere with request sessions.
+    CPU-bound work runs in a thread (FastAPI BackgroundTasks run in the same
+    event loop thread; we offload to a real OS thread here).
+    """
+    def _worker() -> None:
+        from backend.models.science_runs import ScienceRun
+        from backend.science.pipeline import SciencePipeline, SciencePipelineConfig
+
+        db = SessionLocal()
+        try:
+            config = SciencePipelineConfig(enable_all=True)
+            config.enable_segmentation = False  # Keep off by default — expensive
+            config.enable_materials_vlm = False
+            config.enable_clip_materials = False
+            config.enable_cognitive = False
+            config.enable_semantic = False
+
+            pipeline = SciencePipeline(db=db, config=config)
+
+            pending = (
+                db.query(ScienceRun)
+                .filter(ScienceRun.status == "PENDING")
+                .order_by(ScienceRun.queued_at)
+                .limit(100)
+                .all()
+            )
+
+            logger.info("Science worker: processing %d pending runs.", len(pending))
+            for run in pending:
+                try:
+                    pipeline.process_image_canonical(
+                        run.image_id,
+                        trigger_source=run.trigger_source,
+                    )
+                except Exception as exc:
+                    logger.error(
+                        "Science worker: unhandled error for image %d: %s",
+                        run.image_id, exc,
+                    )
+        finally:
+            db.close()
+
+    t = threading.Thread(target=_worker, daemon=True, name="science-worker")
+    t.start()
+
+
+@router.get("/images/{image_id}/affordance")
+def get_image_affordance(
+    image_id: int,
+    db: Session = Depends(get_db),
+    user=Depends(require_tagger),
+):
+    image = db.query(Image).filter(Image.id == image_id).first()
+    if image is None:
+        raise HTTPException(status_code=404, detail="Image not found")
+    payload = _get_or_compute_affordance_payload(image, db)
+    return {
+        "image_id": image_id,
+        "affordance_scores": _score_list_from_map(payload.get("scores")),
+        "affordance_method": payload.get("method"),
+    }
 
 
 @router.post("/seed")
