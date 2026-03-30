@@ -201,6 +201,33 @@ function AffordancePanel({ scores, method }) {
     );
 }
 
+function RoomTypePanel({ roomTags }) {
+    if (!roomTags?.length) return null;
+    const top = roomTags[0];
+    const conf = top.confidence ?? 0;
+
+    return (
+        <div className="p-3 border-b border-gray-700">
+            <div className="flex items-center justify-between mb-2">
+                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                    Room Type
+                </div>
+                <div className="text-[9px] text-gray-500">Canonical · Vision</div>
+            </div>
+            <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="text-gray-100 font-medium">{top.label}</span>
+                <span className="font-mono text-emerald-300">{Math.round(conf * 100)}%</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-gray-800 overflow-hidden">
+                <div
+                    className="h-full rounded-full bg-emerald-500"
+                    style={{ width: `${Math.round(conf * 100)}%` }}
+                />
+            </div>
+        </div>
+    );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function ImageDetailModal({
@@ -338,6 +365,15 @@ export default function ImageDetailModal({
     const bothBottomPanelsCollapsed = !scienceOpen && !humanOpen;
     const scienceRun = detail?.science_run ?? null;
     const canonicalAvailable = detail?.canonical_outputs_available ?? false;
+
+    // Room tags: attribute_key is 'room.type_coarse'; tag_key (not in TagInfo) is 'room_type.*'
+    const roomTags = useMemo(
+        () => (tags ?? []).filter(t =>
+            t.source === 'science_pipeline' &&
+            (t.attribute_key?.startsWith('room.') || t.attribute_key?.startsWith('room_type.'))
+        ),
+        [tags]
+    );
 
     function scienceEmptyMessage() {
         if (!scienceRun) {
@@ -620,11 +656,20 @@ export default function ImageDetailModal({
                         <AffordancePanel scores={affordanceScores} method={affordanceMethod} />
                     )}
 
+                    {canonicalAvailable && <RoomTypePanel roomTags={roomTags} />}
+
                     {/* Tags */}
                     {tags.length > 0 && (
                         <div className="p-3 border-b border-gray-700">
                             <div className="flex items-center justify-between mb-2">
-                                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Tags</div>
+                                <div className="flex items-center gap-2">
+                                    <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Tags</div>
+                                    {canonicalAvailable && (
+                                        <span className="text-[8px] font-bold uppercase px-1 py-0.5 rounded bg-emerald-900 text-emerald-400 border border-emerald-700">
+                                            canonical
+                                        </span>
+                                    )}
+                                </div>
                                 <div className="flex items-center gap-2 text-[9px] text-gray-600">
                                     <span className="flex items-center gap-1">
                                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-gray-500" /> imported
@@ -648,6 +693,20 @@ export default function ImageDetailModal({
                             <div>ID: <span className="font-mono text-gray-300">{img.id}</span></div>
                             {detail?.meta_data?.upload_batch_id && (
                                 <div>Batch: <span className="font-mono text-gray-300 text-[9px]">{detail.meta_data.upload_batch_id}</span></div>
+                            )}
+                            {scienceRun?.completed_at && (
+                                <div>
+                                    Analyzed:{' '}
+                                    <span className="font-mono text-gray-300 text-[9px]">
+                                        {new Date(scienceRun.completed_at).toLocaleDateString()}
+                                    </span>
+                                </div>
+                            )}
+                            {scienceRun?.science_version && (
+                                <div>
+                                    Version:{' '}
+                                    <span className="font-mono text-gray-400 text-[9px]">{scienceRun.science_version}</span>
+                                </div>
                             )}
                             <div className="pt-2 text-[9px] text-gray-700 leading-relaxed">
                                 ← → navigate &nbsp;·&nbsp; 1–8 debug<br />
