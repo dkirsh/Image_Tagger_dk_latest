@@ -32,6 +32,12 @@ INDEX_CATALOG: Dict[str, IndexInfo] = {
         "bins": {"field": "science.organized_complexity_bin", "values": ["low", "mid", "high"]},
         "tags": ["composite", "candidate_bn_input"],
     },
+    "biophilia.index": {
+        "label": "Biophilia index",
+        "description": "Weighted composite of lightweight plant-presence and natural-texture proxies.",
+        "type": "float",
+        "tags": ["composite", "candidate_bn_input"],
+    },
 }
 
 

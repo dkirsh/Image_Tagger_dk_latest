@@ -12,6 +12,7 @@ from backend.science.tag_derivation import (
     SCIENCE_TAG_THRESHOLD,
     derive_affordance_tags,
     derive_all_tags,
+    derive_material_tags,
     derive_object_tags,
     derive_room_tags,
     derive_science_attribute_tags,
@@ -155,6 +156,11 @@ class TestDeriveScienceAttributeTags:
         derive_science_attribute_tags({"cognitive.restorative": 0.8}, ctx)
         assert any(t.namespace == "cognitive" for t in ctx.tags)
 
+    def test_biophilia_attribute_above_threshold_emits_tag(self):
+        ctx = _ctx()
+        derive_science_attribute_tags({"biophilia.index": SCIENCE_TAG_THRESHOLD}, ctx)
+        assert any(t.namespace == "biophilia" for t in ctx.tags)
+
     def test_color_attribute_not_promoted(self):
         ctx = _ctx()
         derive_science_attribute_tags({"color.saturation_mean": 0.9}, ctx)
@@ -164,6 +170,21 @@ class TestDeriveScienceAttributeTags:
         ctx = _ctx()
         derive_science_attribute_tags({"style.minimalist": SCIENCE_TAG_THRESHOLD - 0.01}, ctx)
         assert not ctx.tags
+
+
+class TestDeriveMaterialTags:
+    def test_material_with_share_emits_tag(self):
+        ctx = _ctx()
+        derive_material_tags(
+            {
+                "materials": [
+                    {"material": "wood", "coverage_3d": 0.21, "confidence": 0.91},
+                ]
+            },
+            ctx,
+        )
+        assert any(t.tag_key == "material.wood" for t in ctx.tags)
+        assert any("21%" in t.label for t in ctx.tags)
 
 
 # ── derive_all_tags ───────────────────────────────────────────────────────────
@@ -176,6 +197,7 @@ class TestDeriveAllTags:
             affordance_summary=None,
             room_summary=None,
             segmentation_summary=None,
+            materials_summary=None,
             ctx=ctx,
         )
         assert ctx.tags
@@ -188,12 +210,14 @@ class TestDeriveAllTags:
             affordance_summary={"scores": {"L059": 6.0}},
             room_summary={"top_coarse": ["bedroom", 0.70]},
             segmentation_summary=None,
+            materials_summary={"materials": [{"material": "wood", "coverage_3d": 0.18, "confidence": 0.9}]},
             ctx=ctx,
         )
         namespaces = {t.namespace for t in ctx.tags}
         assert "room_type" in namespaces
         assert "affordance" in namespaces
         assert "style" in namespaces
+        assert "material" in namespaces
 
     def test_tag_keys_are_unique_by_default(self):
         ctx = _ctx()
@@ -202,6 +226,7 @@ class TestDeriveAllTags:
             affordance_summary={"scores": {"L059": 6.0}},
             room_summary={"top_coarse": ["bedroom", 0.70]},
             segmentation_summary=None,
+            materials_summary={"materials": [{"material": "wood", "coverage_3d": 0.18, "confidence": 0.9}]},
             ctx=ctx,
         )
         keys = [t.tag_key for t in ctx.tags]

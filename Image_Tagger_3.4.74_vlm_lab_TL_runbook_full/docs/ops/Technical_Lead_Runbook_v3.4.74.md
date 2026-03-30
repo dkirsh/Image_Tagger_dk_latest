@@ -1,41 +1,43 @@
-# 🛠️ Technical Lead Runbook – Image Tagger 3.4.74_vlm_lab_notebook_TL_runbook
+# Technical Lead Runbook - Image Tagger 3.4.74
 
-This document is for the **Technical Lead (TL)** responsible for:
+This document is for the technical lead responsible for:
 
 - getting Image Tagger up and running,
 - verifying that both teaching tracks work, and
 - making the system easy to share with students and collaborators.
 
-It assumes you are comfortable with basic command-line work and Docker.
+It assumes basic Docker and command-line familiarity.
 
 ---
 
 ## 1. What you are supporting
 
-The repository supports two main teaching modes:
+The current repository supports two practical modes:
 
-- **Track A – Full App (persistent)**  
-  - Full stack with Workbench, Explorer, Admin.
-  - Runs in Docker on a server, Codespace, or lab machine.
-  - Suitable for multi-week projects and demos with persistent data.
+- **Track A - Full App (persistent)**
+  - Full stack with Explorer, Workbench, Monitor, and Admin.
+  - Runs in Docker on a laptop, server, or Codespace.
+  - Includes the canonical science-run subsystem used by Explorer.
 
-- **Track B – Colab “VLM Health Lab” (ephemeral)**  
+- **Track B - Colab "VLM Health Lab" (ephemeral)**
   - Google Colab notebook: `notebooks/VLM_Health_Lab.ipynb`.
   - Sets up a small DB and toy image set inside Colab.
   - Runs the science pipeline and VLM variance audit.
   - Ideal for short, self-contained labs that do not require persistence.
 
-Your goal is to ensure that **at least one Track A deployment** and the **Track B notebook** are working
-and documented before students arrive.
+Your job is to ensure that at least one Track A deployment is working and, if
+you are using it, that the Track B notebook path is still usable.
 
 ---
 
-## 2. Artifacts you need
+## 2. Core artifacts
 
-- The repository zip, for example:
-  - `Image_Tagger_3.4.74_vlm_lab_notebook_TL_runbook_full.zip`
+- The repository checkout or release zip
 - The core docs inside the repo:
   - `STUDENT_START_HERE.md`
+  - `README_v3.md`
+  - `docs/science_overview.md`
+  - `docs/SCIENCE_TAG_MAP.md`
   - `docs/ops/Student_Quickstart_v3.4.73.md`
   - `docs/ops/Cloud_AntiGravity_Quickstart.md`
   - `docs/ops/VLM_Health_Quickstart.md` (if present)
@@ -49,47 +51,53 @@ Optional but recommended external docs (if provided):
 
 ---
 
-## 3. Track A – Full App Deployment
+## 3. Track A - Full App Deployment
 
 You have three main options: local machine, GitHub Codespaces, or cloud VM / lab server.
 
-### 3.1 Local machine (for your own development / testing)
+### 3.1 Local machine
 
 1. Install Docker and docker-compose.
 2. Unzip the repository into a folder on your machine.
-3. Open a terminal in that folder and run:
+3. Open a terminal in the app root and run:
 
    ```bash
-   ./auto_install.sh
+   ./install.sh
    ```
 
-   - First run: builds images, runs migrations and seeds.
-   - Subsequent runs: should be quicker, mainly verifying that things still work.
-
-4. Start the stack (command may vary slightly by repo config):
+4. Start the stack:
 
    ```bash
-   docker compose up
+   docker-compose -f deploy/docker-compose.yml up -d
    ```
 
-5. Open the main frontend URL (often `http://localhost:8080` or as documented in the code).
+5. Open `http://localhost:8080`.
 
-**Smoke test:**
+Smoke test:
 
 - Confirm you can:
-  - open Workbench,
   - open Explorer,
-  - access Admin (and see VLM Health views).
+  - open Workbench,
+  - open Monitor,
+  - access Admin,
+  - open `http://localhost:8080/api/docs`.
 
-### 3.2 GitHub Codespaces (recommended for remote teaching)
+- Confirm the canonical science subsystem responds:
+
+  ```bash
+  curl -s http://localhost:8080/api/v1/explorer/science/status \
+    -H "X-User-Id: 1" -H "X-User-Role: admin"
+  ```
+
+### 3.2 GitHub Codespaces
 
 1. Ensure the repository is on GitHub.
 2. From the GitHub repo page:
    - Click **Code → Codespaces → Create codespace on main**.
-3. Once the Codespace is ready, open the integrated terminal and run:
+3. Once the Codespace is ready, run:
 
    ```bash
-   ./auto_install.sh
+   ./install.sh
    ```
 
 4. Use the **Ports** panel in Codespaces:
@@ -107,31 +115,54 @@ You have three main options: local machine, GitHub Codespaces, or cloud VM / lab
 
 1. Provision an Ubuntu 22.04+ VM (or choose an existing lab server).
 2. Copy the repository zip to the VM.
-3. SSH into the VM and run:
+3. SSH into the VM, install Docker if needed, then run the same app-root flow:
 
    ```bash
-   chmod +x infra/cloud/full_stack_vm_setup.sh
-   ./infra/cloud/full_stack_vm_setup.sh
+   ./install.sh
+   docker-compose -f deploy/docker-compose.yml up -d
    ```
-
-   This script will:
-
-   - install Docker if necessary,
-   - unpack the repo zip into an `image_tagger` directory (if present),
-   - run `./auto_install.sh`.
 
 4. Expose the frontend:
 
    - For quick demos, use `ngrok http 8080` and share the generated URL.
    - For longer-term use, configure a proper reverse proxy or load balancer.
 
-**Checklist for Track A:**
+Checklist for Track A:
 
-- [ ] `./auto_install.sh` completes without errors.
+- [ ] `./install.sh` completes without errors.
 - [ ] Workbench loads.
 - [ ] Explorer loads.
-- [ ] Admin loads and VLM Health pages are reachable.
+- [ ] Monitor and Admin load.
+- [ ] `/api/v1/explorer/science/status` returns a valid response.
 - [ ] Your chosen sharing mechanism (Codespaces URL, VM+ngrok) is documented for students.
+
+### 3.4 Canonical science verification
+
+The canonical pipeline is part of the operational definition of a healthy Track A
+deployment.
+
+Check these endpoints:
+
+```bash
+curl -s -X POST http://localhost:8080/api/v1/explorer/science/bootstrap \
+  -H "X-User-Id: 1" -H "X-User-Role: admin"
+
+curl -s http://localhost:8080/api/v1/explorer/science/status \
+  -H "X-User-Id: 1" -H "X-User-Role: admin"
+```
+
+What to expect:
+
+- `bootstrap` queues up to 500 missing runs
+- `status` reports `current_completed`, `pending`, `running`, and `failed`
+- completed images should expose `science_run` and canonical tags in the
+  Explorer detail API
+
+Known current limitations:
+
+- room detection is working
+- affordance inference may fail because of the LightGBM model compatibility issue
+- segmentation is disabled in the default canonical config
 
 ---
 
@@ -141,7 +172,7 @@ The notebook `notebooks/VLM_Health_Lab.ipynb` is a self-contained “science lab
 
 ### 4.1 TL verification
 
-1. Download `Image_Tagger_3.4.74_vlm_lab_notebook_TL_runbook_full.zip` to your local machine.
+1. Download the current Image Tagger repository zip to your local machine.
 2. Open the notebook in Google Colab:
    - Go to https://colab.research.google.com/
    - Choose **File → Upload notebook**, select `notebooks/VLM_Health_Lab.ipynb`.
@@ -169,19 +200,20 @@ The notebook `notebooks/VLM_Health_Lab.ipynb` is a self-contained “science lab
 
 ---
 
-## 5. Minimal GO/NO-GO Gate for the Technical Lead
+## 5. Minimal GO/NO-GO gate
 
 Before the course starts, the TL should be able to answer **YES** to:
 
-1. **Governance / guards:**
+1. Governance / guards:
    - [ ] `python scripts/syntax_guard.py` passes.
    - [ ] `python scripts/program_integrity_guard.py` passes.
    - [ ] `python scripts/critical_import_guard.py` passes.
    - [ ] `python scripts/canon_guard.py` passes.
 
-2. **Track A:**
-   - [ ] I can run `./auto_install.sh` to completion in at least one environment (local, Codespace, VM).
+2. Track A:
+   - [ ] I can run `./install.sh` to completion in at least one environment.
    - [ ] I can open Workbench, Explorer, and Admin in a browser.
+   - [ ] I can query the science bootstrap/status endpoints successfully.
    - [ ] I know what URL to give students (and under what conditions).
 
 3. **Track B:**
@@ -189,7 +221,8 @@ Before the course starts, the TL should be able to answer **YES** to:
    - [ ] I know which zip students should upload.
    - [ ] I have told TAs which parts of the notebook matter for their assignments.
 
-4. **Documentation:**
+4. Documentation:
+   - [ ] `README_v3.md`, `docs/science_overview.md`, and `docs/SCIENCE_TAG_MAP.md` reflect the current canonical science architecture.
    - [ ] `STUDENT_START_HERE.md` and `docs/ops/Student_Quickstart_v3.4.73.md` exist and reflect our actual teaching plan.
    - [ ] `docs/ops/Cloud_AntiGravity_Quickstart.md` is accurate for our deployment strategy.
    - [ ] TAs know where to find any external guides (Repo Overview, TA & Student Guide).
@@ -207,5 +240,6 @@ Share with TAs:
 - what *not* to change (e.g., governance files, guard scripts),
 - how to escalate issues (what logs to send you, what screenshots to collect).
 
-With this runbook and the in-repo quickstarts, the Technical Lead should be able to maintain a
-stable teaching instance and support both the full application and the Colab lab.
+With this runbook and the core docs, the technical lead should be able to
+maintain a stable teaching instance and explain the current canonical science
+behavior accurately.

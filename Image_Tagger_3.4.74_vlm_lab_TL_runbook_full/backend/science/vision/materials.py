@@ -105,6 +105,215 @@ Return STRICT JSON with this exact structure:
   "style_note": "..."
 }"""
 
+_MATERIAL_ALIASES = {
+    "hardwood": "wood",
+    "oak": "wood",
+    "walnut": "wood",
+    "plywood": "wood",
+    "wood_paneling": "wood",
+    "stainless_steel": "steel",
+    "steel": "steel",
+    "brushed_steel": "steel",
+    "aluminium": "aluminum",
+    "aluminum": "aluminum",
+    "chrome": "metal",
+    "nickel": "metal",
+    "ceramic_tile": "tile",
+    "porcelain_tile": "porcelain",
+    "gypsum": "plaster",
+    "drywall": "drywall",
+    "painted_drywall": "paint",
+    "upholstered_fabric": "fabric",
+    "linen": "fabric",
+    "cotton": "fabric",
+    "wool": "fabric",
+    "boucle": "fabric",
+    "plastic_laminate": "laminate",
+    "quartz": "stone",
+    "limestone": "stone",
+}
+
+
+def _slugify_material(name: str) -> str:
+    return "".join(ch if ch.isalnum() else "_" for ch in name.strip().lower()).strip("_")
+
+
+def _normalize_material_name(name: str) -> str:
+    slug = _slugify_material(name)
+    if slug in _MATERIAL_ALIASES:
+        return _MATERIAL_ALIASES[slug]
+    for canonical in MATERIAL_CATEGORIES:
+        if canonical in slug:
+            return canonical
+    return slug or "unknown"
+
+
+def _orient_depth_map(depth_map: Optional[np.ndarray]) -> Optional[np.ndarray]:
+    """Normalise depth semantics to 0=near, 1=far.
+
+    Depth backends are inconsistent about whether larger values mean "nearer"
+    or "farther". For interiors, the lower part of the frame is usually closer
+    than the upper part, so we use that as a weak orientation prior.
+    """
+    if depth_map is None:
+        return None
+
+    arr = np.asarray(depth_map, dtype=np.float32)
+    if arr.ndim == 3:
+        arr = arr[..., 0]
+    if arr.ndim != 2 or arr.size == 0:
+        return None
+
+    arr = np.nan_to_num(arr, nan=0.0, posinf=0.0, neginf=0.0)
+    arr = np.clip(arr, 0.0, 1.0)
+
+    h = arr.shape[0]
+    if h < 8:
+        return arr
+
+    top_mean = float(arr[: max(1, h // 5), :].mean())
+    bottom_mean = float(arr[int(h * 0.8):, :].mean())
+    if bottom_mean > top_mean:
+        arr = 1.0 - arr
+    return arr
+
+
+def _surface_weight_map(frame: AnalysisFrame) -> Optional[np.ndarray]:
+    depth = _orient_depth_map(getattr(frame, "depth_map", None))
+    if depth is None:
+        return None
+    # Approximate projected-to-surface scaling under perspective:
+    # farther visible surfaces represent more real area per screen pixel.
+    return (1.0 + 1.5 * np.power(depth, 1.35)).astype(np.float32)
+
+
+def _coverage_stats(frame: AnalysisFrame, mask: np.ndarray) -> dict[str, float]:
+    mask_bool = np.asarray(mask, dtype=bool)
+    total_pixels = float(mask_bool.size or 1)
+    coverage_2d = float(mask_bool.sum() / total_pixels)
+
+    depth = _orient_depth_map(getattr(frame, "depth_map", None))
+    weights = _surface_weight_map(frame)
+    if depth is None or weights is None:
+        return {
+            "coverage_2d": coverage_2d,
+            "coverage_3d": coverage_2d,
+            "depth_mean": 0.0,
+            "depth_factor": 1.0,
+        }
+
+    masked_weights = float(weights[mask_bool].sum())
+    total_weights = float(weights.sum()) or 1.0
+    coverage_3d = masked_weights / total_weights
+    depth_mean = float(depth[mask_bool].mean()) if mask_bool.any() else 0.0
+    depth_factor = float(coverage_3d / coverage_2d) if coverage_2d > 0 else 1.0
+    return {
+        "coverage_2d": coverage_2d,
+        "coverage_3d": coverage_3d,
+        "depth_mean": depth_mean,
+        "depth_factor": depth_factor,
+    }
+
+
+def _location_mask(location: str, shape: tuple[int, int]) -> np.ndarray:
+    h, w = shape
+    loc = location.lower()
+    mask = np.zeros((h, w), dtype=bool)
+
+    def fill(y0: float, y1: float, x0: float = 0.0, x1: float = 1.0) -> None:
+        ys = slice(max(0, int(h * y0)), min(h, int(h * y1)))
+        xs = slice(max(0, int(w * x0)), min(w, int(w * x1)))
+        mask[ys, xs] = True
+
+    if any(token in loc for token in ("floor", "rug", "carpet")):
+        fill(0.62, 1.0)
+    elif any(token in loc for token in ("ceiling", "light", "pendant", "fixture")):
+        fill(0.0, 0.24)
+    elif any(token in loc for token in ("wall", "backsplash")):
+        fill(0.18, 0.78)
+    elif any(token in loc for token in ("counter", "countertop", "island", "tabletop")):
+        fill(0.45, 0.7, 0.15, 0.85)
+    elif any(token in loc for token in ("cabinet", "millwork", "shelf", "bookcase")):
+        fill(0.3, 0.85, 0.0, 1.0)
+    elif any(token in loc for token in ("window", "glass", "glazing", "window_frame")):
+        fill(0.08, 0.7, 0.1, 0.9)
+    elif any(token in loc for token in ("door", "frame")):
+        fill(0.15, 0.88, 0.05, 0.95)
+    elif any(token in loc for token in ("sofa", "chair", "upholstery", "bed", "headboard")):
+        fill(0.32, 0.88, 0.08, 0.92)
+    else:
+        mask[:, :] = True
+
+    if not mask.any():
+        mask[:, :] = True
+    return mask
+
+
+def _aggregate_material_entries(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped: dict[str, dict[str, Any]] = {}
+    for entry in entries:
+        name = _normalize_material_name(str(entry.get("material", "unknown")))
+        grouped.setdefault(
+            name,
+            {
+                "material": name,
+                "coverage_2d": 0.0,
+                "coverage_3d": 0.0,
+                "confidence": 0.0,
+                "locations": [],
+                "finishes": [],
+                "color_tones": [],
+                "depth_mean": 0.0,
+                "depth_factor": 1.0,
+                "_depth_weight": 0.0,
+            },
+        )
+        bucket = grouped[name]
+        cov2d = float(entry.get("coverage_2d", entry.get("coverage", 0.0)))
+        cov3d = float(entry.get("coverage_3d", cov2d))
+        bucket["coverage_2d"] += cov2d
+        bucket["coverage_3d"] += cov3d
+        bucket["confidence"] = max(bucket["confidence"], float(entry.get("confidence", 0.0)))
+        location = str(entry.get("location", "")).strip()
+        finish = str(entry.get("finish", "")).strip()
+        color_tone = str(entry.get("color_tone", "")).strip()
+        if location and location not in bucket["locations"]:
+            bucket["locations"].append(location)
+        if finish and finish not in bucket["finishes"]:
+            bucket["finishes"].append(finish)
+        if color_tone and color_tone not in bucket["color_tones"]:
+            bucket["color_tones"].append(color_tone)
+        depth_mean = float(entry.get("depth_mean", 0.0))
+        bucket["_depth_weight"] += cov3d
+        bucket["depth_mean"] += depth_mean * cov3d
+
+    aggregated = []
+    for bucket in grouped.values():
+        weight = bucket.pop("_depth_weight", 0.0)
+        if weight > 0:
+            bucket["depth_mean"] = float(bucket["depth_mean"] / weight)
+        bucket["coverage_2d"] = min(1.0, float(bucket["coverage_2d"]))
+        bucket["coverage_3d"] = min(1.0, float(bucket["coverage_3d"]))
+        if bucket["coverage_2d"] > 0:
+            bucket["depth_factor"] = float(bucket["coverage_3d"] / bucket["coverage_2d"])
+        aggregated.append(bucket)
+
+    total_2d = sum(float(entry.get("coverage_2d", 0.0)) for entry in aggregated)
+    total_3d = sum(float(entry.get("coverage_3d", 0.0)) for entry in aggregated)
+    if total_2d > 1.0:
+        for entry in aggregated:
+            entry["coverage_2d"] = float(entry["coverage_2d"] / total_2d)
+    if total_3d > 1.0:
+        for entry in aggregated:
+            entry["coverage_3d"] = float(entry["coverage_3d"] / total_3d)
+    for entry in aggregated:
+        cov2d = float(entry.get("coverage_2d", 0.0))
+        cov3d = float(entry.get("coverage_3d", cov2d))
+        entry["depth_factor"] = float(cov3d / cov2d) if cov2d > 0 else 1.0
+
+    aggregated.sort(key=lambda x: x.get("coverage_3d", x.get("coverage_2d", 0.0)), reverse=True)
+    return aggregated
+
 
 class MaterialAnalyzer:
     """
@@ -139,14 +348,14 @@ class MaterialAnalyzer:
             & (hsv[:, :, 1] > 30)
             & (hsv[:, :, 2] > 50)
         )
-        wood_coverage = float(np.sum(wood_mask) / wood_mask.size)
-        frame.add_attribute("material.wood_coverage", wood_coverage)
+        wood_stats = _coverage_stats(frame, wood_mask)
+        frame.add_attribute("material.wood_coverage", wood_stats["coverage_2d"])
 
         # --- Metal heuristic (simplified from v2) ---
         # Low saturation, mid-to-high value → shiny / metallic regions.
         metal_mask = (hsv[:, :, 1] < 30) & (hsv[:, :, 2] > 150)
-        metal_coverage = float(np.sum(metal_mask) / metal_mask.size)
-        frame.add_attribute("material.metal_coverage", metal_coverage)
+        metal_stats = _coverage_stats(frame, metal_mask)
+        frame.add_attribute("material.metal_coverage", metal_stats["coverage_2d"])
 
         # --- Glass heuristic (ported from v2) ---
         # High luminance + low local variance → smooth bright panes.
@@ -160,8 +369,8 @@ class MaterialAnalyzer:
         smooth_mask = local_var < 100.0
 
         glass_mask = bright_mask & smooth_mask
-        glass_coverage = float(np.sum(glass_mask) / glass_mask.size)
-        frame.add_attribute("material.glass_coverage", glass_coverage)
+        glass_stats = _coverage_stats(frame, glass_mask)
+        frame.add_attribute("material.glass_coverage", glass_stats["coverage_2d"])
         # --- L1 material cues (read-only; support higher tiers) ---
         # Normalized brightness (0-1) from grayscale.
         gray_float = gray.astype(float) / 255.0
@@ -190,16 +399,16 @@ class MaterialAnalyzer:
             (hsv[:, :, 2] > 60) &
             (hsv[:, :, 2] < 200)
         )
-        stone_coverage = float(stone_mask.sum() / stone_mask.size)
-        frame.add_attribute("materials.substrate.stone_concrete", stone_coverage, confidence=0.5)
+        stone_stats = _coverage_stats(frame, stone_mask)
+        frame.add_attribute("materials.substrate.stone_concrete", stone_stats["coverage_2d"], confidence=0.5)
 
         # Plaster/Gypsum: very low saturation, high value, low variance.
         plaster_mask = (
             (hsv[:, :, 1] < 30) &
             (hsv[:, :, 2] > 180)
         )
-        plaster_coverage = float(plaster_mask.sum() / plaster_mask.size)
-        frame.add_attribute("materials.substrate.plaster_gypsum", plaster_coverage, confidence=0.5)
+        plaster_stats = _coverage_stats(frame, plaster_mask)
+        frame.add_attribute("materials.substrate.plaster_gypsum", plaster_stats["coverage_2d"], confidence=0.5)
 
         # Tile/Ceramic: bright and moderately saturated with elevated local variance.
         # We reuse local_var from the glass heuristic as a crude texture cue.
@@ -208,8 +417,32 @@ class MaterialAnalyzer:
             (hsv[:, :, 1] > 40) &
             (local_var > 50.0)
         )
-        tile_coverage = float(tile_mask.sum() / tile_mask.size)
-        frame.add_attribute("materials.substrate.tile_ceramic", tile_coverage, confidence=0.4)
+        tile_stats = _coverage_stats(frame, tile_mask)
+        frame.add_attribute("materials.substrate.tile_ceramic", tile_stats["coverage_2d"], confidence=0.4)
+
+        entries = [
+            {"material": "wood", "confidence": 0.7, **wood_stats},
+            {"material": "metal", "confidence": 0.6, **metal_stats},
+            {"material": "glass", "confidence": 0.7, **glass_stats},
+            {"material": "stone_concrete", "confidence": 0.5, **stone_stats},
+            {"material": "plaster_gypsum", "confidence": 0.5, **plaster_stats},
+            {"material": "tile_ceramic", "confidence": 0.4, **tile_stats},
+        ]
+        entries = [
+            entry for entry in entries
+            if entry["coverage_2d"] >= 0.01 or entry["coverage_3d"] >= 0.01
+        ]
+        entries = _aggregate_material_entries(entries)
+        frame.metadata["material_detection_basic"] = {
+            "mode": "heuristic",
+            "engine": "HSV+Depth",
+            "coverage_basis": "depth_3d_estimate" if getattr(frame, "depth_map", None) is not None else "2d",
+            "depth_available": getattr(frame, "depth_map", None) is not None,
+            "materials": entries,
+            "dominant_material": entries[0]["material"] if entries else "unknown",
+            "material_palette": [entry["material"] for entry in entries[:5]],
+            "style_note": "Heuristic material estimate from color, luminance, texture, and depth cues.",
+        }
 
 
 # ============================================================================
@@ -300,12 +533,13 @@ class GeminiMaterialAnalyzer:
 
         # Parse and structure the result
         result = GeminiMaterialAnalyzer._parse_vlm_result(raw_result)
+        result = GeminiMaterialAnalyzer._apply_depth_scaling(frame, result)
 
         # Generate tags from the parsed result
         tags = GeminiMaterialAnalyzer._generate_tags(result)
 
         # Store in frame attributes
-        materials_list = result.get("materials", [])
+        materials_list = result.get("materials_aggregated", result.get("materials", []))
         dominant = result.get("dominant_material", "unknown")
         palette = result.get("material_palette", [])
 
@@ -316,7 +550,7 @@ class GeminiMaterialAnalyzer:
         # Store coverage for top materials
         for mat_entry in materials_list[:5]:
             mat_name = mat_entry.get("material", "unknown").replace(" ", "_").lower()
-            coverage = float(mat_entry.get("coverage", 0.0))
+            coverage = float(mat_entry.get("coverage_3d", mat_entry.get("coverage", 0.0)))
             confidence = float(mat_entry.get("confidence", 0.0))
             frame.add_attribute(
                 f"material.vlm.{mat_name}_coverage",
@@ -327,6 +561,10 @@ class GeminiMaterialAnalyzer:
         # Store full result and tags in metadata
         result["tags"] = tags
         result["engine"] = type(engine).__name__
+        result["coverage_basis"] = (
+            "depth_3d_estimate" if getattr(frame, "depth_map", None) is not None else "2d"
+        )
+        result["depth_available"] = getattr(frame, "depth_map", None) is not None
         frame.metadata["material_detection"] = result
         frame.metadata["material_tags"] = tags
 
@@ -387,6 +625,34 @@ class GeminiMaterialAnalyzer:
         return result
 
     @staticmethod
+    def _apply_depth_scaling(frame: AnalysisFrame, result: Dict[str, Any]) -> Dict[str, Any]:
+        materials = result.get("materials", [])
+        if not isinstance(materials, list):
+            result["materials_aggregated"] = []
+            return result
+
+        adjusted = []
+        shape = frame.original_image.shape[:2]
+        for entry in materials:
+            location = str(entry.get("location", ""))
+            stats = _coverage_stats(frame, _location_mask(location, shape))
+            coverage_2d = float(entry.get("coverage", 0.0))
+            entry = dict(entry)
+            entry["coverage_2d"] = coverage_2d
+            entry["coverage_3d"] = min(1.0, coverage_2d * stats["depth_factor"])
+            entry["depth_mean"] = stats["depth_mean"]
+            entry["depth_factor"] = stats["depth_factor"]
+            adjusted.append(entry)
+
+        aggregated = _aggregate_material_entries(adjusted)
+        if aggregated:
+            result["dominant_material"] = aggregated[0]["material"]
+            result["material_palette"] = [entry["material"] for entry in aggregated[:5]]
+        result["materials"] = adjusted
+        result["materials_aggregated"] = aggregated
+        return result
+
+    @staticmethod
     def _generate_tags(result: Dict[str, Any]) -> List[str]:
         """Generate human-readable tags from the parsed material detection result."""
         tags = []
@@ -397,16 +663,17 @@ class GeminiMaterialAnalyzer:
             tags.append(f"material:{dominant}")
 
         # Individual material tags with confidence
-        for mat in result.get("materials", [])[:6]:
+        for mat in result.get("materials_aggregated", result.get("materials", []))[:6]:
             material_name = mat.get("material", "unknown")
             confidence = mat.get("confidence", 0.0)
-            location = mat.get("location", "")
-            finish = mat.get("finish", "")
+            location = ", ".join(mat.get("locations", [])) or mat.get("location", "")
+            finish = ", ".join(mat.get("finishes", [])) or mat.get("finish", "")
             conf_pct = int(confidence * 100)
+            cov_pct = int(round(float(mat.get("coverage_3d", mat.get("coverage", 0.0))) * 100))
 
-            if conf_pct >= 50:
+            if conf_pct >= 50 or cov_pct >= 4:
                 # High confidence: include location
-                tag = f"material:{material_name} ({conf_pct}%)"
+                tag = f"material:{material_name} ({cov_pct}%)"
                 if tag not in tags:
                     tags.append(tag)
 

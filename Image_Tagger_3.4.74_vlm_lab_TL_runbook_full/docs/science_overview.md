@@ -1,137 +1,194 @@
-# Science Overview (v3.2.39)
+# Science Overview (v3.4.74 canonical line)
 
-This document explains the heuristics-based science pipeline implemented in `backend/science/`
-and how its outputs are used by the Explorer, Monitor, and downstream analysis tools.
+This document describes the science stack as it exists in the current `3.4.74`
+repository state. The system is no longer just a legacy heuristics pipeline that
+writes directly to `Validation`. It now has a canonical run model, dedicated
+science-run persistence tables, and Explorer-facing APIs for queueing,
+monitoring, and rendering canonical outputs.
 
-## 1. Pipeline sketch
+## 1. Current pipeline shape
 
-1. Images are stored in the database via the `Image` model (`backend/models/assets.py`), with a
-   `storage_path` or similar file reference.
-2. The science pipeline orchestrator (`backend/science/pipeline.py`) loads pixels into an
-   `AnalysisFrame` abstraction.
-3. A set of analyzers run over this frame, each responsible for a family of measures:
+The main entry points are:
 
-   - Color and luminance (`backend/science/color.py`)
-   - Texture via gray-level co-occurrence matrix (GLCM) (`backend/science/texture.py`)
-   - Fractal dimension (`backend/science/fractals.py`)
-   - Visual complexity (`backend/science/complexity.py`)
-   - Perceptual / depth cues (`backend/science/perception.py`)
-   - Social disposition (rule-based) (`backend/science/context_social.py`)
-   - Cognitive/restorative disposition (rule-based) (`backend/science/context_cognitive.py`)
-   - Summary / composite indices (`backend/science/summary.py`)
+- `backend/science/pipeline.py`
+- `backend/services/science_runs.py`
+- `backend/api/v1_discovery.py`
 
-4. Each analyzer adds attributes to the frame using a simple API such as:
+The canonical flow is:
 
-   ```python
-   frame.add_attribute("science.edge_density", value, confidence=0.9)
-   ```
+1. An image is queued for canonical processing via `ScienceRun` state in
+   `backend/models/science_runs.py`.
+2. The Explorer bootstrap endpoint, `POST /v1/explorer/science/bootstrap`,
+   queues up to 500 missing runs for the active config/version.
+3. A background worker processes `PENDING` runs with
+   `SciencePipeline.process_image_canonical(...)`.
+4. Outputs are persisted into:
+   - `science_runs` for lifecycle state
+   - `science_tags` for canonical tags
+   - `science_artifacts` for structured JSON outputs
+   - `validations` for persisted science attributes
+5. The Explorer detail endpoint reads those canonical tables first and exposes:
+   - `science_run`
+   - `canonical_outputs_available`
+   - canonical tags
+   - canonical affordance and room summaries when present
 
-5. At the end of the pipeline, `_save_results` (in `pipeline.py`) persists these attributes
-   into the `Validation` table (`backend/models/annotation.py`) as science-sourced rows
-   (e.g. `source='science_pipeline_v3.2'`).
+The active science version is defined in `backend/services/science_runs.py`.
+At the time of this documentation update it is `3.4.74-canonical-v2`.
 
-6. These persisted attributes can be:
+## 2. Canonical config
 
-   - Visualised and filtered in the Explorer GUI.
-   - Used as moderators in the Monitor (Supervisor) GUI.
-   - Exported as BN-ready rows via the `/v1/export/bn-snapshot` endpoint.
+`backend/services/science_runs.py` defines the authoritative canonical config.
+The current defaults are:
 
-## 2. Primitive measures
+- `enable_color = True`
+- `enable_complexity = True`
+- `enable_texture = True`
+- `enable_fractals = True`
+- `enable_spatial = True`
+- `enable_affordance = True`
+- `enable_room_detection = True`
+- `enable_segmentation = False`
+- `enable_cognitive = False`
+- `enable_semantic = False`
+- `enable_materials_basic = True`
+- `enable_materials_vlm = False` by default unless enabled by env var
+- `enable_clip_materials = False` by default unless enabled by env var
 
-The current v3.2.39 line implements a modest but coherent set of primitives, including:
+This means the canonical line currently emphasizes cheap deterministic
+measurements plus room classification and material heuristics. Segmentation and
+VLM-heavy enrichers are present in the codebase but are not part of the default
+canonical run path.
 
-- **Color primitives** (in `color.py`):
+## 3. What the canonical pipeline produces today
 
-  - Mean luminance and saturation in a perceptually uniform colour space.
-  - Warm/cool ratio based on hue ranges.
-  - Simple colour entropy over a coarse histogram.
+### Persisted science attributes
 
-- **Texture / GLCM primitives** (in `texture.py`):
+The pipeline still writes numeric attributes to `Validation` with a science
+source. The current canonical set includes classic deterministic features such as
+color, complexity, texture, fractals, spatial cues, and materials heuristics,
+plus the new room and affordance keys.
 
-  - GLCM contrast, homogeneity, energy, correlation on a downsampled grayscale channel.
+### Canonical tags
 
-- **Fractal measures** (in `fractals.py`):
+Tag derivation now lives in `backend/science/tag_derivation.py`. The API layer
+should not invent canonical tags on read.
 
-  - Global fractal dimension `D` estimated via box-counting over a binarised edge map.
+Canonical tags currently include:
 
-- **Complexity primitives** (in `complexity.py`):
+- `room_type.*` tags derived from Places365 coarse room predictions
+- `affordance.<id>.(medium|high)` tags when affordance scores are available
+- selected `style.*`, `cognitive.*`, and `biophilia.*` science attributes above
+  threshold
+- material tags from materials summaries when coverage is large enough
+- object tags from segmentation summaries when segmentation is enabled
 
-  - Edge density: proportion of edge pixels relative to total image pixels.
-  - Organisation ratio: heuristic ratio of structured vs noisy regions, derived from local
-    variance and edge continuity.
+### Canonical artifacts
 
-These primitives are deterministic for a given image and configuration and are intended as
-transparent, inspectable building blocks rather than final psychological truths.
+Structured artifacts are stored in `science_artifacts`. In the current line the
+important artifact types are:
 
-## 3. Composite indices and bins
+- `room_json`
+- `affordance_json`
+- `materials_json`
 
-`backend/science/summary.py` combines several primitives into composite indices that are easier
-to interpret in teaching and exploratory analysis:
+`room_json` is working end to end and backs the Explorer detail modal.
+`affordance_json` is only present when affordance inference succeeds.
+Segmentation artifacts are defined in the model contract but are not produced by
+default because segmentation is off in `CANONICAL_CONFIG`.
 
-- **Visual richness** (`science.visual_richness`)
-  - Combines colour entropy, edge density and texture variation into a 0–1 composite.
-- **Organised complexity** (`science.organized_complexity`)
-  - Combines fractal dimension and organisation ratio into a 0–1 composite.
+## 4. Explorer integration
 
-Both composites are also discretised into bins for BN and UX:
+The Explorer now has two science-specific endpoints:
 
-- `science.visual_richness_bin`
-- `science.organized_complexity_bin`
+- `POST /v1/explorer/science/bootstrap`
+- `GET /v1/explorer/science/status`
 
-The binning rule is:
+`bootstrap` queues missing runs and immediately returns summary counts.
+Processing then continues in a background worker.
 
-- `0` → low
-- `1` → mid
-- `2` → high
+The detail endpoint,
+`GET /v1/explorer/images/{image_id}/detail`, now exposes canonical state via:
 
-The BN export layer (`backend/api/v1_bn_export.py`) maps these numeric codes to string labels
-(`"low"`, `"mid"`, `"high"`) so that downstream BN tools work purely with categorical
-values.
+- `science_run`
+- `canonical_outputs_available`
+- canonical tags from `science_tags`
+- canonical affordance scores from `affordance_json` when present
 
-## 4. Index catalog
+The frontend detail modal has been updated to show:
 
-`backend/science/index_catalog.py` defines a canonical index catalog. It exposes:
+- science run provenance
+- canonical badge/state
+- room type panel from canonical room tags
 
-- `INDEX_CATALOG`: a dict mapping attribute keys to metadata (label, description, type, bins).
-- `get_candidate_bn_keys()`: returns attribute keys recommended as BN inputs.
-- `get_index_metadata()`: returns the full catalog for metadata endpoints.
+If canonical outputs are not yet available, the API still has a legacy fallback
+path that synthesizes some tags from science attributes and the old
+`affordance_runtime_v1` cache. That path remains for compatibility and should
+not be treated as the canonical contract.
 
-The catalog keeps the BN export layer, Explorer, Monitor and notebooks in sync about which
-indices exist and how they should be interpreted.
+## 5. Backfill and operations
 
-## 5. Relation to Explorer and Monitor
+Large-scale processing is no longer dependent on the Explorer UI alone.
 
-- The **Explorer** GUI can show science attributes as columns and allow filtering/sorting
-  by indices and bins. In v3.2.39 it primarily uses attribute keys; a future iteration may
-  fetch labels/descriptions from the index catalog for richer tooltips.
+`backend/scripts/backfill_science_runs.py` can:
 
-- The **Monitor** GUI can use science indices (especially composites and bins) as moderators
-  in its analyses of tagging velocity and inter-rater reliability. For example, you can
-  ask whether difficult images (high organised complexity) systematically slow taggers or
-  increase disagreement.
+- print status
+- process all pending runs
+- process explicit IDs
+- process ID ranges
+- retry failed runs
+- dry-run queue creation
 
-## 6. BN export
+This script runs the pipeline in-process and uses the same science-run service
+layer as the API.
 
-The BN export endpoint (`/v1/export/bn-snapshot`) produces a list of `BNRow` objects (`backend/schemas/bn_export.py`):
+## 6. Current known gaps
 
-- `image_id`: primary key of the image.
-- `source`: software version string (e.g. `"image_tagger_v3.2.39"`).
-- `indices`: a dict of {attribute_key → float or null} for continuous indices.
-- `bins`: a dict of {bin_attribute_key → label or null} for categorical bins.
+The documentation should reflect the real current state rather than the desired
+end state.
 
-The underlying implementation reads from the `Validation` table, restricted to science
-pipeline sources, and uses the numeric→label mapping described above.
+Known gaps today:
 
-## 7. Extending the pipeline
+- Room detection is working and produces canonical tags plus `room_json`.
+- Affordance model files are present, but the LightGBM pickle compatibility
+  issue means canonical affordance inference is not reliable in the current
+  environment.
+- Segmentation exists in the codebase, but `enable_segmentation` is `False` in
+  the active canonical config, so segmentation/object artifacts are not part of
+  the default production path.
+- The detail API still contains a legacy fallback path for pre-canonical science
+  attributes and cached affordance payloads.
 
-To add a new index:
+## 7. Testing status
 
-1. Implement an analyzer in `backend/science/` with a function such as
-   `analyze(frame: AnalysisFrame)` that calls `frame.add_attribute(...)`.
-2. Add a corresponding entry to `backend/science/index_catalog.py` (with optional bins).
-3. Register the analyzer in `backend/science/pipeline.py` so it runs for each image.
-4. If the index should be part of BN export, tag it as a `"candidate_bn_input"` in the
-   catalog and, if needed, define a binning strategy.
+The canonical line now has targeted tests in:
 
-The goal of this v3.2.39 line is to be modest, explicit and inspectable: science code is
-short enough to read in a seminar, and all heuristics are visible and adjustable.
+- `tests/test_tag_derivation.py`
+- `tests/test_science_runs.py`
+
+These cover:
+
+- canonical tag derivation rules
+- bootstrap/status endpoints
+- detail endpoint canonical payload shape
+- search payload science-run status exposure
+
+## 8. Extension guidance
+
+To add or change canonical outputs safely:
+
+1. Update the analyzer or persistence logic in `backend/science/`.
+2. Update `CANONICAL_CONFIG` or the version string if the active contract has
+   changed.
+3. Update `backend/science/tag_derivation.py` if the new output should create
+   canonical tags.
+4. Update registry/docs:
+   - `backend/science/features_canonical.jsonl`
+   - `contracts/attributes.yml`
+   - `docs/SCIENCE_TAG_MAP.md`
+5. Update Explorer API or frontend rendering only after the persistence contract
+   is clear.
+
+The important distinction in the `3.4.74` line is this: canonical science is now
+an explicit persisted subsystem with versioned runs, not just a loose collection
+of analyzer writes.

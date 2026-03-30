@@ -1,4 +1,4 @@
-# 🎓 Student Quickstart – Image Tagger 3.4.74_vlm_lab_notebook_TL_runbook
+# Student Quickstart - Image Tagger 3.4.74
 
 This page explains **how you will actually use Image Tagger in this course**.
 
@@ -12,7 +12,7 @@ You just need to know which path you are on and what to run or click.
 Image Tagger is a system that:
 
 - stores architectural images,
-- runs a science pipeline (visual and spatial metrics, and optionally VLMs),
+- runs a science pipeline with canonical science-run tracking,
 - and lets you explore the results through web interfaces.
 
 In this course you will use Image Tagger to:
@@ -95,18 +95,13 @@ This will only happen if you are comfortable with Docker and your machine can su
 3. Open a terminal in that folder and run:
 
    ```bash
-   ./auto_install.sh
+   ./install.sh
+   docker-compose -f deploy/docker-compose.yml up -d
    ```
 
    The first run may take several minutes.
 
-4. When instructed (by your TA or the script), start the stack (for example):
-
-   ```bash
-   docker compose up
-   ```
-
-5. Open the URL indicated by your TA (often `http://localhost:8080`).
+4. Open the URL indicated by your TA, usually `http://localhost:8080`.
 
 If you hit errors in this mode, provide the terminal output and any error messages to your TA.
 

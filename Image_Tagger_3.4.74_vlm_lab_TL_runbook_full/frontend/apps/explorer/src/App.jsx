@@ -572,6 +572,7 @@ export default function ExplorerApp() {
                                 const inCart = cart.includes(img.id);
                                 const altText = img.meta_data && img.meta_data.filename ? img.meta_data.filename : `Image ${img.id}`;
                                 const affordanceScores = affordanceMap[img.id]?.affordance_scores ?? img.affordance_scores ?? [];
+                                const scienceStatus = img.science_run_status ?? null;
                                 return (
                                     <div
                                         key={img.id}
@@ -621,9 +622,20 @@ export default function ExplorerApp() {
                                             />
                                         )}
 
-                                        {/* Tag count badge */}
-                                        <div className="absolute top-2 right-2 bg-black/60 backdrop-blur text-white text-xs font-semibold px-2 py-1 rounded">
-                                            {tags.length} tags
+                                        {/* Tag count badge + science status dot */}
+                                        <div className="absolute top-2 right-2 flex items-center gap-1">
+                                            {scienceStatus === 'PENDING' && (
+                                                <span className="w-2 h-2 rounded-full bg-yellow-400 ring-1 ring-white/50" title="Science: queued" />
+                                            )}
+                                            {scienceStatus === 'RUNNING' && (
+                                                <span className="w-2 h-2 rounded-full bg-blue-400 ring-1 ring-white/50 animate-pulse" title="Science: running" />
+                                            )}
+                                            {scienceStatus === 'FAILED' && (
+                                                <span className="w-2 h-2 rounded-full bg-red-400 ring-1 ring-white/50" title="Science: failed" />
+                                            )}
+                                            <div className="bg-black/60 backdrop-blur text-white text-xs font-semibold px-2 py-1 rounded">
+                                                {tags.length} tags
+                                            </div>
                                         </div>
 
                                         {/* Explicit cart checkbox — stopPropagation so it doesn't open the modal */}

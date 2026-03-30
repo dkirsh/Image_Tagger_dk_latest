@@ -1,4 +1,4 @@
-# Governance & Guardian Guide (v3.2.39)
+# Governance & Guardian Guide (v3.4.74)
 
 This document explains how repository governance is enforced in the v3 line and how to work
 with the `Guardian` tool without getting stuck.

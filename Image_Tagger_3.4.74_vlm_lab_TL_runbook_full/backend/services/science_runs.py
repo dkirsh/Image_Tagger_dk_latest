@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import os
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -29,24 +30,39 @@ logger = logging.getLogger("v3.services.science_runs")
 # ── Active science version ─────────────────────────────────────────────────────
 # Bump this string when the canonical pipeline config changes so that existing
 # COMPLETED runs are not invalidated implicitly.
-ACTIVE_SCIENCE_VERSION = "3.4.74-canonical-v1"
+ACTIVE_SCIENCE_VERSION = "3.4.74-canonical-v2"
 
-# Canonical config for Explorer science runs.
-# enable_segmentation is off by default (expensive); toggle per deployment.
-CANONICAL_CONFIG: dict = {
-    "enable_color": True,
-    "enable_complexity": True,
-    "enable_texture": True,
-    "enable_fractals": True,
-    "enable_spatial": True,
-    "enable_affordance": True,
-    "enable_room_detection": True,
-    "enable_segmentation": False,
-    "enable_cognitive": False,
-    "enable_semantic": False,
-    "enable_materials_vlm": False,
-    "enable_clip_materials": False,
-}
+def _env_flag(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def build_canonical_config() -> dict:
+    """Build the canonical config used for queueing and run fingerprinting.
+
+    The cheap heuristic materials pass is enabled by default.
+    Expensive material enrichers remain opt-in at process startup.
+    """
+    return {
+        "enable_color": True,
+        "enable_complexity": True,
+        "enable_texture": True,
+        "enable_fractals": True,
+        "enable_spatial": True,
+        "enable_affordance": True,
+        "enable_room_detection": True,
+        "enable_segmentation": False,
+        "enable_cognitive": False,
+        "enable_semantic": False,
+        "enable_materials_basic": True,
+        "enable_materials_vlm": _env_flag("SCIENCE_ENABLE_MATERIALS_VLM", default=False),
+        "enable_clip_materials": _env_flag("SCIENCE_ENABLE_CLIP_MATERIALS", default=False),
+    }
+
+
+CANONICAL_CONFIG: dict = build_canonical_config()
 
 
 def get_active_science_version() -> str:

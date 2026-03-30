@@ -180,12 +180,7 @@ def main() -> None:
             return
 
         # ── 4. Run the pipeline ───────────────────────────────────────────
-        cfg = SciencePipelineConfig(enable_all=True)
-        cfg.enable_cognitive = False
-        cfg.enable_semantic = False
-        cfg.enable_segmentation = False
-        cfg.enable_materials_vlm = False
-        cfg.enable_clip_materials = False
+        cfg = SciencePipelineConfig.from_mapping(CANONICAL_CONFIG)
         cfg.enable_affordance = False  # runs unconditionally inside canonical method
 
         pipeline = SciencePipeline(db=db, config=cfg)

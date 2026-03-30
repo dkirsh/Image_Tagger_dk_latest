@@ -285,3 +285,106 @@ attributes:
   sources: {cv: true, vlm: true}
   notes: Degree of local architectural language adherence
 
+# --- Canonical Pipeline Attributes (added canonical_pipeline_v3.4.74) ---
+# These keys are written by process_image_canonical() and persisted to Validation.
+# They are also seeded in the attributes DB table via migrate_3_4_74_add_science_tables.py.
+
+# Affordance (LightGBM regressors trained on Hypersim pilot dataset)
+- id: affordance.L059
+  name: Sleep suitability (raw)
+  level: inferred
+  range: "1–7 Likert"
+  sources: {cv: true, vlm: false}
+  notes: LightGBM regressor from panoptic segmentation feature map. STATUS NOTE — model has a LightGBM version mismatch (pickled with older API); currently failing at runtime.
+
+- id: affordance.L059_norm
+  name: Sleep suitability (0–1)
+  level: inferred
+  range: continuous
+  sources: {cv: true, vlm: false}
+  notes: (affordance.L059 − 1) / 6. Normalised for UI progress bars.
+
+- id: affordance.L079
+  name: Cook suitability (raw)
+  level: inferred
+  range: "1–7 Likert"
+  sources: {cv: true, vlm: false}
+  notes: LightGBM regressor. Same status note as affordance.L059.
+
+- id: affordance.L079_norm
+  name: Cook suitability (0–1)
+  level: inferred
+  range: continuous
+  sources: {cv: true, vlm: false}
+  notes: (affordance.L079 − 1) / 6.
+
+- id: affordance.L091
+  name: Computer work suitability (raw)
+  level: inferred
+  range: "1–7 Likert"
+  sources: {cv: true, vlm: false}
+  notes: LightGBM regressor. Same status note as affordance.L059.
+
+- id: affordance.L091_norm
+  name: Computer work suitability (0–1)
+  level: inferred
+  range: continuous
+  sources: {cv: true, vlm: false}
+  notes: (affordance.L091 − 1) / 6.
+
+- id: affordance.L130
+  name: Conversation suitability (raw)
+  level: inferred
+  range: "1–7 Likert"
+  sources: {cv: true, vlm: false}
+  notes: LightGBM regressor. Same status note as affordance.L059.
+
+- id: affordance.L130_norm
+  name: Conversation suitability (0–1)
+  level: inferred
+  range: continuous
+  sources: {cv: true, vlm: false}
+  notes: (affordance.L130 − 1) / 6.
+
+- id: affordance.L141
+  name: Yoga / movement suitability (raw)
+  level: inferred
+  range: "1–7 Likert"
+  sources: {cv: true, vlm: false}
+  notes: LightGBM regressor. Same status note as affordance.L059.
+
+- id: affordance.L141_norm
+  name: Yoga / movement suitability (0–1)
+  level: inferred
+  range: continuous
+  sources: {cv: true, vlm: false}
+  notes: (affordance.L141 − 1) / 6.
+
+# Room type (Places365 vision classifier)
+- id: room.type_coarse
+  name: Coarse room type (index)
+  level: inferred
+  range: ordinal
+  sources: {cv: true, vlm: false}
+  notes: Integer index into COARSE_CATEGORIES list in RoomDetectionAnalyzer. 13 categories including bedroom, kitchen, living, lobby, office, etc.
+
+- id: room.type_coarse_confidence
+  name: Coarse room type confidence
+  level: inferred
+  range: prob
+  sources: {cv: true, vlm: false}
+  notes: Softmax probability for top coarse category. Tag is emitted when >= 0.20.
+
+- id: room.type_fine_confidence
+  name: Fine room type confidence
+  level: inferred
+  range: prob
+  sources: {cv: true, vlm: false}
+  notes: Softmax probability for top Places365 fine-grained category.
+
+- id: biophilia.index
+  name: Biophilia Index
+  level: inferred
+  range: continuous
+  sources: {cv: true, vlm: false}
+  notes: Weighted composite of lightweight plant-presence and natural-texture proxies computed by the main science pipeline

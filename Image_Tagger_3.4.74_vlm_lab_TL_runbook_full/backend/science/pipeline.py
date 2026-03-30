@@ -26,12 +26,13 @@ from backend.science.math.fractals import FractalAnalyzer
 from backend.science.math.symmetry import SymmetryAnalyzer
 from backend.science.math.naturalness import NaturalnessAnalyzer
 from backend.science.math.fluency import FluencyAnalyzer
+from backend.science.biophilia import BiophiliaAnalyzer
 from backend.science.spatial.depth import DepthAnalyzer  # Replaces Isovist
 from backend.science.context.cognitive import CognitiveStateAnalyzer
 from backend.science.context.affordance import AffordanceAnalyzer
 from backend.science.semantics.semantic_tags_vlm import SemanticTagAnalyzer
 from backend.science.vision.segmentation import SegmentationAnalyzer  # Now uses OneFormer
-from backend.science.vision.materials import GeminiMaterialAnalyzer
+from backend.science.vision.materials import MaterialAnalyzer, GeminiMaterialAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,8 @@ class SciencePipelineConfig:
         self.enable_segmentation = False
         self.segmentation_use_semantic = True   # include semantic coverage metrics
         self.segmentation_use_panoptic = True   # include instance metrics + merged masks
+        # Cheap heuristic materials pass — enabled by default for canonical runs.
+        self.enable_materials_basic = True
         # Gemini Flash material detection (VLM) — opt-in
         self.enable_materials_vlm = False
         # OneFormer + SigLIP2 material identification — opt-in
@@ -60,6 +63,32 @@ class SciencePipelineConfig:
         # Affordance prediction (environmental activity suitability) — opt-in
         # Prefers Mask2Former COCO panoptic segmentation; falls back to OneFormer.
         self.enable_affordance = False
+
+    @classmethod
+    def from_mapping(cls, data: dict | None) -> "SciencePipelineConfig":
+        cfg = cls(enable_all=True)
+        for key, value in (data or {}).items():
+            if hasattr(cfg, key):
+                setattr(cfg, key, value)
+        return cfg
+
+    def to_dict(self) -> dict:
+        return {
+            "enable_color": self.enable_color,
+            "enable_complexity": self.enable_complexity,
+            "enable_texture": self.enable_texture,
+            "enable_fractals": self.enable_fractals,
+            "enable_spatial": self.enable_spatial,
+            "enable_cognitive": self.enable_cognitive,
+            "enable_semantic": self.enable_semantic,
+            "enable_segmentation": self.enable_segmentation,
+            "segmentation_use_semantic": self.segmentation_use_semantic,
+            "segmentation_use_panoptic": self.segmentation_use_panoptic,
+            "enable_materials_basic": self.enable_materials_basic,
+            "enable_materials_vlm": self.enable_materials_vlm,
+            "enable_clip_materials": self.enable_clip_materials,
+            "enable_affordance": self.enable_affordance,
+        }
 
 class SciencePipeline:
     def __init__(
@@ -80,10 +109,12 @@ class SciencePipeline:
         self.symmetry = SymmetryAnalyzer()
         self.naturalness = NaturalnessAnalyzer()
         self.fluency = FluencyAnalyzer()
+        self.biophilia = BiophiliaAnalyzer()
         self.spatial = DepthAnalyzer()  # The new Spatial Engine
         self.cognitive = CognitiveStateAnalyzer()
         self.semantic = SemanticTagAnalyzer()
         self.segmentation = SegmentationAnalyzer()  # OneFormer semantic+panoptic
+        self.materials_basic = MaterialAnalyzer()
         self.materials_vlm = GeminiMaterialAnalyzer()
         self.affordance = AffordanceAnalyzer()
         # clip_material is instantiated lazily on first use (heavy model load)
@@ -121,6 +152,7 @@ class SciencePipeline:
             # L1: Perceptual (Dependent on L0)
             if self.config.enable_spatial:
                 self.fluency.analyze(frame)
+                self.biophilia.analyze(frame)
 
             # L1.5: Vision (OneFormer semantic + panoptic segmentation)
             if self.config.enable_segmentation:
@@ -129,6 +161,10 @@ class SciencePipeline:
                     use_semantic=self.config.segmentation_use_semantic,
                     use_panoptic=self.config.segmentation_use_panoptic,
                 )
+
+            # L1.55: Materials — cheap heuristic pass, depth-aware when available
+            if self.config.enable_materials_basic:
+                self.materials_basic.analyze(frame)
 
             # L1.6: Materials — Gemini Flash VLM
             if self.config.enable_materials_vlm:
@@ -254,7 +290,6 @@ class SciencePipeline:
             mark_run_failed,
             persist_science_tags,
             persist_science_artifact,
-            CANONICAL_CONFIG,
         )
 
         # ── 1. Ensure a run record exists ──────────────────────────────────
@@ -292,6 +327,7 @@ class SciencePipeline:
                 self.naturalness.analyze(frame)
                 self.spatial.analyze(frame)
                 self.fluency.analyze(frame)
+                self.biophilia.analyze(frame)
 
             if self.config.enable_segmentation:
                 self.segmentation.analyze(
@@ -299,6 +335,9 @@ class SciencePipeline:
                     use_semantic=self.config.segmentation_use_semantic,
                     use_panoptic=self.config.segmentation_use_panoptic,
                 )
+
+            if self.config.enable_materials_basic:
+                self.materials_basic.analyze(frame)
 
             if self.config.enable_materials_vlm:
                 self.materials_vlm.analyze(frame)
@@ -364,7 +403,14 @@ class SciencePipeline:
             ctx = ScienceRunContext(
                 image_id=image_id,
                 science_version=ACTIVE_SCIENCE_VERSION,
-                config_fingerprint=get_config_fingerprint(CANONICAL_CONFIG),
+                config_fingerprint=get_config_fingerprint(self.config.to_dict()),
+            )
+
+            materials_summary = (
+                frame.metadata.get("material_detection")
+                if isinstance(frame.metadata.get("material_detection"), dict)
+                and not frame.metadata.get("material_detection", {}).get("stub")
+                else frame.metadata.get("material_detection_basic")
             )
 
             if affordance_summary:
@@ -387,12 +433,23 @@ class SciencePipeline:
                     content_type="application/json",
                 )
 
+            if materials_summary:
+                persist_science_artifact(
+                    self.db,
+                    run_id=run.id,
+                    image_id=image_id,
+                    artifact_type="materials_json",
+                    meta_json=materials_summary,
+                    content_type="application/json",
+                )
+
             # ── 7. Derive and persist canonical tags ───────────────────────
             derive_all_tags(
                 attributes=frame.attributes,
                 affordance_summary=affordance_summary,
                 room_summary=room_summary,
                 segmentation_summary=None,  # segmentation off by default
+                materials_summary=materials_summary,
                 ctx=ctx,
             )
 

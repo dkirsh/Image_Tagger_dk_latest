@@ -43,6 +43,7 @@ CANONICAL_ATTRIBUTES = [
     {"key": "room.type_coarse", "name": "Room Type (coarse index)", "category": "spatial", "level": "L2", "sources": "science_pipeline", "notes": "Coarse room category index (Places365 → 13-class taxonomy)"},
     {"key": "room.type_coarse_confidence", "name": "Room Type Confidence (coarse)", "category": "spatial", "level": "L2", "sources": "science_pipeline", "notes": "Probability of primary coarse room class (0-1)"},
     {"key": "room.type_fine_confidence", "name": "Room Type Confidence (fine)", "category": "spatial", "level": "L2", "sources": "science_pipeline", "notes": "Probability of primary fine-grained Places365 class (0-1)"},
+    {"key": "biophilia.index", "name": "Biophilia Index", "category": "biophilia", "level": "L2", "sources": "science_pipeline", "notes": "Weighted composite of lightweight plant-presence and natural-texture proxies."},
 ]
 
 

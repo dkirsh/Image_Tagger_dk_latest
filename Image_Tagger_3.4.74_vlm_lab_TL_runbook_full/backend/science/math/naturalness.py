@@ -29,7 +29,7 @@ except Exception:  # pragma: no cover
 
 class NaturalnessAnalyzer:
     def analyze(self, frame) -> None:
-        rgb = getattr(frame, "rgb_image", None)
+        rgb = getattr(frame, "original_image", None)
         if rgb is None:
             return
 

@@ -36,8 +36,9 @@ OBJECT_COVERAGE_THRESHOLD   = 0.01  # Object must cover ≥ 1% of frame
 OBJECT_CONFIDENCE_THRESHOLD = 0.30  # Detection confidence ≥ 30%
 
 # ── Science attribute namespaces promoted to tags ─────────────────────────────
-SCIENCE_TAG_NAMESPACES = ("style.", "cognitive.")
+SCIENCE_TAG_NAMESPACES = ("style.", "cognitive.", "biophilia.")
 SCIENCE_TAG_THRESHOLD  = 0.5  # Attribute value ≥ 0.5 → emit tag
+MATERIAL_TAG_THRESHOLD = 0.04  # Estimated scene share ≥ 4% → emit tag
 
 
 def derive_affordance_tags(
@@ -154,11 +155,40 @@ def derive_science_attribute_tags(
         )
 
 
+def derive_material_tags(
+    materials_summary: dict,
+    ctx: ScienceRunContext,
+) -> None:
+    """Emit canonical material tags with visible coverage percentages."""
+    materials = (
+        materials_summary.get("materials_aggregated")
+        or materials_summary.get("materials")
+        or []
+    )
+    for material in materials:
+        name = str(material.get("material", "")).strip().lower()
+        if not name:
+            continue
+        share = float(material.get("coverage_3d", material.get("coverage_2d", 0.0)))
+        if share < MATERIAL_TAG_THRESHOLD:
+            continue
+        label = f"{' '.join(w.capitalize() for w in name.split('_'))} {round(share * 100):.0f}%"
+        ctx.add_tag(
+            tag_key=f"material.{name}",
+            label=label,
+            namespace="material",
+            confidence=round(float(material.get("confidence", share)), 3),
+            source_analyzer=str(materials_summary.get("engine", "materials")),
+            attribute_key=f"material.vlm.{name}_coverage_3d",
+        )
+
+
 def derive_all_tags(
     attributes: dict[str, float],
     affordance_summary: dict | None,
     room_summary: dict | None,
     segmentation_summary: dict | None,
+    materials_summary: dict | None,
     ctx: ScienceRunContext,
 ) -> None:
     """Run all tag derivation rules and accumulate results into ctx."""
@@ -168,4 +198,6 @@ def derive_all_tags(
         derive_room_tags(room_summary, ctx)
     if segmentation_summary:
         derive_object_tags(segmentation_summary, ctx)
+    if materials_summary:
+        derive_material_tags(materials_summary, ctx)
     derive_science_attribute_tags(attributes, ctx)

@@ -1,6 +1,7 @@
-# ☁️ Cloud "Anti-Gravity" Quickstart (3.4.74_vlm_lab_notebook_TL_runbook)
+# Cloud "Anti-Gravity" Quickstart (3.4.74)
 
-This guide explains how to run **Image Tagger 3.4.74_vlm_lab_notebook_TL_runbook** in the cloud with **minimal local setup**.
+This guide explains how to run Image Tagger `3.4.74` in the cloud with minimal
+local setup.
 It offers two tracks:
 
 - **TRACK A – Full Stack (persistent)**: full application with Workbench / Explorer / Admin.
@@ -45,13 +46,14 @@ In this guide:
 
 ### 2.1 GitHub Codespaces (Recommended)
 
-1. Push or upload this repo (`Image_Tagger_3.4.74_vlm_lab_notebook_TL_runbook`) to GitHub.
+1. Push or upload this repo to GitHub.
 2. In GitHub, open the repository page.
 3. Click **Code → Codespaces → Create codespace on main**.
 4. When the Codespace terminal is ready, run:
 
    ```bash
-   ./auto_install.sh
+   ./install.sh
+   docker-compose -f deploy/docker-compose.yml up -d
    ```
 
 5. In the **Ports** panel in Codespaces:
@@ -64,19 +66,13 @@ unless you delete the Codespace.
 ### 2.2 Generic Cloud VM (AWS/GCP/Azure or lab server)
 
 1. Provision an Ubuntu 22.04+ VM (or use an existing lab machine).
-2. Copy the `Image_Tagger_3.4.74_vlm_lab_TL_runbook_full.zip` artifact onto the machine, or clone from Git.
+2. Copy the repository zip onto the machine, or clone from Git.
 3. SSH into the machine and run:
 
    ```bash
-   chmod +x infra/cloud/full_stack_vm_setup.sh
-   ./infra/cloud/full_stack_vm_setup.sh
+   ./install.sh
+   docker-compose -f deploy/docker-compose.yml up -d
    ```
-
-   This helper script will:
-
-   - install Docker if needed,
-   - unpack the repo ZIP into an `image_tagger` directory (if the ZIP is present),
-   - run `./auto_install.sh` from inside the repo.
 
 4. Access the UI:
 
@@ -174,8 +170,9 @@ installing Docker or the full stack.
 Before the course begins, the Technical Lead should:
 
 - [ ] Bring up at least one **TRACK A** instance (Codespaces or VM) and confirm:
-      - `./auto_install.sh` completes successfully.
-      - Workbench, Explorer, and Admin load.
+      - `./install.sh` completes successfully.
+      - Explorer, Workbench, Monitor, and Admin load.
+      - `/api/v1/explorer/science/status` returns a valid payload.
 - [ ] Run the **TRACK B** notebook once end-to-end in Colab and confirm:
       - all five steps execute without error,
       - at least one variance CSV is produced.

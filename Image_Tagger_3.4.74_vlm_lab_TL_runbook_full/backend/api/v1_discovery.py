@@ -183,37 +183,83 @@ def search_images(
     q = q.order_by(getattr(Image, "id")).offset(offset).limit(page_size)
 
     images = q.all()
-    results: List[ImageSearchResult] = []
+    if not images:
+        return []
 
+    # ── Batch-load canonical science run state and tags ───────────────────────
+    # Single IN query per result set — avoids N+1 per image.
+    from backend.models.science_runs import ScienceRun, ScienceTag
+    from backend.services.science_runs import (
+        get_active_science_version,
+        get_config_fingerprint,
+    )
+
+    image_ids = [img.id for img in images if img.id is not None]
+    version = get_active_science_version()
+    fingerprint = get_config_fingerprint()
+
+    runs = (
+        db.query(ScienceRun)
+        .filter(
+            ScienceRun.image_id.in_(image_ids),
+            ScienceRun.science_version == version,
+            ScienceRun.config_fingerprint == fingerprint,
+        )
+        .all()
+    )
+    run_status_map = {r.image_id: r.status for r in runs}
+    completed_run_ids = [r.id for r in runs if r.status == "COMPLETED"]
+
+    # Canonical tags keyed by image_id (labels only for grid display)
+    canonical_tags_map: dict[int, list[str]] = {}
+    if completed_run_ids:
+        canon_tags = (
+            db.query(ScienceTag.image_id, ScienceTag.label)
+            .filter(
+                ScienceTag.science_run_id.in_(completed_run_ids),
+                ScienceTag.is_canonical.is_(True),
+            )
+            .all()
+        )
+        for img_id, label in canon_tags:
+            canonical_tags_map.setdefault(img_id, []).append(label)
+
+    # ── Build results ─────────────────────────────────────────────────────────
+    results: List[ImageSearchResult] = []
     base_thumb_url = "/static/thumbnails"
 
     for img in images:
         image_id = getattr(img, "id", None)
         if image_id is None:
             continue
-        
-        # Get URL from storage_path (external URLs) or build thumbnail path
+
         storage_path = getattr(img, "storage_path", None)
         if storage_path and storage_path.startswith("http"):
             url = storage_path
         else:
             thumb_name = getattr(img, "thumbnail_path", None) or f"image_{image_id}.jpg"
             url = f"{base_thumb_url}/{thumb_name}"
-        
-        # Extract tags from meta_data
+
         meta = getattr(img, "meta_data", {}) or {}
-        tags = meta.get("tags", []) if isinstance(meta, dict) else []
-        
+        imported_tags: list[str] = meta.get("tags", []) if isinstance(meta, dict) else []
+
+        # Merge imported tags with canonical pipeline tags (deduped, imported first)
+        pipeline_tags = canonical_tags_map.get(image_id, [])
+        imported_lower = {t.lower() for t in imported_tags}
+        merged_tags = list(imported_tags) + [
+            t for t in pipeline_tags if t.lower() not in imported_lower
+        ]
+
         affordance_payload = _get_cached_affordance_payload(img)
-        res = ImageSearchResult(
+        results.append(ImageSearchResult(
             id=image_id,
             url=url,
-            tags=tags,
+            tags=merged_tags,
             meta_data=meta,
             affordance_scores=_score_list_from_map((affordance_payload or {}).get("scores")),
             affordance_method=(affordance_payload or {}).get("method"),
-        )
-        results.append(res)
+            science_run_status=run_status_map.get(image_id),
+        ))
 
     return results
 
@@ -343,6 +389,8 @@ def get_image_detail(
         "naturalness": "Naturalness Analyzer",
         "fluency":     "Fluency Analyzer",
         "spatial":     "Depth / Spatial Analyzer",
+        "material":    "Material Analyzer",
+        "materials":   "Material Analyzer",
         "segmentation":"Segmentation · OneFormer",
         "science":     "Complexity Analyzer · Canny",
     }
@@ -446,6 +494,52 @@ def get_image_detail(
         if aff_artifact and aff_artifact.meta_json:
             aff_payload = aff_artifact.meta_json
 
+        material_artifact = (
+            db.query(ScienceArtifact)
+            .filter(
+                ScienceArtifact.science_run_id == current_run.id,
+                ScienceArtifact.artifact_type == "materials_json",
+            )
+            .first()
+        )
+        if material_artifact and material_artifact.meta_json:
+            material_payload = material_artifact.meta_json
+            existing_keys = {a.key for a in science_attributes}
+            materials = (
+                material_payload.get("materials_aggregated")
+                or material_payload.get("materials")
+                or []
+            )
+            for material in materials[:8]:
+                material_name = str(material.get("material", "unknown")).strip().lower()
+                if not material_name:
+                    continue
+                pretty = " ".join(w.capitalize() for w in material_name.split("_"))
+                coverage_3d_key = f"material.vlm.{material_name}_coverage_3d"
+                coverage_2d_key = f"material.vlm.{material_name}_coverage_2d"
+                coverage_3d = float(material.get("coverage_3d", material.get("coverage_2d", 0.0)))
+                coverage_2d = float(material.get("coverage_2d", material.get("coverage", coverage_3d)))
+                if coverage_3d_key not in existing_keys:
+                    science_attributes.append(AttributeValue(
+                        key=coverage_3d_key,
+                        name=f"{pretty} Coverage (3D)",
+                        category="Materials",
+                        value=coverage_3d,
+                        source="science_pipeline.materials",
+                    ))
+                    existing_keys.add(coverage_3d_key)
+                if coverage_2d_key not in existing_keys:
+                    science_attributes.append(AttributeValue(
+                        key=coverage_2d_key,
+                        name=f"{pretty} Coverage (2D)",
+                        category="Materials",
+                        value=coverage_2d,
+                        source="science_pipeline.materials",
+                    ))
+                    existing_keys.add(coverage_2d_key)
+
+    science_attributes.sort(key=lambda item: item.key)
+
     return ImageDetailResult(
         id=image.id,
         url=url,
@@ -510,16 +604,11 @@ def _run_pending_science_jobs() -> None:
     def _worker() -> None:
         from backend.models.science_runs import ScienceRun
         from backend.science.pipeline import SciencePipeline, SciencePipelineConfig
+        from backend.services.science_runs import CANONICAL_CONFIG
 
         db = SessionLocal()
         try:
-            config = SciencePipelineConfig(enable_all=True)
-            config.enable_segmentation = False  # Keep off by default — expensive
-            config.enable_materials_vlm = False
-            config.enable_clip_materials = False
-            config.enable_cognitive = False
-            config.enable_semantic = False
-
+            config = SciencePipelineConfig.from_mapping(CANONICAL_CONFIG)
             pipeline = SciencePipeline(db=db, config=config)
 
             pending = (

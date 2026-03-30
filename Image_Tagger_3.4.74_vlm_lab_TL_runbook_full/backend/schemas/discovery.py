@@ -50,6 +50,8 @@ class ImageSearchResult(BaseModel):
     meta_data: Dict[str, Any] = {}
     affordance_scores: List["AffordanceScore"] = []
     affordance_method: Optional[str] = None
+    # Canonical pipeline state — allows grid to show processing indicator
+    science_run_status: Optional[str] = None  # PENDING | RUNNING | COMPLETED | FAILED | None
     
 class ExportRequest(BaseModel):
     """Contract for Dataset Export"""

@@ -41,7 +41,8 @@ RUN pip install --no-cache-dir \
     torchvision==0.16.2 \
     transformers==4.49.0 \
     timm==1.0.3 \
-    supervision==0.22.0
+    supervision==0.22.0 \
+    lightgbm==4.5.0
 
 
 # Copy the backend code, scripts, tests, and contracts
