@@ -1,5 +1,6 @@
 import numpy as np
 from skimage.feature import graycomatrix, graycoprops
+from skimage.transform import resize as sk_resize
 from backend.science.core import AnalysisFrame
 
 class TextureAnalyzer:
@@ -15,7 +16,8 @@ class TextureAnalyzer:
         h, w = gray.shape
         if h > 512:
             scale = 512 / h
-            gray = cv2.resize(gray, (0,0), fx=scale, fy=scale)
+            new_h, new_w = int(h * scale), int(w * scale)
+            gray = (sk_resize(gray, (new_h, new_w), anti_aliasing=True) * 255).astype(np.uint8)
 
         # Quantize to 64 levels
         gray = (gray // 4).astype(np.uint8)

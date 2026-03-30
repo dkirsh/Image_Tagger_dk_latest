@@ -22,15 +22,17 @@ class AnalysisFrame:
     # Results
     attributes: Dict[str, float] = field(default_factory=dict)
     metadata: Dict[str, Any] = field(default_factory=dict)
+    # Legacy alias — some analyzers write to frame.metrics; treated as attributes
+    metrics: Dict[str, float] = field(default_factory=dict)
 
     def __post_init__(self):
         # Lazy load opencv only when needed
         import cv2
         from skimage import color
-        
+
         if self.gray_image is None:
             self.gray_image = cv2.cvtColor(self.original_image, cv2.COLOR_RGB2GRAY)
-        
+
         if self.edges is None:
             # L2gradient=True provides more accurate edge magnitude for architecture
             self.edges = cv2.Canny(self.gray_image, 50, 150, L2gradient=True)
@@ -39,6 +41,9 @@ class AnalysisFrame:
             # Convert to LAB for scientifically valid color analysis
             # We use skimage because cv2's LAB scaling is non-standard/confusing
             self.lab_image = color.rgb2lab(self.original_image)
+
+        # metrics is a legacy alias for attributes — same dict object so writes are unified
+        self.metrics = self.attributes
 
     def add_attribute(self, key: str, value: float, confidence: float = 1.0):
         """

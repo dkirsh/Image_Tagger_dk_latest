@@ -174,15 +174,38 @@ class SciencePipeline:
         return True
 
     def _load_image(self, image_record: Image) -> Optional[np.ndarray]:
-        # Simple local loader
         import os
-        path = f"data_store/{image_record.storage_path}"
-        if not os.path.exists(path):
-            return None
-        bgr = cv2.imread(path)
-        if bgr is None:
-            return None
-        return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+        storage_path = image_record.storage_path or ""
+
+        # HTTP/HTTPS URLs
+        if storage_path.startswith("http://") or storage_path.startswith("https://"):
+            try:
+                import requests
+                resp = requests.get(storage_path, timeout=15)
+                resp.raise_for_status()
+                arr = np.frombuffer(resp.content, dtype=np.uint8)
+                bgr = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+                if bgr is None:
+                    return None
+                return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+            except Exception as exc:
+                logger.warning("Could not fetch image URL %s: %s", storage_path, exc)
+                return None
+
+        # Local filesystem — try several candidate paths
+        candidates = [
+            storage_path,
+            f"data_store/{storage_path}",
+            os.path.join(os.getenv("IMAGE_STORAGE_ROOT", ""), storage_path),
+        ]
+        for candidate in candidates:
+            if candidate and os.path.isfile(candidate):
+                bgr = cv2.imread(candidate)
+                if bgr is not None:
+                    return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+
+        logger.warning("Image file not found for path: %s", storage_path)
+        return None
 
     def _save_results(self, image_id: int, attributes: dict) -> None:
         from backend.models.attribute import Attribute
@@ -310,15 +333,17 @@ class SciencePipeline:
                 from backend.science.vision.room_detection import RoomDetectionAnalyzer
                 room_result = RoomDetectionAnalyzer.analyze(frame, top_k=5)
                 if room_result:
+                    # top_coarse / top_fine are dicts: {"label": ..., "probability": ...}
                     top_coarse = room_result.get("top_coarse")
+                    top_fine = room_result.get("top_fine")
                     room_summary = {
                         "top_coarse": (
-                            [top_coarse[0], float(top_coarse[1])]
+                            [top_coarse["label"], float(top_coarse["probability"])]
                             if top_coarse else None
                         ),
                         "top_fine": (
-                            [room_result["top_fine"][0], float(room_result["top_fine"][1])]
-                            if room_result.get("top_fine") else None
+                            [top_fine["label"], float(top_fine["probability"])]
+                            if top_fine else None
                         ),
                         "coarse_probs": {
                             k: round(float(v), 4)
