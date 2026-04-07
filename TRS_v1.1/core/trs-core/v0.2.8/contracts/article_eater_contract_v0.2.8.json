@@ -1,0 +1,3857 @@
+{
+  "meta": {
+    "registry_sha256": "54adb89299589db8420366b0d74e0b8e1eba1423da6cd8e3b47155481f97525a",
+    "generated_at_utc": "2025-12-21T18:53:34.889842+00:00",
+    "contract_version": "v0.2.8"
+  },
+  "contract_version": "v0.2.8",
+  "source_registry": {
+    "content_version": "0.2.1",
+    "generated_at_utc": "2025-12-19T13:46:15.702047+00:00"
+  },
+  "tags": [
+    {
+      "tag_id": "env.v2a_001.color_palette_hue_saturation_lightness_harmony_beyond_cct",
+      "status": "active",
+      "search_terms": [
+        "Color palette hue/saturation/lightness harmony (beyond CCT)"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_002.warm_vs_cool_white_appearance_cct_and_perceived_coziness_activation_cajochen_et",
+      "status": "active",
+      "search_terms": [
+        "Warm vs cool white appearance (CCT) and perceived coziness/activation (Cajochen et al., 2005"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_003.brightness_level_at_eye_vertical_illuminance_vs_task_plane",
+      "status": "active",
+      "search_terms": [
+        "Brightness level at eye (vertical illuminance) vs task plane"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_004.brightness_gradients_and_brightness_contrast_ratios",
+      "status": "active",
+      "search_terms": [
+        "Brightness gradients and brightness contrast ratios"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_005.daylight_presence_sky_view_and_view_to_outside_content",
+      "status": "active",
+      "search_terms": [
+        "Daylight presence, sky view, and view-to-outside content"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_006.glare_source_count",
+      "status": "active",
+      "search_terms": [
+        "Glare source count"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_007.flicker_temporal_modulation_risk_cues_led_drivers",
+      "status": "active",
+      "search_terms": [
+        "Flicker/temporal modulation risk cues (LED drivers"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_008.color_rendering_saturation_rendering",
+      "status": "active",
+      "search_terms": [
+        "Color rendering / saturation rendering"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_009.shadow_softness_hardness",
+      "status": "active",
+      "search_terms": [
+        "Shadow softness/hardness"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_010.lighting_control_cues_dimmers_blinds_task_lights",
+      "status": "active",
+      "search_terms": [
+        "Lighting control cues: dimmers, blinds, task lights"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_011.evening_like_ambience_cues_vs_daytime_like_ambience_cues",
+      "status": "active",
+      "search_terms": [
+        "Evening-like ambience cues vs daytime-like ambience cues"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_012.visual_privacy_via_lighting_backlit_silhouettes_vs_evenly_lit_faces",
+      "status": "active",
+      "search_terms": [
+        "Visual privacy via lighting: backlit silhouettes vs evenly lit faces"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_013.high_contrast_spotlight_social_exposure_cues",
+      "status": "active",
+      "search_terms": [
+        "High contrast ‘spotlight’ social exposure cues"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_014.presence_of_natural_light_patterns",
+      "status": "active",
+      "search_terms": [
+        "Presence of natural light patterns"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_015.lighting_temperature_mismatch",
+      "status": "active",
+      "search_terms": [
+        "Lighting ‘temperature mismatch’"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_001.illuminance_level_task_surface",
+      "status": "active",
+      "search_terms": [
+        "Illuminance level (task surface)"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_002.illuminance_level_ambient",
+      "status": "active",
+      "search_terms": [
+        "Illuminance level (ambient)"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_003.luminance_distribution",
+      "status": "active",
+      "search_terms": [
+        "Luminance distribution"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_004.contrast_ratio",
+      "status": "active",
+      "search_terms": [
+        "Contrast ratio"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_005.uniformity_ratio",
+      "status": "active",
+      "search_terms": [
+        "Uniformity ratio"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_006.daylight_factor",
+      "status": "active",
+      "search_terms": [
+        "Daylight factor"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_007.daylight_autonomy",
+      "status": "active",
+      "search_terms": [
+        "Daylight autonomy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_008.correlated_color_temperature_cct",
+      "status": "active",
+      "search_terms": [
+        "Correlated color temperature (CCT)"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_009.spectral_power_distribution",
+      "status": "active",
+      "search_terms": [
+        "Spectral power distribution"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_010.color_rendering_index_cri",
+      "status": "active",
+      "search_terms": [
+        "Color rendering index (CRI)"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_011.melanopic_lux",
+      "status": "active",
+      "search_terms": [
+        "Melanopic lux"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_012.dominant_wavelength",
+      "status": "active",
+      "search_terms": [
+        "Dominant wavelength"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_013.flicker_frequency",
+      "status": "active",
+      "search_terms": [
+        "Flicker frequency"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_014.flicker_modulation_depth",
+      "status": "active",
+      "search_terms": [
+        "Flicker modulation depth"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_015.circadian_timing_of_exposure",
+      "status": "active",
+      "search_terms": [
+        "Circadian timing of exposure"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_016.rate_of_illuminance_change",
+      "status": "active",
+      "search_terms": [
+        "Rate of illuminance change"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_017.diurnal_variation_pattern",
+      "status": "active",
+      "search_terms": [
+        "Diurnal variation pattern"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_018.direct_indirect_ratio",
+      "status": "active",
+      "search_terms": [
+        "Direct/indirect ratio"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_019.light_directionality",
+      "status": "active",
+      "search_terms": [
+        "Light directionality"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_020.unified_glare_rating_ugr",
+      "status": "active",
+      "search_terms": [
+        "Unified Glare Rating (UGR)"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_021.shadow_characteristics",
+      "status": "active",
+      "search_terms": [
+        "Shadow characteristics"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_022.natural_artificial_ratio",
+      "status": "active",
+      "search_terms": [
+        "Natural/artificial ratio"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_023.point_vs_diffuse_illumination",
+      "status": "active",
+      "search_terms": [
+        "Point vs. diffuse illumination"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_024.window_sky_type_visible",
+      "status": "active",
+      "search_terms": [
+        "Window/sky type visible"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_025.solar_penetration_depth",
+      "status": "active",
+      "search_terms": [
+        "Solar penetration depth"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_026.view_to_exterior",
+      "status": "active",
+      "search_terms": [
+        "View to exterior"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_067.ceiling_height_and_openness_processing_style",
+      "status": "active",
+      "search_terms": [
+        "Ceiling height and openness (processing style"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_068.room_scale_cues",
+      "status": "active",
+      "search_terms": [
+        "Room scale cues"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_069.enclosure_ratio_wall_to_window_balance",
+      "status": "active",
+      "search_terms": [
+        "Enclosure ratio: wall-to-window balance"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_070.prospect_refuge_ability_to_see_without_being_seen",
+      "status": "active",
+      "search_terms": [
+        "Prospect–refuge: ability to see without being seen"
+      ],
+      "aliases": [
+        "Refuge",
+        "Prospect",
+        "prospect",
+        "refuge"
+      ]
+    },
+    {
+      "tag_id": "env.v2a_071.exit_visibility_and_path_to_exit_complexity",
+      "status": "active",
+      "search_terms": [
+        "Exit visibility and path-to-exit complexity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_072.blind_corners_vs_transparent_partitions",
+      "status": "active",
+      "search_terms": [
+        "Blind corners vs transparent partitions"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_073.distance_to_others",
+      "status": "active",
+      "search_terms": [
+        "Distance to others"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_074.wayfinding_legibility_straight_sightlines",
+      "status": "active",
+      "search_terms": [
+        "Wayfinding legibility: straight sightlines"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_075.spatial_complexity_branching_corridors_vs_simple_loops",
+      "status": "active",
+      "search_terms": [
+        "Spatial complexity: branching corridors vs simple loops"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_076.perceived_territoriality_defined_zones_vs_ambiguous_shared_space",
+      "status": "active",
+      "search_terms": [
+        "Perceived territoriality: defined zones vs ambiguous shared space."
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_077.barrier_permeability_half_walls_vs_full_walls",
+      "status": "active",
+      "search_terms": [
+        "Barrier permeability: half-walls vs full walls"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_078.visual_access_to_outdoors_nature_as_escape_affordance",
+      "status": "active",
+      "search_terms": [
+        "Visual access to outdoors/nature as ‘escape’ affordance."
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_079.seating_prospect_facing_entrance_vs_back_to_entrance",
+      "status": "active",
+      "search_terms": [
+        "Seating prospect: facing entrance vs back to entrance"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_080.verticality_cues",
+      "status": "active",
+      "search_terms": [
+        "Verticality cues"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_081.personal_safety_affordances_lighting_in_corners",
+      "status": "active",
+      "search_terms": [
+        "Personal safety affordances: lighting in corners"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_090.ceiling_height",
+      "status": "active",
+      "search_terms": [
+        "Ceiling height"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_091.room_volume",
+      "status": "active",
+      "search_terms": [
+        "Room volume"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_092.floor_area",
+      "status": "active",
+      "search_terms": [
+        "Floor area"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_093.aspect_ratios",
+      "status": "active",
+      "search_terms": [
+        "Aspect ratios"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_094.degree_of_enclosure",
+      "status": "active",
+      "search_terms": [
+        "Degree of enclosure"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_095.boundary_definition",
+      "status": "active",
+      "search_terms": [
+        "Boundary definition"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_096.visual_permeability",
+      "status": "active",
+      "search_terms": [
+        "Visual permeability"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_097.spatial_layering",
+      "status": "active",
+      "search_terms": [
+        "Spatial layering"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_098.visual_access_extent",
+      "status": "active",
+      "search_terms": [
+        "Visual access extent"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_099.prospect_quality",
+      "status": "active",
+      "search_terms": [
+        "Prospect quality"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_100.refuge_degree",
+      "status": "active",
+      "search_terms": [
+        "Refuge degree"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_101.prospect_refuge_balance",
+      "status": "active",
+      "search_terms": [
+        "Prospect-refuge balance"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_102.defensible_space",
+      "status": "active",
+      "search_terms": [
+        "Defensible space"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_103.plan_complexity",
+      "status": "active",
+      "search_terms": [
+        "Plan complexity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_104.spatial_hierarchy",
+      "status": "active",
+      "search_terms": [
+        "Spatial hierarchy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_105.wayfinding_affordances",
+      "status": "active",
+      "search_terms": [
+        "Wayfinding affordances"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_106.mystery",
+      "status": "active",
+      "search_terms": [
+        "Mystery"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_107.coherence",
+      "status": "active",
+      "search_terms": [
+        "Coherence"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_108.legibility",
+      "status": "active",
+      "search_terms": [
+        "Legibility"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_109.angular_vs_curvilinear",
+      "status": "active",
+      "search_terms": [
+        "Angular vs. curvilinear"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_110.symmetry",
+      "status": "active",
+      "search_terms": [
+        "Symmetry"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_111.proportion",
+      "status": "active",
+      "search_terms": [
+        "Proportion"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_112.fractal_dimension",
+      "status": "active",
+      "search_terms": [
+        "Fractal dimension"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_113.self_similarity_scale_range",
+      "status": "active",
+      "search_terms": [
+        "Self-similarity scale range"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_082.curvature_prevalence_vs_sharp_angles",
+      "status": "active",
+      "search_terms": [
+        "Curvature prevalence vs sharp angles"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_083.symmetry_and_regularity",
+      "status": "active",
+      "search_terms": [
+        "Symmetry and regularity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_084.fractal_self_similar_edge_statistics",
+      "status": "active",
+      "search_terms": [
+        "Fractal/self-similar edge statistics"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_085.clutter_disorder_object_density_occlusion_surface_coverage",
+      "status": "active",
+      "search_terms": [
+        "Clutter/disorder: object density, occlusion, surface coverage"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_086.cleanliness_maintenance_stains_damage_wear",
+      "status": "active",
+      "search_terms": [
+        "Cleanliness/maintenance: stains, damage, wear"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_087.color_diversity_and_saturation",
+      "status": "active",
+      "search_terms": [
+        "Color diversity and saturation"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_088.texture_density",
+      "status": "active",
+      "search_terms": [
+        "Texture density"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_089.artwork_density_and_semantic_content",
+      "status": "active",
+      "search_terms": [
+        "Artwork density and semantic content"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_090.naturalness_of_materials",
+      "status": "active",
+      "search_terms": [
+        "Naturalness of materials"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_091.visual_complexity_gradients",
+      "status": "active",
+      "search_terms": [
+        "Visual complexity gradients"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_092.signage_density_informational_load",
+      "status": "active",
+      "search_terms": [
+        "Signage density (informational load"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_093.visual_affordances_for_organization",
+      "status": "active",
+      "search_terms": [
+        "Visual affordances for organization"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_094.orderliness_of_lines_alignment",
+      "status": "active",
+      "search_terms": [
+        "Orderliness of lines: alignment"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_095.perceptual_mystery_cues",
+      "status": "active",
+      "search_terms": [
+        "Perceptual ‘mystery’ cues"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_114.visual_entropy",
+      "status": "active",
+      "search_terms": [
+        "Visual entropy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_115.edge_density",
+      "status": "active",
+      "search_terms": [
+        "Edge density"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_116.color_diversity",
+      "status": "active",
+      "search_terms": [
+        "Color diversity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_117.element_count",
+      "status": "active",
+      "search_terms": [
+        "Element count"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_118.visual_noise",
+      "status": "active",
+      "search_terms": [
+        "Visual noise"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_119.pattern_regularity",
+      "status": "active",
+      "search_terms": [
+        "Pattern regularity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_120.figure_ground_clarity",
+      "status": "active",
+      "search_terms": [
+        "Figure-ground clarity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_121.visual_hierarchy",
+      "status": "active",
+      "search_terms": [
+        "Visual hierarchy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_096.visible_vegetation_quantity_proximity_and_distribution",
+      "status": "active",
+      "search_terms": [
+        "Visible vegetation quantity, proximity, and distribution"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_097.window_view_content_greenery_sky_water_vs_built_up",
+      "status": "active",
+      "search_terms": [
+        "Window view content: greenery, sky, water vs built-up"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_098.natural_materials_wood_stone",
+      "status": "active",
+      "search_terms": [
+        "Natural materials: wood/stone"
+      ],
+      "aliases": [
+        "wood and stone",
+        "Natural Materials",
+        "natural materials"
+      ]
+    },
+    {
+      "tag_id": "env.v2a_099.blue_space",
+      "status": "active",
+      "search_terms": [
+        "Blue-space"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_100.prospect_to_distant_views",
+      "status": "active",
+      "search_terms": [
+        "Prospect to distant views"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_101.natural_ventilation_cues",
+      "status": "active",
+      "search_terms": [
+        "Natural ventilation cues"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_102.natural_sound_sources",
+      "status": "active",
+      "search_terms": [
+        "Natural sound sources"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_103.daylight_nature_coupling",
+      "status": "active",
+      "search_terms": [
+        "Daylight + nature coupling"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_104.seasonal_cues",
+      "status": "active",
+      "search_terms": [
+        "Seasonal cues"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_105.animal_presence_cues",
+      "status": "active",
+      "search_terms": [
+        "Animal presence cues"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_122.vegetation_density",
+      "status": "active",
+      "search_terms": [
+        "Vegetation density"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_123.vegetation_diversity",
+      "status": "active",
+      "search_terms": [
+        "Vegetation diversity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_124.water_features",
+      "status": "active",
+      "search_terms": [
+        "Water features"
+      ],
+      "aliases": [
+        "Water Feature",
+        "water feature"
+      ]
+    },
+    {
+      "tag_id": "env.v1_125.sky_visibility",
+      "status": "active",
+      "search_terms": [
+        "Sky visibility"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_126.natural_landforms",
+      "status": "active",
+      "search_terms": [
+        "Natural landforms"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_127.view_distance_layers",
+      "status": "active",
+      "search_terms": [
+        "View distance layers"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_128.nature_vs_urban_view",
+      "status": "active",
+      "search_terms": [
+        "Nature vs. urban view"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_129.natural_material_proportion",
+      "status": "active",
+      "search_terms": [
+        "Natural material proportion"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_130.biomimetic_forms",
+      "status": "active",
+      "search_terms": [
+        "Biomimetic forms"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_131.natural_light_patterns",
+      "status": "active",
+      "search_terms": [
+        "Natural light patterns"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_106.sociopetal_seating",
+      "status": "active",
+      "search_terms": [
+        "Sociopetal seating"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_107.density_crowding_proxies_chairs_per_area_people_present_queueing_lines",
+      "status": "active",
+      "search_terms": [
+        "Density/crowding proxies: chairs per area, people present, queueing lines"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_108.surveillance_cues_cameras_exposed_workstations_panoramic_visibility",
+      "status": "active",
+      "search_terms": [
+        "Surveillance cues: cameras, exposed workstations, panoramic visibility"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_109.privacy_cues_partitions_doors_curtains",
+      "status": "active",
+      "search_terms": [
+        "Privacy cues: partitions, doors, curtains"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_110.territoriality_markers_name_plates",
+      "status": "active",
+      "search_terms": [
+        "Territoriality markers: name plates"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_111.norm_cues_formal_vs_informal",
+      "status": "active",
+      "search_terms": [
+        "Norm cues: formal vs informal"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_112.shared_resource_competition_cues",
+      "status": "active",
+      "search_terms": [
+        "Shared-resource competition cues"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_113.social_mixing_affordances",
+      "status": "active",
+      "search_terms": [
+        "Social mixing affordances"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_114.conflict_overhearing_risk_cues",
+      "status": "active",
+      "search_terms": [
+        "Conflict/overhearing risk cues"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_115.waiting_time_cues",
+      "status": "active",
+      "search_terms": [
+        "Waiting-time cues"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_132.spatial_density",
+      "status": "active",
+      "search_terms": [
+        "Spatial density"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_133.social_density",
+      "status": "active",
+      "search_terms": [
+        "Social density"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_134.perceived_crowding",
+      "status": "active",
+      "search_terms": [
+        "Perceived crowding"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_135.visual_privacy",
+      "status": "active",
+      "search_terms": [
+        "Visual privacy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_136.acoustic_privacy",
+      "status": "active",
+      "search_terms": [
+        "Acoustic privacy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_137.territorial_definition",
+      "status": "active",
+      "search_terms": [
+        "Territorial definition"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_138.seating_arrangement",
+      "status": "active",
+      "search_terms": [
+        "Seating arrangement"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_139.collaboration_space_ratio",
+      "status": "active",
+      "search_terms": [
+        "Collaboration space ratio"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_116.user_controls_visible_and_accessible_dimmers_blinds_thermostats",
+      "status": "active",
+      "search_terms": [
+        "User controls visible and accessible: dimmers, blinds, thermostats"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_117.furniture_adjustability_movable_chairs_tables",
+      "status": "active",
+      "search_terms": [
+        "Furniture adjustability: movable chairs/tables"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_118.choice_richness_multiple_zones",
+      "status": "active",
+      "search_terms": [
+        "Choice richness: multiple zones"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_119.personalization_affordances_pinboards",
+      "status": "active",
+      "search_terms": [
+        "Personalization affordances: pinboards"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_120.policy_cues_restricting_control",
+      "status": "active",
+      "search_terms": [
+        "Policy cues restricting control"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_121.control_over_privacy_doors",
+      "status": "active",
+      "search_terms": [
+        "Control over privacy: doors"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_122.control_over_sound_headsets",
+      "status": "active",
+      "search_terms": [
+        "Control over sound: headsets"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_123.control_over_thermal_fans",
+      "status": "active",
+      "search_terms": [
+        "Control over thermal: fans"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_124.control_over_lighting_task_lamps",
+      "status": "active",
+      "search_terms": [
+        "Control over lighting: task lamps"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v2a_125.information_control_clear_wayfinding_reduces_uncertainty",
+      "status": "active",
+      "search_terms": [
+        "Information control: clear wayfinding reduces uncertainty."
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_140.temperature_control",
+      "status": "active",
+      "search_terms": [
+        "Temperature control"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_141.lighting_control",
+      "status": "active",
+      "search_terms": [
+        "Lighting control"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_142.acoustic_control",
+      "status": "active",
+      "search_terms": [
+        "Acoustic control"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_143.window_operation",
+      "status": "active",
+      "search_terms": [
+        "Window operation"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_144.workspace_personalization",
+      "status": "active",
+      "search_terms": [
+        "Workspace personalization"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.v1_145.perceived_control",
+      "status": "active",
+      "search_terms": [
+        "Perceived control"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "affect.cozy",
+      "status": "existing",
+      "search_terms": [
+        "Cozy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "affect.jarring",
+      "status": "existing",
+      "search_terms": [
+        "Jarring"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "affect.scary",
+      "status": "existing",
+      "search_terms": [
+        "Scary"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "affect.tranquil",
+      "status": "existing",
+      "search_terms": [
+        "Tranquil"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "affect.welcoming",
+      "status": "existing",
+      "search_terms": [
+        "Welcoming"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "affordance.isovist_area",
+      "status": "existing",
+      "search_terms": [
+        "Isovist Area"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "affordance.seating_count",
+      "status": "existing",
+      "search_terms": [
+        "Seating Count"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.axial_circulation_clear",
+      "status": "existing",
+      "search_terms": [
+        "Axial Circulation Clear"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.bay_window",
+      "status": "existing",
+      "search_terms": [
+        "Bay Window"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.central_hearth",
+      "status": "existing",
+      "search_terms": [
+        "Central Hearth"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.circulation_maze_like",
+      "status": "existing",
+      "search_terms": [
+        "Circulation Maze Like"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.colonnade",
+      "status": "existing",
+      "search_terms": [
+        "Colonnade"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.corner_window",
+      "status": "existing",
+      "search_terms": [
+        "Corner Window"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.daylight_hard",
+      "status": "existing",
+      "search_terms": [
+        "Daylight Hard"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.daylight_soft",
+      "status": "existing",
+      "search_terms": [
+        "Daylight Soft"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.double_height_space",
+      "status": "existing",
+      "search_terms": [
+        "Double Height Space"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.gallery_edge",
+      "status": "existing",
+      "search_terms": [
+        "Gallery Edge"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.loft_mezzanine",
+      "status": "existing",
+      "search_terms": [
+        "Loft Mezzanine"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.long_view_corridor",
+      "status": "existing",
+      "search_terms": [
+        "Long View Corridor"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.perimeter_seating",
+      "status": "existing",
+      "search_terms": [
+        "Perimeter Seating"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.prospect_strong",
+      "status": "existing",
+      "search_terms": [
+        "Prospect Strong"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.refuge_nook",
+      "status": "existing",
+      "search_terms": [
+        "Refuge Nook"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.refuge_strong",
+      "status": "existing",
+      "search_terms": [
+        "Refuge Strong"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.skylight_dominant",
+      "status": "existing",
+      "search_terms": [
+        "Skylight Dominant"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.staircase_sculptural",
+      "status": "existing",
+      "search_terms": [
+        "Staircase Sculptural"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.threshold_emphasized",
+      "status": "existing",
+      "search_terms": [
+        "Threshold Emphasized"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "arch.pattern.window_seat_niche",
+      "status": "existing",
+      "search_terms": [
+        "Window Seat Niche"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "biophilia.plant_count",
+      "status": "existing",
+      "search_terms": [
+        "Plant Count"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.biophilic.natural_material_ratio",
+      "status": "existing",
+      "search_terms": [
+        "Natural Material Ratio"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.cognitive.activity_zones_count",
+      "status": "existing",
+      "search_terms": [
+        "Activity Zones Count"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.cognitive.landmark_salience",
+      "status": "existing",
+      "search_terms": [
+        "Landmark Salience"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.cognitive.legibility_score",
+      "status": "existing",
+      "search_terms": [
+        "Legibility Score"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.dynamic.optic_flow_magnitude",
+      "status": "existing",
+      "search_terms": [
+        "Optic Flow Magnitude"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.dynamic.path_glare_max",
+      "status": "existing",
+      "search_terms": [
+        "Path Glare Max"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.dynamic.reflection_flow",
+      "status": "existing",
+      "search_terms": [
+        "Reflection Flow"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.dynamic.revelation_rate",
+      "status": "existing",
+      "search_terms": [
+        "Revelation Rate"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.dynamic.texture_gradient",
+      "status": "existing",
+      "search_terms": [
+        "Texture Gradient"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.anomaly_count",
+      "status": "existing",
+      "search_terms": [
+        "Anomaly Count"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.clutter_density_count",
+      "status": "existing",
+      "search_terms": [
+        "Clutter Density Count"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.color_palette_entropy",
+      "status": "existing",
+      "search_terms": [
+        "Color Palette Entropy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.edge_clarity_mean",
+      "status": "existing",
+      "search_terms": [
+        "Edge Clarity Mean"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.figure_ground_clarity",
+      "status": "existing",
+      "search_terms": [
+        "Figure Ground Clarity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.hierarchy_depth",
+      "status": "existing",
+      "search_terms": [
+        "Hierarchy Depth"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.pattern_rhythm_regularity",
+      "status": "existing",
+      "search_terms": [
+        "Pattern Rhythm Regularity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.processing_load_proxy",
+      "status": "existing",
+      "search_terms": [
+        "Processing Load Proxy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.symmetry_score_horizontal",
+      "status": "existing",
+      "search_terms": [
+        "Symmetry Score Horizontal"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.visual_entropy_spatial",
+      "status": "existing",
+      "search_terms": [
+        "Visual Entropy Spatial"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.zoning_clarity",
+      "status": "existing",
+      "search_terms": [
+        "Zoning Clarity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fractal_dimension",
+      "status": "existing",
+      "search_terms": [
+        "Fractal Dimension"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.haptic.soft_surface_ratio",
+      "status": "existing",
+      "search_terms": [
+        "Soft Surface Ratio"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.haptic.texture_variation_index",
+      "status": "existing",
+      "search_terms": [
+        "Texture Variation Index"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.light.brightness_variance",
+      "status": "existing",
+      "search_terms": [
+        "Brightness Variance"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.light.diffuse_vs_direct_ratio",
+      "status": "existing",
+      "search_terms": [
+        "Diffuse Vs Direct Ratio"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.light.vertical_illuminance_proxy",
+      "status": "existing",
+      "search_terms": [
+        "Vertical Illuminance Proxy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.light.warm_vs_cool_ratio",
+      "status": "existing",
+      "search_terms": [
+        "Warm Vs Cool Ratio"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.spatial.ceiling_height_avg",
+      "status": "existing",
+      "search_terms": [
+        "Ceiling Height Avg"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.spatial.enclosure_index",
+      "status": "existing",
+      "search_terms": [
+        "Enclosure Index"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.spatial.prospect_to_refuge_ratio",
+      "status": "existing",
+      "search_terms": [
+        "Prospect To Refuge Ratio"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cognitive.coherence",
+      "status": "existing",
+      "search_terms": [
+        "Coherence"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cognitive.complexity",
+      "status": "existing",
+      "search_terms": [
+        "Complexity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cognitive.error",
+      "status": "existing",
+      "search_terms": [
+        "Error"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cognitive.legibility",
+      "status": "existing",
+      "search_terms": [
+        "Legibility"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cognitive.mystery",
+      "status": "existing",
+      "search_terms": [
+        "Mystery"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cognitive.restoration",
+      "status": "existing",
+      "search_terms": [
+        "Restoration"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "color.lab_volume",
+      "status": "existing",
+      "search_terms": [
+        "Lab Volume"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "color.lightness_contrast",
+      "status": "existing",
+      "search_terms": [
+        "Lightness Contrast"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "color.luminance",
+      "status": "existing",
+      "search_terms": [
+        "Luminance"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "color.perceptual_lightness",
+      "status": "existing",
+      "search_terms": [
+        "Perceptual Lightness"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "color.saturation",
+      "status": "existing",
+      "search_terms": [
+        "Saturation"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "color.warmth",
+      "status": "existing",
+      "search_terms": [
+        "Warmth"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "color.warmth_ratio",
+      "status": "existing",
+      "search_terms": [
+        "Warmth Ratio"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "complexity.edge_density",
+      "status": "existing",
+      "search_terms": [
+        "Edge Density"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "complexity.shannon_entropy",
+      "status": "existing",
+      "search_terms": [
+        "Shannon Entropy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "complexity.spatial_entropy",
+      "status": "existing",
+      "search_terms": [
+        "Spatial Entropy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.bathroom.fixture.material.brass",
+      "status": "existing",
+      "search_terms": [
+        "Brass"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.bathroom.fixture.material.matte_black",
+      "status": "existing",
+      "search_terms": [
+        "Matte Black"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.bathroom.fixture.type.rain_showerhead",
+      "status": "existing",
+      "search_terms": [
+        "Rain Showerhead"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.ceiling.coffered",
+      "status": "existing",
+      "search_terms": [
+        "Coffered"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.ceiling.cove_lighting",
+      "status": "existing",
+      "search_terms": [
+        "Cove Lighting"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.ceiling.exposed_beam",
+      "status": "existing",
+      "search_terms": [
+        "Exposed Beam"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.ceiling.tray",
+      "status": "existing",
+      "search_terms": [
+        "Tray"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.ceiling.vaulted",
+      "status": "existing",
+      "search_terms": [
+        "Vaulted"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.kitchen.hardware.material.brass",
+      "status": "existing",
+      "search_terms": [
+        "Brass"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.kitchen.hardware.material.chrome",
+      "status": "existing",
+      "search_terms": [
+        "Chrome"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.kitchen.hardware.material.matte_black",
+      "status": "existing",
+      "search_terms": [
+        "Matte Black"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.kitchen.hardware.type.bar_pull",
+      "status": "existing",
+      "search_terms": [
+        "Bar Pull"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.kitchen.hardware.type.handleless",
+      "status": "existing",
+      "search_terms": [
+        "Handleless"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.kitchen.hardware.type.knob",
+      "status": "existing",
+      "search_terms": [
+        "Knob"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.wall.material.brick_exposed",
+      "status": "existing",
+      "search_terms": [
+        "Brick Exposed"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.wall.material.stone_wall",
+      "status": "existing",
+      "search_terms": [
+        "Stone Wall"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.wall.material.wood_slat",
+      "status": "existing",
+      "search_terms": [
+        "Wood Slat"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.wall.treatment.wainscoting",
+      "status": "existing",
+      "search_terms": [
+        "Wainscoting"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "component.wall.treatment.wallpaper_patterned",
+      "status": "existing",
+      "search_terms": [
+        "Wallpaper Patterned"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "fluency.symmetry",
+      "status": "existing",
+      "search_terms": [
+        "Symmetry"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "isovist.area_25d",
+      "status": "existing",
+      "search_terms": [
+        "Area 25D"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "isovist.compactness_25d",
+      "status": "existing",
+      "search_terms": [
+        "Compactness 25D"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "isovist.confidence",
+      "status": "existing",
+      "search_terms": [
+        "Confidence"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "material.glass_coverage",
+      "status": "existing",
+      "search_terms": [
+        "Glass Coverage"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "material.metal_coverage",
+      "status": "existing",
+      "search_terms": [
+        "Metal Coverage"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "material.wood_coverage",
+      "status": "existing",
+      "search_terms": [
+        "Wood Coverage"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "materials.cues.brightness_mean",
+      "status": "existing",
+      "search_terms": [
+        "Brightness Mean"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "materials.cues.saturation_mean",
+      "status": "existing",
+      "search_terms": [
+        "Saturation Mean"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "materials.cues.specularity_proxy",
+      "status": "existing",
+      "search_terms": [
+        "Specularity Proxy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "materials.cues.texture_variance",
+      "status": "existing",
+      "search_terms": [
+        "Texture Variance"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "materials.cues.value_mean",
+      "status": "existing",
+      "search_terms": [
+        "Value Mean"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "materials.substrate.plaster_gypsum",
+      "status": "existing",
+      "search_terms": [
+        "Plaster Gypsum"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "materials.substrate.stone_concrete",
+      "status": "existing",
+      "search_terms": [
+        "Stone Concrete"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "materials.substrate.tile_ceramic",
+      "status": "existing",
+      "search_terms": [
+        "Tile Ceramic"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "provenance.architect_kengo_kuma",
+      "status": "existing",
+      "search_terms": [
+        "Architect Kengo Kuma"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "provenance.architect_le_corbusier",
+      "status": "existing",
+      "search_terms": [
+        "Architect Le Corbusier"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "provenance.iconic_chair_barcelona",
+      "status": "existing",
+      "search_terms": [
+        "Iconic Chair Barcelona"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "provenance.iconic_chair_eames",
+      "status": "existing",
+      "search_terms": [
+        "Iconic Chair Eames"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "psych.coziness",
+      "status": "existing",
+      "search_terms": [
+        "Coziness"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "science.organized_complexity",
+      "status": "existing",
+      "search_terms": [
+        "Organized Complexity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "science.organized_complexity_bin",
+      "status": "existing",
+      "search_terms": [
+        "Organized Complexity Bin"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "science.visual_richness",
+      "status": "existing",
+      "search_terms": [
+        "Visual Richness"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "science.visual_richness_bin",
+      "status": "existing",
+      "search_terms": [
+        "Visual Richness Bin"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "social.occupancy",
+      "status": "existing",
+      "search_terms": [
+        "Occupancy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "social.privacy",
+      "status": "existing",
+      "search_terms": [
+        "Privacy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "social.sociopetal",
+      "status": "existing",
+      "search_terms": [
+        "Sociopetal"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "spatial.central_openness",
+      "status": "existing",
+      "search_terms": [
+        "Central Openness"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "spatial.depth_contrast",
+      "status": "existing",
+      "search_terms": [
+        "Depth Contrast"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "spatial.depth_mean",
+      "status": "existing",
+      "search_terms": [
+        "Depth Mean"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "spatial.isovist_openness",
+      "status": "existing",
+      "search_terms": [
+        "Isovist Openness"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "spatial.refuge_quality",
+      "status": "existing",
+      "search_terms": [
+        "Refuge Quality"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "spatial.room_function.bathroom",
+      "status": "existing",
+      "search_terms": [
+        "Bathroom"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "spatial.room_function.bedroom",
+      "status": "existing",
+      "search_terms": [
+        "Bedroom"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "spatial.room_function.home_office",
+      "status": "existing",
+      "search_terms": [
+        "Home Office"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "spatial.room_function.kitchen",
+      "status": "existing",
+      "search_terms": [
+        "Kitchen"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "spatial.room_function.living_room",
+      "status": "existing",
+      "search_terms": [
+        "Living Room"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "spatial.visual_clutter",
+      "status": "existing",
+      "search_terms": [
+        "Visual Clutter"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "style.bohemian",
+      "status": "existing",
+      "search_terms": [
+        "Bohemian"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "style.farmhouse",
+      "status": "existing",
+      "search_terms": [
+        "Farmhouse"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "style.industrial",
+      "status": "existing",
+      "search_terms": [
+        "Industrial"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "style.japandi",
+      "status": "existing",
+      "search_terms": [
+        "Japandi"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "style.mid_century_modern",
+      "status": "existing",
+      "search_terms": [
+        "Mid Century Modern"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "style.minimalist",
+      "status": "existing",
+      "search_terms": [
+        "Minimalist"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "style.modern",
+      "status": "existing",
+      "search_terms": [
+        "Modern"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "style.modernity",
+      "status": "existing",
+      "search_terms": [
+        "Modernity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "style.rustic",
+      "status": "existing",
+      "search_terms": [
+        "Rustic"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "style.scandinavian",
+      "status": "existing",
+      "search_terms": [
+        "Scandinavian"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "style.traditional",
+      "status": "existing",
+      "search_terms": [
+        "Traditional"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "texture.macro.contrast",
+      "status": "existing",
+      "search_terms": [
+        "Contrast"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "texture.macro.homogeneity",
+      "status": "existing",
+      "search_terms": [
+        "Homogeneity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "texture.micro.contrast",
+      "status": "existing",
+      "search_terms": [
+        "Contrast"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "texture.micro.homogeneity",
+      "status": "existing",
+      "search_terms": [
+        "Homogeneity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.depth.depth_variance",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Depth Variance"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.depth.mean_depth",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Mean Depth"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.autoencoder_recon_error",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Autoencoder Recon Error"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.compression_ratio",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Compression Ratio"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.map.edge_density",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Edge Density"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.map.fractal_dimension",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Fractal Dimension"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.map.spatial_entropy",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Spatial Entropy"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.map.symmetry",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Symmetry"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fluency.surprisal_mean",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Surprisal Mean"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fractal.lacunarity",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Lacunarity"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fractal.multifractal_width",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Multifractal Width"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fractal.spectral_slope_1overf",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Spectral Slope 1Overf"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fractal_dimension_edges",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Fractal Dimension Edges"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.fractal_dimension_luminance",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Fractal Dimension Luminance"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.geometry.curvature_index",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Curvature Index"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.geometry.fractal_curve_intersection",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Fractal Curve Intersection"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.geometry.rectilinearity_index",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Rectilinearity Index"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "cnfa.layout.opening_ratio",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Opening Ratio"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "smell.concentration_dfa_exponent",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Concentration Dfa Exponent"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "smell.intensity_rating",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Intensity Rating"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "smell.pleasantness_rating",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Pleasantness Rating"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "sound.amplitude_fractal_dimension",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Amplitude Fractal Dimension"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "sound.noise_color_beta",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Noise Color Beta"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "sound.one_over_f_slope",
+      "status": "proposed_delta",
+      "search_terms": [
+        "One Over F Slope"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "sound.reverberation_rt60",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Reverberation Rt60"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "tag.evidence_pointer",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Evidence Pointer"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "tag.request_source",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Request Source"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "touch.haptic_fractal_dimension",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Haptic Fractal Dimension"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "touch.hardness_rating",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Hardness Rating"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "touch.surface_roughness_spectrum_slope",
+      "status": "proposed_delta",
+      "search_terms": [
+        "Surface Roughness Spectrum Slope"
+      ],
+      "aliases": []
+    },
+    {
+      "tag_id": "env.ae.warm_lighting",
+      "status": "active",
+      "search_terms": [
+        "Warm Lighting",
+        "warm light",
+        "warm lights"
+      ],
+      "aliases": [
+        "Warm Lighting",
+        "warm light",
+        "warm lights",
+        "warm lighting"
+      ]
+    },
+    {
+      "tag_id": "env.ae.daylighting",
+      "status": "active",
+      "search_terms": [
+        "Daylighting",
+        "natural light",
+        "sunlight"
+      ],
+      "aliases": [
+        "Daylighting",
+        "natural light",
+        "sunlight",
+        "daylighting"
+      ]
+    },
+    {
+      "tag_id": "env.ae.indoor_plants",
+      "status": "active",
+      "search_terms": [
+        "Indoor Plants",
+        "plants",
+        "greenery"
+      ],
+      "aliases": [
+        "Indoor Plants",
+        "plants",
+        "greenery",
+        "indoor plants"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_clutter",
+      "status": "active",
+      "search_terms": [
+        "High Clutter",
+        "cluttered",
+        "messy"
+      ],
+      "aliases": [
+        "High Clutter",
+        "cluttered",
+        "messy",
+        "high clutter"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_illuminance",
+      "status": "active",
+      "search_terms": [
+        "High Illuminance",
+        "bright lighting",
+        "well-lit"
+      ],
+      "aliases": [
+        "High Illuminance",
+        "bright lighting",
+        "well-lit",
+        "high illuminance"
+      ]
+    },
+    {
+      "tag_id": "env.ae.low_illuminance",
+      "status": "active",
+      "search_terms": [
+        "Low Illuminance",
+        "dim lighting",
+        "low light"
+      ],
+      "aliases": [
+        "Low Illuminance",
+        "dim lighting",
+        "low light",
+        "low illuminance"
+      ]
+    },
+    {
+      "tag_id": "env.ae.cool_lighting_(high_cct)",
+      "status": "active",
+      "search_terms": [
+        "Cool Lighting (High CCT)",
+        "cool light",
+        "bluish light"
+      ],
+      "aliases": [
+        "Cool Lighting (High CCT)",
+        "cool light",
+        "bluish light",
+        "cool lighting (high cct)"
+      ]
+    },
+    {
+      "tag_id": "env.ae.glare_present",
+      "status": "active",
+      "search_terms": [
+        "Glare Present",
+        "harsh glare"
+      ],
+      "aliases": [
+        "Glare Present",
+        "harsh glare",
+        "glare present"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_contrast_lighting",
+      "status": "active",
+      "search_terms": [
+        "High Contrast Lighting",
+        "dramatic lighting"
+      ],
+      "aliases": [
+        "High Contrast Lighting",
+        "dramatic lighting",
+        "high contrast lighting"
+      ]
+    },
+    {
+      "tag_id": "env.ae.uniform_lighting",
+      "status": "active",
+      "search_terms": [
+        "Uniform Lighting",
+        "even lighting"
+      ],
+      "aliases": [
+        "Uniform Lighting",
+        "even lighting",
+        "uniform lighting"
+      ]
+    },
+    {
+      "tag_id": "env.ae.dynamic_lighting",
+      "status": "active",
+      "search_terms": [
+        "Dynamic Lighting",
+        "changing light",
+        "adaptive lighting"
+      ],
+      "aliases": [
+        "Dynamic Lighting",
+        "changing light",
+        "adaptive lighting",
+        "dynamic lighting"
+      ]
+    },
+    {
+      "tag_id": "env.ae.visible_windows",
+      "status": "active",
+      "search_terms": [
+        "Visible Windows",
+        "windows"
+      ],
+      "aliases": [
+        "Visible Windows",
+        "windows",
+        "visible windows"
+      ]
+    },
+    {
+      "tag_id": "env.ae.large_window_area",
+      "status": "active",
+      "search_terms": [
+        "Large Window Area",
+        "floor-to-ceiling windows"
+      ],
+      "aliases": [
+        "Large Window Area",
+        "floor-to-ceiling windows",
+        "large window area"
+      ]
+    },
+    {
+      "tag_id": "env.ae.view_to_outdoors",
+      "status": "active",
+      "search_terms": [
+        "View to Outdoors",
+        "view outside",
+        "vista"
+      ],
+      "aliases": [
+        "View to Outdoors",
+        "view outside",
+        "vista",
+        "view to outdoors"
+      ]
+    },
+    {
+      "tag_id": "env.ae.warm_color_palette",
+      "status": "active",
+      "search_terms": [
+        "Warm Color Palette",
+        "warm colors",
+        "reds and oranges"
+      ],
+      "aliases": [
+        "Warm Color Palette",
+        "warm colors",
+        "reds and oranges",
+        "warm color palette"
+      ]
+    },
+    {
+      "tag_id": "env.ae.cool_color_palette",
+      "status": "active",
+      "search_terms": [
+        "Cool Color Palette",
+        "cool colors",
+        "blues"
+      ],
+      "aliases": [
+        "Cool Color Palette",
+        "cool colors",
+        "blues",
+        "cool color palette"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_saturation",
+      "status": "active",
+      "search_terms": [
+        "High Saturation",
+        "vivid colors"
+      ],
+      "aliases": [
+        "High Saturation",
+        "vivid colors",
+        "high saturation"
+      ]
+    },
+    {
+      "tag_id": "env.ae.low_saturation",
+      "status": "active",
+      "search_terms": [
+        "Low Saturation",
+        "muted colors"
+      ],
+      "aliases": [
+        "Low Saturation",
+        "muted colors",
+        "low saturation"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_color_contrast",
+      "status": "active",
+      "search_terms": [
+        "High Color Contrast"
+      ],
+      "aliases": [
+        "High Color Contrast",
+        "high color contrast"
+      ]
+    },
+    {
+      "tag_id": "env.ae.monochrome/minimal_palette",
+      "status": "active",
+      "search_terms": [
+        "Monochrome/Minimal Palette",
+        "monochrome",
+        "minimal colors"
+      ],
+      "aliases": [
+        "Monochrome/Minimal Palette",
+        "monochrome",
+        "minimal colors",
+        "monochrome/minimal palette"
+      ]
+    },
+    {
+      "tag_id": "env.ae.natural/earthy_palette",
+      "status": "active",
+      "search_terms": [
+        "Natural/Earthy Palette",
+        "earth tones"
+      ],
+      "aliases": [
+        "Natural/Earthy Palette",
+        "earth tones",
+        "natural/earthy palette"
+      ]
+    },
+    {
+      "tag_id": "env.ae.wood_prominent",
+      "status": "active",
+      "search_terms": [
+        "Wood Prominent",
+        "wood"
+      ],
+      "aliases": [
+        "Wood Prominent",
+        "wood",
+        "wood prominent"
+      ]
+    },
+    {
+      "tag_id": "env.ae.stone/marble_prominent",
+      "status": "active",
+      "search_terms": [
+        "Stone/Marble Prominent",
+        "marble",
+        "granite"
+      ],
+      "aliases": [
+        "Stone/Marble Prominent",
+        "marble",
+        "granite",
+        "stone/marble prominent"
+      ]
+    },
+    {
+      "tag_id": "env.ae.concrete_prominent",
+      "status": "active",
+      "search_terms": [
+        "Concrete Prominent",
+        "concrete"
+      ],
+      "aliases": [
+        "Concrete Prominent",
+        "concrete",
+        "concrete prominent"
+      ]
+    },
+    {
+      "tag_id": "env.ae.metal_prominent",
+      "status": "active",
+      "search_terms": [
+        "Metal Prominent",
+        "metal"
+      ],
+      "aliases": [
+        "Metal Prominent",
+        "metal",
+        "metal prominent"
+      ]
+    },
+    {
+      "tag_id": "env.ae.glass_prominent",
+      "status": "active",
+      "search_terms": [
+        "Glass Prominent",
+        "glass"
+      ],
+      "aliases": [
+        "Glass Prominent",
+        "glass",
+        "glass prominent"
+      ]
+    },
+    {
+      "tag_id": "env.ae.textiles/soft_furnishings",
+      "status": "active",
+      "search_terms": [
+        "Textiles/Soft Furnishings",
+        "fabric",
+        "curtains",
+        "rugs"
+      ],
+      "aliases": [
+        "Textiles/Soft Furnishings",
+        "fabric",
+        "curtains",
+        "rugs",
+        "textiles/soft furnishings"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_texture_complexity",
+      "status": "active",
+      "search_terms": [
+        "High Texture Complexity"
+      ],
+      "aliases": [
+        "High Texture Complexity",
+        "high texture complexity"
+      ]
+    },
+    {
+      "tag_id": "env.ae.low_texture_complexity",
+      "status": "active",
+      "search_terms": [
+        "Low Texture Complexity"
+      ],
+      "aliases": [
+        "Low Texture Complexity",
+        "low texture complexity"
+      ]
+    },
+    {
+      "tag_id": "env.ae.repeating_pattern",
+      "status": "active",
+      "search_terms": [
+        "Repeating Pattern"
+      ],
+      "aliases": [
+        "Repeating Pattern",
+        "repeating pattern"
+      ]
+    },
+    {
+      "tag_id": "env.ae.irregular_pattern",
+      "status": "active",
+      "search_terms": [
+        "Irregular Pattern"
+      ],
+      "aliases": [
+        "Irregular Pattern",
+        "irregular pattern"
+      ]
+    },
+    {
+      "tag_id": "env.ae.fractal-like_pattern",
+      "status": "active",
+      "search_terms": [
+        "Fractal-Like Pattern",
+        "fractal"
+      ],
+      "aliases": [
+        "Fractal-Like Pattern",
+        "fractal",
+        "fractal-like pattern"
+      ]
+    },
+    {
+      "tag_id": "env.ae.curvilinear_forms",
+      "status": "active",
+      "search_terms": [
+        "Curvilinear Forms",
+        "curved",
+        "rounded"
+      ],
+      "aliases": [
+        "Curvilinear Forms",
+        "curved",
+        "rounded",
+        "curvilinear forms"
+      ]
+    },
+    {
+      "tag_id": "env.ae.rectilinear_forms",
+      "status": "active",
+      "search_terms": [
+        "Rectilinear Forms",
+        "straight lines"
+      ],
+      "aliases": [
+        "Rectilinear Forms",
+        "straight lines",
+        "rectilinear forms"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_symmetry",
+      "status": "active",
+      "search_terms": [
+        "High Symmetry"
+      ],
+      "aliases": [
+        "High Symmetry",
+        "high symmetry"
+      ]
+    },
+    {
+      "tag_id": "env.ae.low_symmetry",
+      "status": "active",
+      "search_terms": [
+        "Low Symmetry"
+      ],
+      "aliases": [
+        "Low Symmetry",
+        "low symmetry"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_ceiling",
+      "status": "active",
+      "search_terms": [
+        "High Ceiling",
+        "tall ceiling"
+      ],
+      "aliases": [
+        "High Ceiling",
+        "tall ceiling",
+        "high ceiling"
+      ]
+    },
+    {
+      "tag_id": "env.ae.low_ceiling",
+      "status": "active",
+      "search_terms": [
+        "Low Ceiling",
+        "low ceiling"
+      ],
+      "aliases": [
+        "Low Ceiling",
+        "low ceiling"
+      ]
+    },
+    {
+      "tag_id": "env.ae.large_enclosure_volume",
+      "status": "active",
+      "search_terms": [
+        "Large Enclosure Volume"
+      ],
+      "aliases": [
+        "Large Enclosure Volume",
+        "large enclosure volume"
+      ]
+    },
+    {
+      "tag_id": "env.ae.narrow_corridor",
+      "status": "active",
+      "search_terms": [
+        "Narrow Corridor"
+      ],
+      "aliases": [
+        "Narrow Corridor",
+        "narrow corridor"
+      ]
+    },
+    {
+      "tag_id": "env.ae.strong_verticality",
+      "status": "active",
+      "search_terms": [
+        "Strong Verticality",
+        "high vertical lines"
+      ],
+      "aliases": [
+        "Strong Verticality",
+        "high vertical lines",
+        "strong verticality"
+      ]
+    },
+    {
+      "tag_id": "env.ae.strong_horizontality",
+      "status": "active",
+      "search_terms": [
+        "Strong Horizontality"
+      ],
+      "aliases": [
+        "Strong Horizontality",
+        "strong horizontality"
+      ]
+    },
+    {
+      "tag_id": "env.ae.complex_geometry",
+      "status": "active",
+      "search_terms": [
+        "Complex Geometry"
+      ],
+      "aliases": [
+        "Complex Geometry",
+        "complex geometry"
+      ]
+    },
+    {
+      "tag_id": "env.ae.open_plan",
+      "status": "active",
+      "search_terms": [
+        "Open Plan",
+        "open layout"
+      ],
+      "aliases": [
+        "Open Plan",
+        "open layout",
+        "open plan"
+      ]
+    },
+    {
+      "tag_id": "env.ae.compartmentalized_plan",
+      "status": "active",
+      "search_terms": [
+        "Compartmentalized Plan"
+      ],
+      "aliases": [
+        "Compartmentalized Plan",
+        "compartmentalized plan"
+      ]
+    },
+    {
+      "tag_id": "env.ae.clear_sightlines",
+      "status": "active",
+      "search_terms": [
+        "Clear Sightlines"
+      ],
+      "aliases": [
+        "Clear Sightlines",
+        "clear sightlines"
+      ]
+    },
+    {
+      "tag_id": "env.ae.occluded_sightlines",
+      "status": "active",
+      "search_terms": [
+        "Occluded Sightlines"
+      ],
+      "aliases": [
+        "Occluded Sightlines",
+        "occluded sightlines"
+      ]
+    },
+    {
+      "tag_id": "env.ae.strong_central_landmark",
+      "status": "active",
+      "search_terms": [
+        "Strong Central Landmark"
+      ],
+      "aliases": [
+        "Strong Central Landmark",
+        "strong central landmark"
+      ]
+    },
+    {
+      "tag_id": "env.ae.clear_circulation_paths",
+      "status": "active",
+      "search_terms": [
+        "Clear Circulation Paths"
+      ],
+      "aliases": [
+        "Clear Circulation Paths",
+        "clear circulation paths"
+      ]
+    },
+    {
+      "tag_id": "env.ae.maze-like_layout",
+      "status": "active",
+      "search_terms": [
+        "Maze-Like Layout"
+      ],
+      "aliases": [
+        "Maze-Like Layout",
+        "maze-like layout"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_orderliness",
+      "status": "active",
+      "search_terms": [
+        "High Orderliness",
+        "tidy",
+        "organized"
+      ],
+      "aliases": [
+        "High Orderliness",
+        "tidy",
+        "organized",
+        "high orderliness"
+      ]
+    },
+    {
+      "tag_id": "env.ae.low_orderliness",
+      "status": "active",
+      "search_terms": [
+        "Low Orderliness",
+        "disorganized"
+      ],
+      "aliases": [
+        "Low Orderliness",
+        "disorganized",
+        "low orderliness"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_cleanliness",
+      "status": "active",
+      "search_terms": [
+        "High Cleanliness"
+      ],
+      "aliases": [
+        "High Cleanliness",
+        "high cleanliness"
+      ]
+    },
+    {
+      "tag_id": "env.ae.visible_dirt/decay",
+      "status": "active",
+      "search_terms": [
+        "Visible Dirt/Decay",
+        "dirty",
+        "grimy"
+      ],
+      "aliases": [
+        "Visible Dirt/Decay",
+        "dirty",
+        "grimy",
+        "visible dirt/decay"
+      ]
+    },
+    {
+      "tag_id": "env.ae.nature_imagery",
+      "status": "active",
+      "search_terms": [
+        "Nature Imagery",
+        "landscape art"
+      ],
+      "aliases": [
+        "Nature Imagery",
+        "landscape art",
+        "nature imagery"
+      ]
+    },
+    {
+      "tag_id": "env.ae.naturalistic_forms",
+      "status": "active",
+      "search_terms": [
+        "Naturalistic Forms",
+        "biomorphic",
+        "organic shapes"
+      ],
+      "aliases": [
+        "Naturalistic Forms",
+        "biomorphic",
+        "organic shapes",
+        "naturalistic forms"
+      ]
+    },
+    {
+      "tag_id": "env.ae.indoor-outdoor_continuity",
+      "status": "active",
+      "search_terms": [
+        "Indoor-Outdoor Continuity"
+      ],
+      "aliases": [
+        "Indoor-Outdoor Continuity",
+        "indoor-outdoor continuity"
+      ]
+    },
+    {
+      "tag_id": "env.ae.seating_available",
+      "status": "active",
+      "search_terms": [
+        "Seating Available"
+      ],
+      "aliases": [
+        "Seating Available",
+        "seating available"
+      ]
+    },
+    {
+      "tag_id": "env.ae.soft_seating",
+      "status": "active",
+      "search_terms": [
+        "Soft Seating",
+        "sofa",
+        "cushions"
+      ],
+      "aliases": [
+        "Soft Seating",
+        "sofa",
+        "cushions",
+        "soft seating"
+      ]
+    },
+    {
+      "tag_id": "env.ae.hard_seating",
+      "status": "active",
+      "search_terms": [
+        "Hard Seating"
+      ],
+      "aliases": [
+        "Hard Seating",
+        "hard seating"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_seating_density",
+      "status": "active",
+      "search_terms": [
+        "High Seating Density"
+      ],
+      "aliases": [
+        "High Seating Density",
+        "high seating density"
+      ]
+    },
+    {
+      "tag_id": "env.ae.work_surfaces_present",
+      "status": "active",
+      "search_terms": [
+        "Work Surfaces Present"
+      ],
+      "aliases": [
+        "Work Surfaces Present",
+        "work surfaces present"
+      ]
+    },
+    {
+      "tag_id": "env.ae.home-like_decor",
+      "status": "active",
+      "search_terms": [
+        "Home-like Decor",
+        "cozy decor"
+      ],
+      "aliases": [
+        "Home-like Decor",
+        "cozy decor",
+        "home-like decor"
+      ]
+    },
+    {
+      "tag_id": "env.ae.institutional_decor",
+      "status": "active",
+      "search_terms": [
+        "Institutional Decor"
+      ],
+      "aliases": [
+        "Institutional Decor",
+        "institutional decor"
+      ]
+    },
+    {
+      "tag_id": "env.ae.crowded_space",
+      "status": "active",
+      "search_terms": [
+        "Crowded Space",
+        "many people"
+      ],
+      "aliases": [
+        "Crowded Space",
+        "many people",
+        "crowded space"
+      ]
+    },
+    {
+      "tag_id": "env.ae.sparse_occupancy",
+      "status": "active",
+      "search_terms": [
+        "Sparse Occupancy",
+        "empty"
+      ],
+      "aliases": [
+        "Sparse Occupancy",
+        "empty",
+        "sparse occupancy"
+      ]
+    },
+    {
+      "tag_id": "env.ae.private/enclosed_niche",
+      "status": "active",
+      "search_terms": [
+        "Private/Enclosed Niche"
+      ],
+      "aliases": [
+        "Private/Enclosed Niche",
+        "private/enclosed niche"
+      ]
+    },
+    {
+      "tag_id": "env.ae.public/exposed_area",
+      "status": "active",
+      "search_terms": [
+        "Public/Exposed Area"
+      ],
+      "aliases": [
+        "Public/Exposed Area",
+        "public/exposed area"
+      ]
+    },
+    {
+      "tag_id": "env.ae.clear_exits/wayfinding_signage",
+      "status": "active",
+      "search_terms": [
+        "Clear Exits/Wayfinding Signage",
+        "exit sign",
+        "wayfinding sign"
+      ],
+      "aliases": [
+        "Clear Exits/Wayfinding Signage",
+        "exit sign",
+        "wayfinding sign",
+        "clear exits/wayfinding signage"
+      ]
+    },
+    {
+      "tag_id": "env.ae.poor_visibility_/_dark_corners",
+      "status": "active",
+      "search_terms": [
+        "Poor Visibility / Dark Corners"
+      ],
+      "aliases": [
+        "Poor Visibility / Dark Corners",
+        "poor visibility / dark corners"
+      ]
+    },
+    {
+      "tag_id": "env.ae.barriers/guards_present",
+      "status": "active",
+      "search_terms": [
+        "Barriers/Guards Present",
+        "railings",
+        "guards"
+      ],
+      "aliases": [
+        "Barriers/Guards Present",
+        "railings",
+        "guards",
+        "barriers/guards present"
+      ]
+    },
+    {
+      "tag_id": "env.ae.hazard_indicators",
+      "status": "active",
+      "search_terms": [
+        "Hazard Indicators",
+        "broken glass",
+        "construction"
+      ],
+      "aliases": [
+        "Hazard Indicators",
+        "broken glass",
+        "construction",
+        "hazard indicators"
+      ]
+    },
+    {
+      "tag_id": "env.ae.surveillance_/_cameras_visible",
+      "status": "active",
+      "search_terms": [
+        "Surveillance / Cameras Visible",
+        "CCTV"
+      ],
+      "aliases": [
+        "Surveillance / Cameras Visible",
+        "CCTV",
+        "surveillance / cameras visible"
+      ]
+    },
+    {
+      "tag_id": "env.ae.soft_acoustic_treatments",
+      "status": "active",
+      "search_terms": [
+        "Soft Acoustic Treatments",
+        "acoustic panels",
+        "carpet"
+      ],
+      "aliases": [
+        "Soft Acoustic Treatments",
+        "acoustic panels",
+        "carpet",
+        "soft acoustic treatments"
+      ]
+    },
+    {
+      "tag_id": "env.ae.hard_reflective_surfaces",
+      "status": "active",
+      "search_terms": [
+        "Hard Reflective Surfaces",
+        "bare walls"
+      ],
+      "aliases": [
+        "Hard Reflective Surfaces",
+        "bare walls",
+        "hard reflective surfaces"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_ceiling_+_hard_surfaces",
+      "status": "active",
+      "search_terms": [
+        "High Ceiling + Hard Surfaces"
+      ],
+      "aliases": [
+        "High Ceiling + Hard Surfaces",
+        "high ceiling + hard surfaces"
+      ]
+    },
+    {
+      "tag_id": "env.ae.visible_hvac_vents",
+      "status": "active",
+      "search_terms": [
+        "Visible HVAC Vents"
+      ],
+      "aliases": [
+        "Visible HVAC Vents",
+        "visible hvac vents"
+      ]
+    },
+    {
+      "tag_id": "env.ae.open_windows",
+      "status": "active",
+      "search_terms": [
+        "Open Windows",
+        "window open"
+      ],
+      "aliases": [
+        "Open Windows",
+        "window open",
+        "open windows"
+      ]
+    },
+    {
+      "tag_id": "env.ae.fans_visible",
+      "status": "active",
+      "search_terms": [
+        "Fans Visible",
+        "ceiling fan"
+      ],
+      "aliases": [
+        "Fans Visible",
+        "ceiling fan",
+        "fans visible"
+      ]
+    },
+    {
+      "tag_id": "env.ae.commercial_branding",
+      "status": "active",
+      "search_terms": [
+        "Commercial Branding",
+        "logo signage"
+      ],
+      "aliases": [
+        "Commercial Branding",
+        "logo signage",
+        "commercial branding"
+      ]
+    },
+    {
+      "tag_id": "env.ae.religious_symbols",
+      "status": "active",
+      "search_terms": [
+        "Religious Symbols",
+        "temple",
+        "church"
+      ],
+      "aliases": [
+        "Religious Symbols",
+        "temple",
+        "church",
+        "religious symbols"
+      ]
+    },
+    {
+      "tag_id": "env.ae.artworks_prominent",
+      "status": "active",
+      "search_terms": [
+        "Artworks Prominent",
+        "paintings",
+        "sculpture"
+      ],
+      "aliases": [
+        "Artworks Prominent",
+        "paintings",
+        "sculpture",
+        "artworks prominent"
+      ]
+    },
+    {
+      "tag_id": "env.ae.text/information_density_high",
+      "status": "active",
+      "search_terms": [
+        "Text/Information Density High",
+        "lots of signs"
+      ],
+      "aliases": [
+        "Text/Information Density High",
+        "lots of signs",
+        "text/information density high"
+      ]
+    },
+    {
+      "tag_id": "env.ae.minimal_signage",
+      "status": "active",
+      "search_terms": [
+        "Minimal Signage"
+      ],
+      "aliases": [
+        "Minimal Signage",
+        "minimal signage"
+      ]
+    },
+    {
+      "tag_id": "env.ae.well_maintained",
+      "status": "active",
+      "search_terms": [
+        "Well Maintained"
+      ],
+      "aliases": [
+        "Well Maintained",
+        "well maintained"
+      ]
+    },
+    {
+      "tag_id": "env.ae.worn/degraded",
+      "status": "active",
+      "search_terms": [
+        "Worn/Degraded",
+        "worn",
+        "broken"
+      ],
+      "aliases": [
+        "Worn/Degraded",
+        "worn",
+        "broken",
+        "worn/degraded"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_edge_density",
+      "status": "active",
+      "search_terms": [
+        "High Edge Density"
+      ],
+      "aliases": [
+        "High Edge Density",
+        "high edge density"
+      ]
+    },
+    {
+      "tag_id": "env.ae.low_edge_density",
+      "status": "active",
+      "search_terms": [
+        "Low Edge Density"
+      ],
+      "aliases": [
+        "Low Edge Density",
+        "low edge density"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_spatial_frequency_content",
+      "status": "active",
+      "search_terms": [
+        "High Spatial Frequency Content"
+      ],
+      "aliases": [
+        "High Spatial Frequency Content",
+        "high spatial frequency content"
+      ]
+    },
+    {
+      "tag_id": "env.ae.low_spatial_frequency_content",
+      "status": "active",
+      "search_terms": [
+        "Low Spatial Frequency Content"
+      ],
+      "aliases": [
+        "Low Spatial Frequency Content",
+        "low spatial frequency content"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_color_entropy",
+      "status": "active",
+      "search_terms": [
+        "High Color Entropy"
+      ],
+      "aliases": [
+        "High Color Entropy",
+        "high color entropy"
+      ]
+    },
+    {
+      "tag_id": "env.ae.high_fractal_dimension_(2d)",
+      "status": "active",
+      "search_terms": [
+        "High Fractal Dimension (2D)"
+      ],
+      "aliases": [
+        "High Fractal Dimension (2D)",
+        "high fractal dimension (2d)"
+      ]
+    }
+  ]
+}

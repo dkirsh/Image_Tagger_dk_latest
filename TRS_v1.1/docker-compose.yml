@@ -1,0 +1,34 @@
+services:
+  trs_api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      - TRS_CORE_VER=${TRS_CORE_VER:-v0.2.8}
+      - TRS_DB_PATH=/data/trs.db
+    ports:
+      - "${TRS_API_PORT:-8401}:8401"
+    volumes:
+      - trs_data:/data
+      - ./core:/app/core:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8401/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  trs_ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    environment:
+      - TRS_API_URL=http://trs_api:8401
+    ports:
+      - "${TRS_UI_PORT:-8501}:8501"
+    depends_on:
+      trs_api:
+        condition: service_healthy
+
+volumes:
+  trs_data:
+    name: trs_data

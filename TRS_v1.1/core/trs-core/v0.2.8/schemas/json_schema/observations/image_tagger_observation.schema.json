@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Image Tagger Observation Envelope",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "image_id",
+    "run_id",
+    "tags"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "pattern": "^v\\d+\\.\\d+\\.\\d+$"
+    },
+    "image_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "tag_id",
+          "value_type"
+        ],
+        "properties": {
+          "tag_id": {
+            "type": "string"
+          },
+          "value_type": {
+            "type": "string",
+            "enum": [
+              "binary",
+              "ordinal",
+              "continuous",
+              "categorical",
+              "region_map"
+            ]
+          },
+          "value": {},
+          "confidence": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "status": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "meta": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

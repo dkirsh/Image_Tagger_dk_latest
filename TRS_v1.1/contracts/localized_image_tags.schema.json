@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neuroarch.ucsd.edu/schemas/localized_image_tags/v0.1.0",
+  "title": "Neuroarchitecture Localized Image Tags",
+  "description": "Schema for spatially-structured architectural feature extraction",
+  "type": "object",
+  "properties": {
+    "image_id": {"type": "string"},
+    "schema_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "computed_at": {"type": "string", "format": "date-time"},
+    "image_source": {"$ref": "#/$defs/ImageSource"},
+    "global_attributes": {"$ref": "#/$defs/GlobalAttributes"},
+    "semantic_regions": {"type": "array", "items": {"$ref": "#/$defs/SemanticRegion"}},
+    "dense_maps": {"type": "array", "items": {"$ref": "#/$defs/DenseMapReference"}},
+    "region_relationships": {"type": "array", "items": {"$ref": "#/$defs/RegionRelationship"}},
+    "contrast_metrics": {"type": "array", "items": {"$ref": "#/$defs/ContrastMetric"}},
+    "pipeline_provenance": {"$ref": "#/$defs/PipelineProvenance"}
+  },
+  "required": ["image_id", "schema_version", "computed_at", "semantic_regions", "pipeline_provenance"],
+  "$defs": {
+    "ImageSource": {
+      "type": "object",
+      "properties": {
+        "source_type": {"type": "string", "enum": ["file", "url", "dataset", "capture"]},
+        "source_path": {"type": "string"},
+        "dataset_name": {"type": ["string", "null"]},
+        "dataset_id": {"type": ["string", "null"]}
+      },
+      "required": ["source_type", "source_path"]
+    },
+    "AttributeValue": {
+      "type": "object",
+      "properties": {
+        "value": {"oneOf": [{"type": "number"}, {"type": "array", "items": {"type": "number"}}, {"type": "string"}]},
+        "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "provenance": {"$ref": "#/$defs/AttributeProvenance"}
+      },
+      "required": ["value", "provenance"]
+    },
+    "AttributeProvenance": {
+      "type": "object",
+      "properties": {
+        "model_id": {"type": "string"},
+        "model_version": {"type": "string"},
+        "computation_date": {"type": "string", "format": "date-time"},
+        "parameters": {"type": ["object", "null"]},
+        "source_reference": {"type": ["string", "null"]}
+      },
+      "required": ["model_id", "model_version", "computation_date"]
+    },
+    "BoundingBox": {
+      "type": "object",
+      "properties": {
+        "x": {"type": "integer", "minimum": 0},
+        "y": {"type": "integer", "minimum": 0},
+        "width": {"type": "integer", "minimum": 1},
+        "height": {"type": "integer", "minimum": 1}
+      },
+      "required": ["x", "y", "width", "height"]
+    },
+    "MaskReference": {
+      "type": "object",
+      "properties": {
+        "format": {"type": "string", "enum": ["rle", "png", "dense_index"]},
+        "storage_key": {"type": "string"},
+        "resolution": {"type": "array", "items": {"type": "integer"}, "minItems": 2, "maxItems": 2}
+      },
+      "required": ["format", "storage_key", "resolution"]
+    },
+    "MaterialComposition": {
+      "type": "object",
+      "properties": {
+        "material_code": {"type": "string", "pattern": "^mat\\."},
+        "area_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+        "mask_reference": {"$ref": "#/$defs/MaskReference"}
+      },
+      "required": ["material_code", "area_fraction"]
+    },
+    "RegionAttributes": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/AttributeValue"}
+    },
+    "SemanticRegion": {
+      "type": "object",
+      "properties": {
+        "region_id": {"type": "string"},
+        "region_label": {"type": "string"},
+        "vocabulary_code": {"type": "string"},
+        "mask_reference": {"$ref": "#/$defs/MaskReference"},
+        "bounding_box": {"$ref": "#/$defs/BoundingBox"},
+        "area_pixels": {"type": "integer", "minimum": 0},
+        "area_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+        "centroid": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+        "parent_region": {"type": ["string", "null"]},
+        "child_regions": {"type": ["array", "null"], "items": {"type": "string"}},
+        "adjacent_regions": {"type": ["array", "null"], "items": {"type": "string"}},
+        "material_composition": {"type": ["array", "null"], "items": {"$ref": "#/$defs/MaterialComposition"}},
+        "attributes": {"$ref": "#/$defs/RegionAttributes"}
+      },
+      "required": ["region_id", "region_label", "vocabulary_code", "mask_reference", "bounding_box", "area_pixels", "area_fraction", "attributes"]
+    },
+    "GlobalAttributes": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/AttributeValue"}
+    },
+    "DenseMapReference": {
+      "type": "object",
+      "properties": {
+        "attribute_id": {"type": "string"},
+        "resolution": {"type": "array", "items": {"type": "integer"}, "minItems": 2, "maxItems": 2},
+        "format": {"type": "string", "enum": ["float32", "float16", "uint8", "uint16"]},
+        "compression": {"type": "string", "enum": ["none", "lz4", "zstd", "blosc"]},
+        "storage_uri": {"type": "string"},
+        "window_size": {"type": ["integer", "null"]},
+        "stride": {"type": ["integer", "null"]},
+        "value_min": {"type": "number"},
+        "value_max": {"type": "number"},
+        "provenance": {"$ref": "#/$defs/AttributeProvenance"}
+      },
+      "required": ["attribute_id", "resolution", "format", "storage_uri", "value_min", "value_max", "provenance"]
+    },
+    "RegionRelationship": {
+      "type": "object",
+      "properties": {
+        "relationship_type": {"type": "string", "enum": ["contains", "adjacent_to", "faces", "views"]},
+        "region_a": {"type": "string"},
+        "region_b": {"type": "string"},
+        "metadata": {"type": ["object", "null"]}
+      },
+      "required": ["relationship_type", "region_a", "region_b"]
+    },
+    "ContrastMetric": {
+      "type": "object",
+      "properties": {
+        "metric_id": {"type": "string"},
+        "metric_type": {"type": "string", "enum": ["difference", "ratio", "correlation", "custom"]},
+        "region_a": {"type": "string"},
+        "region_b": {"type": "string"},
+        "attribute_id": {"type": "string"},
+        "value": {"type": "number"},
+        "formula": {"type": ["string", "null"]},
+        "provenance": {"$ref": "#/$defs/AttributeProvenance"}
+      },
+      "required": ["metric_id", "metric_type", "region_a", "region_b", "attribute_id", "value", "provenance"]
+    },
+    "ComponentVersion": {
+      "type": "object",
+      "properties": {
+        "component_id": {"type": "string"},
+        "component_type": {"type": "string", "enum": ["model", "algorithm", "library"]},
+        "version": {"type": "string"},
+        "source": {"type": "string"},
+        "checkpoint": {"type": ["string", "null"]}
+      },
+      "required": ["component_id", "component_type", "version", "source"]
+    },
+    "PipelineProvenance": {
+      "type": "object",
+      "properties": {
+        "pipeline_version": {"type": "string"},
+        "execution_id": {"type": "string"},
+        "execution_time": {"type": "string", "format": "date-time"},
+        "components": {"type": "array", "items": {"$ref": "#/$defs/ComponentVersion"}},
+        "config_hash": {"type": "string"}
+      },
+      "required": ["pipeline_version", "execution_id", "execution_time", "components"]
+    }
+  }
+}

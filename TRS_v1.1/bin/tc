@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO_ROOT"
+
+say(){ printf "%s\n" "$*"; }
+
+wait_for_url(){
+  local url="$1"
+  local name="$2"
+  local max_tries="${3:-60}"
+  local sleep_s="${4:-2}"
+  local i=1
+  while (( i <= max_tries )); do
+    if command -v curl >/dev/null 2>&1; then
+      if curl -fsS --max-time 2 "$url" >/dev/null 2>&1; then
+        say "OK: $name"
+        return 0
+      fi
+    else
+      say "WARN: curl not found; skipping health check for $name"
+      return 0
+    fi
+    sleep "$sleep_s"
+    i=$((i + 1))
+  done
+  say "NO-GO: $name did not become healthy at $url"
+  return 2
+}
+
+ensure_env(){
+  if [[ ! -f "$REPO_ROOT/.env" ]]; then
+    if [[ -f "$REPO_ROOT/.env.example" ]]; then
+      cp "$REPO_ROOT/.env.example" "$REPO_ROOT/.env"
+      say "Created .env from .env.example"
+    else
+      cat > "$REPO_ROOT/.env" << 'E'
+TRS_CORE_VER=v0.2.8
+TRS_API_PORT=8401
+TRS_UI_PORT=8501
+E
+      say "Created default .env"
+    fi
+  fi
+  # shellcheck disable=SC1091
+  set -a; source "$REPO_ROOT/.env"; set +a
+  : "${TRS_CORE_VER:=v0.2.8}"
+  : "${TRS_API_PORT:=8401}"
+  : "${TRS_UI_PORT:=8501}"
+}
+
+doctor(){
+  ensure_env
+  say "== Doctor =="
+  say "Repo: $REPO_ROOT"
+  say "Version: $(cat "$REPO_ROOT/VERSION.txt" 2>/dev/null || echo 'UNKNOWN')"
+  say "Core: $TRS_CORE_VER"
+  command -v docker >/dev/null 2>&1 || { say "NO-GO: docker not found"; exit 2; }
+  docker compose version >/dev/null 2>&1 || { say "NO-GO: docker compose not available"; exit 2; }
+  [[ -f "$REPO_ROOT/docker-compose.yml" ]] || { say "NO-GO: missing docker-compose.yml"; exit 2; }
+  [[ -f "$REPO_ROOT/Dockerfile.api" ]] || { say "NO-GO: missing Dockerfile.api"; exit 2; }
+  [[ -f "$REPO_ROOT/Dockerfile.ui" ]] || { say "NO-GO: missing Dockerfile.ui"; exit 2; }
+  [[ -d "$REPO_ROOT/core/trs-core/$TRS_CORE_VER" ]] || { say "NO-GO: missing core/trs-core/$TRS_CORE_VER"; exit 2; }
+  say "GO"
+}
+
+status(){
+  say "== Status =="
+  say "Repo: $REPO_ROOT"
+  say "Version: $(cat "$REPO_ROOT/VERSION.txt" 2>/dev/null || echo '(missing VERSION.txt)')"
+  say "Running:"
+  docker compose ps || true
+  say "Releases:"
+  ls -1 "$REPO_ROOT/release_artifacts" 2>/dev/null | sed 's/^/  - /' || true
+}
+
+release(){
+  local ver="${1:-}"
+  [[ -n "$ver" ]] || { say "Usage: ./bin/tc release vX.Y.Z"; exit 2; }
+  doctor
+  python3 "$REPO_ROOT/scripts/release.py" "$ver"
+}
+
+install(){
+  chmod +x "$REPO_ROOT/install.sh" 2>/dev/null || true
+  exec "$REPO_ROOT/install.sh"
+}
+
+up(){
+  doctor
+  ensure_env
+  docker compose up --build -d
+  health
+}
+
+down(){
+  ensure_env
+  docker compose down
+}
+
+logs(){
+  ensure_env
+  local svc="${1:-}"
+  if [[ -z "$svc" ]]; then
+    docker compose logs --tail=200
+  else
+    docker compose logs --tail=200 "$svc"
+  fi
+}
+
+health(){
+  ensure_env
+  say "== Health =="
+  wait_for_url "http://localhost:${TRS_API_PORT}/health" "API" 60 2
+  wait_for_url "http://localhost:${TRS_UI_PORT}" "UI" 60 2
+}
+
+case "${1:-}" in
+  install) install ;;
+  doctor) doctor ;;
+  status) status ;;
+  release) shift; release "$@" ;;
+  up) up ;;
+  down) down ;;
+  logs) shift; logs "$@" ;;
+  health) health ;;
+  *) say "Usage: ./bin/tc {install|status|doctor|release vX.Y.Z|up|down|logs [service]|health}"; exit 1 ;;
+esac

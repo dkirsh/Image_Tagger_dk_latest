@@ -1,0 +1,2130 @@
+{
+  "meta": {
+    "registry_sha256": "54adb89299589db8420366b0d74e0b8e1eba1423da6cd8e3b47155481f97525a",
+    "generated_at_utc": "2025-12-21T18:53:34.889842+00:00",
+    "contract_version": "v0.2.8"
+  },
+  "contract_version": "v0.2.8",
+  "tags": [
+    {
+      "tag_id": "env.v2a_001.color_palette_hue_saturation_lightness_harmony_beyond_cct",
+      "value_type": "ordinal",
+      "definition": "Color palette hue/saturation/lightness harmony (beyond CCT); red/blue dominance (Mehta & Zhu, 2009)."
+    },
+    {
+      "tag_id": "env.v2a_002.warm_vs_cool_white_appearance_cct_and_perceived_coziness_activation_cajochen_et",
+      "value_type": "ordinal",
+      "definition": "Warm vs cool white appearance (CCT) and perceived coziness/activation (Cajochen et al., 2005; Chellappa et al., 2011)."
+    },
+    {
+      "tag_id": "env.v2a_003.brightness_level_at_eye_vertical_illuminance_vs_task_plane",
+      "value_type": "ordinal",
+      "definition": "Brightness level at eye (vertical illuminance) vs task plane; perceived ‘dimness’ vs ‘glare’ zones."
+    },
+    {
+      "tag_id": "env.v2a_004.brightness_gradients_and_brightness_contrast_ratios",
+      "value_type": "ordinal",
+      "definition": "Brightness gradients and brightness contrast ratios (accent lighting vs uniform lighting)."
+    },
+    {
+      "tag_id": "env.v2a_005.daylight_presence_sky_view_and_view_to_outside_content",
+      "value_type": "binary",
+      "definition": "Daylight presence, sky view, and view-to-outside content (nature/urban)."
+    },
+    {
+      "tag_id": "env.v2a_006.glare_source_count",
+      "value_type": "ordinal",
+      "definition": "Glare source count (direct & reflected) and discomfort glare probability proxies."
+    },
+    {
+      "tag_id": "env.v2a_007.flicker_temporal_modulation_risk_cues_led_drivers",
+      "value_type": "ordinal",
+      "definition": "Flicker/temporal modulation risk cues (LED drivers; visible strobing in videos)."
+    },
+    {
+      "tag_id": "env.v2a_008.color_rendering_saturation_rendering",
+      "value_type": "ordinal",
+      "definition": "Color rendering / saturation rendering (skin-tone naturalness) cues."
+    },
+    {
+      "tag_id": "env.v2a_009.shadow_softness_hardness",
+      "value_type": "ordinal",
+      "definition": "Shadow softness/hardness (diffuse vs directional) as comfort/threat cues."
+    },
+    {
+      "tag_id": "env.v2a_010.lighting_control_cues_dimmers_blinds_task_lights",
+      "value_type": "ordinal",
+      "definition": "Lighting control cues: dimmers, blinds, task lights (autonomy)."
+    },
+    {
+      "tag_id": "env.v2a_011.evening_like_ambience_cues_vs_daytime_like_ambience_cues",
+      "value_type": "ordinal",
+      "definition": "Evening-like ambience cues vs daytime-like ambience cues (circadian appropriateness)."
+    },
+    {
+      "tag_id": "env.v2a_012.visual_privacy_via_lighting_backlit_silhouettes_vs_evenly_lit_faces",
+      "value_type": "ordinal",
+      "definition": "Visual privacy via lighting: backlit silhouettes vs evenly lit faces (social comfort)."
+    },
+    {
+      "tag_id": "env.v2a_013.high_contrast_spotlight_social_exposure_cues",
+      "value_type": "ordinal",
+      "definition": "High contrast ‘spotlight’ social exposure cues (stage-like lighting)."
+    },
+    {
+      "tag_id": "env.v2a_014.presence_of_natural_light_patterns",
+      "value_type": "binary",
+      "definition": "Presence of natural light patterns (dappled light, sun patches) (thermal/affective associations)."
+    },
+    {
+      "tag_id": "env.v2a_015.lighting_temperature_mismatch",
+      "value_type": "ordinal",
+      "definition": "Lighting ‘temperature mismatch’ (e.g., very cool lighting in ‘relax’ contexts) as appraisal mismatch."
+    },
+    {
+      "tag_id": "env.v1_001.illuminance_level_task_surface",
+      "value_type": "ordinal",
+      "definition": "50-500 lux typical office range"
+    },
+    {
+      "tag_id": "env.v1_002.illuminance_level_ambient",
+      "value_type": "ordinal",
+      "definition": "General room illumination in lux"
+    },
+    {
+      "tag_id": "env.v1_003.luminance_distribution",
+      "value_type": "ordinal",
+      "definition": "Surface brightness patterns (cd/m²)"
+    },
+    {
+      "tag_id": "env.v1_004.contrast_ratio",
+      "value_type": "ordinal",
+      "definition": "Task-to-surround ratio; optimal ~3:1 for reading"
+    },
+    {
+      "tag_id": "env.v1_005.uniformity_ratio",
+      "value_type": "ordinal",
+      "definition": "Min/average illuminance ratio"
+    },
+    {
+      "tag_id": "env.v1_006.daylight_factor",
+      "value_type": "ordinal",
+      "definition": "Interior/exterior illuminance ratio (%)"
+    },
+    {
+      "tag_id": "env.v1_007.daylight_autonomy",
+      "value_type": "ordinal",
+      "definition": "Hours meeting threshold naturally"
+    },
+    {
+      "tag_id": "env.v1_008.correlated_color_temperature_cct",
+      "value_type": "ordinal",
+      "definition": "2700K (warm) to 6500K (cool)"
+    },
+    {
+      "tag_id": "env.v1_009.spectral_power_distribution",
+      "value_type": "ordinal",
+      "definition": "Blue-enriched vs. depleted curves"
+    },
+    {
+      "tag_id": "env.v1_010.color_rendering_index_cri",
+      "value_type": "ordinal",
+      "definition": "0-100 scale; >80 recommended"
+    },
+    {
+      "tag_id": "env.v1_011.melanopic_lux",
+      "value_type": "ordinal",
+      "definition": "ipRGC-weighted illuminance for circadian/alertness effects"
+    },
+    {
+      "tag_id": "env.v1_012.dominant_wavelength",
+      "value_type": "ordinal",
+      "definition": "Peak spectral energy (nm)"
+    },
+    {
+      "tag_id": "env.v1_013.flicker_frequency",
+      "value_type": "ordinal",
+      "definition": "Hz; below 100Hz can be problematic"
+    },
+    {
+      "tag_id": "env.v1_014.flicker_modulation_depth",
+      "value_type": "ordinal",
+      "definition": "Amplitude of fluctuation (%)"
+    },
+    {
+      "tag_id": "env.v1_015.circadian_timing_of_exposure",
+      "value_type": "ordinal",
+      "definition": "Morning light most impactful for entrainment"
+    },
+    {
+      "tag_id": "env.v1_016.rate_of_illuminance_change",
+      "value_type": "ordinal",
+      "definition": "Gradual vs. abrupt transitions"
+    },
+    {
+      "tag_id": "env.v1_017.diurnal_variation_pattern",
+      "value_type": "ordinal",
+      "definition": "Dynamic vs. static lighting schedules"
+    },
+    {
+      "tag_id": "env.v1_018.direct_indirect_ratio",
+      "value_type": "ordinal",
+      "definition": "Task vs. ambient illumination proportion"
+    },
+    {
+      "tag_id": "env.v1_019.light_directionality",
+      "value_type": "ordinal",
+      "definition": "Angle of primary incidence"
+    },
+    {
+      "tag_id": "env.v1_020.unified_glare_rating_ugr",
+      "value_type": "ordinal",
+      "definition": "0-40 scale; <19 recommended for offices"
+    },
+    {
+      "tag_id": "env.v1_021.shadow_characteristics",
+      "value_type": "ordinal",
+      "definition": "Hardness, pattern complexity"
+    },
+    {
+      "tag_id": "env.v1_022.natural_artificial_ratio",
+      "value_type": "ordinal",
+      "definition": "Daylight contribution percentage"
+    },
+    {
+      "tag_id": "env.v1_023.point_vs_diffuse_illumination",
+      "value_type": "ordinal",
+      "definition": "Source concentration/distribution"
+    },
+    {
+      "tag_id": "env.v1_024.window_sky_type_visible",
+      "value_type": "categorical",
+      "definition": "Clear, overcast, partly cloudy categories"
+    },
+    {
+      "tag_id": "env.v1_025.solar_penetration_depth",
+      "value_type": "ordinal",
+      "definition": "Direct sun reach into interior (meters)"
+    },
+    {
+      "tag_id": "env.v1_026.view_to_exterior",
+      "value_type": "ordinal",
+      "definition": "Solid angle of view (steradians)"
+    },
+    {
+      "tag_id": "env.v2a_067.ceiling_height_and_openness_processing_style",
+      "value_type": "categorical",
+      "definition": "Ceiling height and openness (processing style; freedom/constraint primes) (Meyers-Levy & Zhu, 2007)."
+    },
+    {
+      "tag_id": "env.v2a_068.room_scale_cues",
+      "value_type": "ordinal",
+      "definition": "Room scale cues (human scale vs monumental) and awe/insignificance appraisal."
+    },
+    {
+      "tag_id": "env.v2a_069.enclosure_ratio_wall_to_window_balance",
+      "value_type": "ordinal",
+      "definition": "Enclosure ratio: wall-to-window balance; perceived refuge vs exposure."
+    },
+    {
+      "tag_id": "env.v2a_070.prospect_refuge_ability_to_see_without_being_seen",
+      "value_type": "ordinal",
+      "definition": "Prospect–refuge: ability to see without being seen; corner refuge availability."
+    },
+    {
+      "tag_id": "env.v2a_071.exit_visibility_and_path_to_exit_complexity",
+      "value_type": "ordinal",
+      "definition": "Exit visibility and path-to-exit complexity (safety appraisal)."
+    },
+    {
+      "tag_id": "env.v2a_072.blind_corners_vs_transparent_partitions",
+      "value_type": "ordinal",
+      "definition": "Blind corners vs transparent partitions; concealment opportunities."
+    },
+    {
+      "tag_id": "env.v2a_073.distance_to_others",
+      "value_type": "ordinal",
+      "definition": "Distance to others (proxemic space) and crowding stress risk (Evans & Wener, 2007)."
+    },
+    {
+      "tag_id": "env.v2a_074.wayfinding_legibility_straight_sightlines",
+      "value_type": "ordinal",
+      "definition": "Wayfinding legibility: straight sightlines, landmarks, signage, decision-point density."
+    },
+    {
+      "tag_id": "env.v2a_075.spatial_complexity_branching_corridors_vs_simple_loops",
+      "value_type": "ordinal",
+      "definition": "Spatial complexity: branching corridors vs simple loops (cognitive load)."
+    },
+    {
+      "tag_id": "env.v2a_076.perceived_territoriality_defined_zones_vs_ambiguous_shared_space",
+      "value_type": "ordinal",
+      "definition": "Perceived territoriality: defined zones vs ambiguous shared space."
+    },
+    {
+      "tag_id": "env.v2a_077.barrier_permeability_half_walls_vs_full_walls",
+      "value_type": "ordinal",
+      "definition": "Barrier permeability: half-walls vs full walls; social exposure control."
+    },
+    {
+      "tag_id": "env.v2a_078.visual_access_to_outdoors_nature_as_escape_affordance",
+      "value_type": "ordinal",
+      "definition": "Visual access to outdoors/nature as ‘escape’ affordance."
+    },
+    {
+      "tag_id": "env.v2a_079.seating_prospect_facing_entrance_vs_back_to_entrance",
+      "value_type": "ordinal",
+      "definition": "Seating prospect: facing entrance vs back to entrance (threat monitoring)."
+    },
+    {
+      "tag_id": "env.v2a_080.verticality_cues",
+      "value_type": "ordinal",
+      "definition": "Verticality cues (stairs, atria) and arousal/awe."
+    },
+    {
+      "tag_id": "env.v2a_081.personal_safety_affordances_lighting_in_corners",
+      "value_type": "ordinal",
+      "definition": "Personal safety affordances: lighting in corners, absence of hiding places."
+    },
+    {
+      "tag_id": "env.v1_090.ceiling_height",
+      "value_type": "categorical",
+      "definition": "2.4-4.5m typical range; affects processing style"
+    },
+    {
+      "tag_id": "env.v1_091.room_volume",
+      "value_type": "ordinal",
+      "definition": "Total enclosed volume (m³)"
+    },
+    {
+      "tag_id": "env.v1_092.floor_area",
+      "value_type": "ordinal",
+      "definition": "Usable area (m²)"
+    },
+    {
+      "tag_id": "env.v1_093.aspect_ratios",
+      "value_type": "ordinal",
+      "definition": "L:W:H proportional relationships"
+    },
+    {
+      "tag_id": "env.v1_094.degree_of_enclosure",
+      "value_type": "ordinal",
+      "definition": "Open to fully enclosed continuum"
+    },
+    {
+      "tag_id": "env.v1_095.boundary_definition",
+      "value_type": "ordinal",
+      "definition": "Clear vs. ambiguous edges"
+    },
+    {
+      "tag_id": "env.v1_096.visual_permeability",
+      "value_type": "ordinal",
+      "definition": "See-through proportion (%)"
+    },
+    {
+      "tag_id": "env.v1_097.spatial_layering",
+      "value_type": "ordinal",
+      "definition": "Sequential zones depth"
+    },
+    {
+      "tag_id": "env.v1_098.visual_access_extent",
+      "value_type": "ordinal",
+      "definition": "View distance and angle"
+    },
+    {
+      "tag_id": "env.v1_099.prospect_quality",
+      "value_type": "ordinal",
+      "definition": "View content value rating"
+    },
+    {
+      "tag_id": "env.v1_100.refuge_degree",
+      "value_type": "ordinal",
+      "definition": "Sense of protection (0-1)"
+    },
+    {
+      "tag_id": "env.v1_101.prospect_refuge_balance",
+      "value_type": "ordinal",
+      "definition": "Optimal ratio ~0.6-0.8"
+    },
+    {
+      "tag_id": "env.v1_102.defensible_space",
+      "value_type": "ordinal",
+      "definition": "Territorial clarity"
+    },
+    {
+      "tag_id": "env.v1_103.plan_complexity",
+      "value_type": "ordinal",
+      "definition": "Path and room configuration"
+    },
+    {
+      "tag_id": "env.v1_104.spatial_hierarchy",
+      "value_type": "ordinal",
+      "definition": "Primary-secondary-tertiary levels"
+    },
+    {
+      "tag_id": "env.v1_105.wayfinding_affordances",
+      "value_type": "ordinal",
+      "definition": "Navigation support"
+    },
+    {
+      "tag_id": "env.v1_106.mystery",
+      "value_type": "ordinal",
+      "definition": "Promised further information"
+    },
+    {
+      "tag_id": "env.v1_107.coherence",
+      "value_type": "ordinal",
+      "definition": "Organizational clarity"
+    },
+    {
+      "tag_id": "env.v1_108.legibility",
+      "value_type": "ordinal",
+      "definition": "Mental map formation ease"
+    },
+    {
+      "tag_id": "env.v1_109.angular_vs_curvilinear",
+      "value_type": "ordinal",
+      "definition": "Sharp vs. rounded forms"
+    },
+    {
+      "tag_id": "env.v1_110.symmetry",
+      "value_type": "categorical",
+      "definition": "Type and degree (reflection, rotation)"
+    },
+    {
+      "tag_id": "env.v1_111.proportion",
+      "value_type": "ordinal",
+      "definition": "Golden ratio, harmonic relationships"
+    },
+    {
+      "tag_id": "env.v1_112.fractal_dimension",
+      "value_type": "ordinal",
+      "definition": "D value; 1.3-1.5 preferred for edges"
+    },
+    {
+      "tag_id": "env.v1_113.self_similarity_scale_range",
+      "value_type": "ordinal",
+      "definition": "Fractal depth (octaves)"
+    },
+    {
+      "tag_id": "env.v2a_082.curvature_prevalence_vs_sharp_angles",
+      "value_type": "ordinal",
+      "definition": "Curvature prevalence vs sharp angles (threat/comfort bias) (Bar & Neta, 2006)."
+    },
+    {
+      "tag_id": "env.v2a_083.symmetry_and_regularity",
+      "value_type": "ordinal",
+      "definition": "Symmetry and regularity (processing fluency → preference)."
+    },
+    {
+      "tag_id": "env.v2a_084.fractal_self_similar_edge_statistics",
+      "value_type": "ordinal",
+      "definition": "Fractal/self-similar edge statistics (nature-like ranges) (Hägerhäll et al., 2004)."
+    },
+    {
+      "tag_id": "env.v2a_085.clutter_disorder_object_density_occlusion_surface_coverage",
+      "value_type": "ordinal",
+      "definition": "Clutter/disorder: object density, occlusion, surface coverage (stress/control)."
+    },
+    {
+      "tag_id": "env.v2a_086.cleanliness_maintenance_stains_damage_wear",
+      "value_type": "ordinal",
+      "definition": "Cleanliness/maintenance: stains, damage, wear (safety/valuation)."
+    },
+    {
+      "tag_id": "env.v2a_087.color_diversity_and_saturation",
+      "value_type": "ordinal",
+      "definition": "Color diversity and saturation; visual ‘loudness’ as arousal potential."
+    },
+    {
+      "tag_id": "env.v2a_088.texture_density",
+      "value_type": "ordinal",
+      "definition": "Texture density (busy patterns) vs minimalism (calmness in some contexts)."
+    },
+    {
+      "tag_id": "env.v2a_089.artwork_density_and_semantic_content",
+      "value_type": "ordinal",
+      "definition": "Artwork density and semantic content (threatening vs soothing imagery)."
+    },
+    {
+      "tag_id": "env.v2a_090.naturalness_of_materials",
+      "value_type": "ordinal",
+      "definition": "Naturalness of materials (wood grain) vs synthetic visual noise."
+    },
+    {
+      "tag_id": "env.v2a_091.visual_complexity_gradients",
+      "value_type": "ordinal",
+      "definition": "Visual complexity gradients (quiet corners vs busy hubs)."
+    },
+    {
+      "tag_id": "env.v2a_092.signage_density_informational_load",
+      "value_type": "ordinal",
+      "definition": "Signage density (informational load; can reduce uncertainty or increase clutter)."
+    },
+    {
+      "tag_id": "env.v2a_093.visual_affordances_for_organization",
+      "value_type": "ordinal",
+      "definition": "Visual affordances for organization (storage visibility) reducing disorder."
+    },
+    {
+      "tag_id": "env.v2a_094.orderliness_of_lines_alignment",
+      "value_type": "ordinal",
+      "definition": "Orderliness of lines: alignment, grid structure, repetition."
+    },
+    {
+      "tag_id": "env.v2a_095.perceptual_mystery_cues",
+      "value_type": "ordinal",
+      "definition": "Perceptual ‘mystery’ cues (partial occlusion inviting exploration) (ART literature)."
+    },
+    {
+      "tag_id": "env.v1_114.visual_entropy",
+      "value_type": "ordinal",
+      "definition": "Information density (bits)"
+    },
+    {
+      "tag_id": "env.v1_115.edge_density",
+      "value_type": "ordinal",
+      "definition": "Contour complexity (edges/m²)"
+    },
+    {
+      "tag_id": "env.v1_116.color_diversity",
+      "value_type": "ordinal",
+      "definition": "Chromatic variation index"
+    },
+    {
+      "tag_id": "env.v1_117.element_count",
+      "value_type": "ordinal",
+      "definition": "Discrete visual items"
+    },
+    {
+      "tag_id": "env.v1_118.visual_noise",
+      "value_type": "ordinal",
+      "definition": "Random variation"
+    },
+    {
+      "tag_id": "env.v1_119.pattern_regularity",
+      "value_type": "ordinal",
+      "definition": "Rhythm and repetition"
+    },
+    {
+      "tag_id": "env.v1_120.figure_ground_clarity",
+      "value_type": "ordinal",
+      "definition": "Object separation"
+    },
+    {
+      "tag_id": "env.v1_121.visual_hierarchy",
+      "value_type": "ordinal",
+      "definition": "Dominance structure"
+    },
+    {
+      "tag_id": "env.v2a_096.visible_vegetation_quantity_proximity_and_distribution",
+      "value_type": "ordinal",
+      "definition": "Visible vegetation quantity, proximity, and distribution (Kaplan, 1995)."
+    },
+    {
+      "tag_id": "env.v2a_097.window_view_content_greenery_sky_water_vs_built_up",
+      "value_type": "ordinal",
+      "definition": "Window view content: greenery, sky, water vs built-up (Ulrich, 1984)."
+    },
+    {
+      "tag_id": "env.v2a_098.natural_materials_wood_stone",
+      "value_type": "ordinal",
+      "definition": "Natural materials: wood/stone; biomorphic forms; nature images."
+    },
+    {
+      "tag_id": "env.v2a_099.blue_space",
+      "value_type": "ordinal",
+      "definition": "Blue-space (water features/images) and associated calmness."
+    },
+    {
+      "tag_id": "env.v2a_100.prospect_to_distant_views",
+      "value_type": "ordinal",
+      "definition": "Prospect to distant views (horizon) vs close enclosure."
+    },
+    {
+      "tag_id": "env.v2a_101.natural_ventilation_cues",
+      "value_type": "ordinal",
+      "definition": "Natural ventilation cues (breeze, operable windows) as ‘nature contact’."
+    },
+    {
+      "tag_id": "env.v2a_102.natural_sound_sources",
+      "value_type": "ordinal",
+      "definition": "Natural sound sources (water fountain) as restorative cue."
+    },
+    {
+      "tag_id": "env.v2a_103.daylight_nature_coupling",
+      "value_type": "ordinal",
+      "definition": "Daylight + nature coupling (synergy hypothesis)."
+    },
+    {
+      "tag_id": "env.v2a_104.seasonal_cues",
+      "value_type": "ordinal",
+      "definition": "Seasonal cues (flowers, fall colors) and mood associations."
+    },
+    {
+      "tag_id": "env.v2a_105.animal_presence_cues",
+      "value_type": "binary",
+      "definition": "Animal presence cues (fish tanks) and soothing engagement."
+    },
+    {
+      "tag_id": "env.v1_122.vegetation_density",
+      "value_type": "ordinal",
+      "definition": "Plants per m²"
+    },
+    {
+      "tag_id": "env.v1_123.vegetation_diversity",
+      "value_type": "ordinal",
+      "definition": "Species count"
+    },
+    {
+      "tag_id": "env.v1_124.water_features",
+      "value_type": "binary",
+      "definition": "Moving vs. still water presence"
+    },
+    {
+      "tag_id": "env.v1_125.sky_visibility",
+      "value_type": "ordinal",
+      "definition": "Solid angle of visible sky"
+    },
+    {
+      "tag_id": "env.v1_126.natural_landforms",
+      "value_type": "ordinal",
+      "definition": "Mountains, fields, etc. in view"
+    },
+    {
+      "tag_id": "env.v1_127.view_distance_layers",
+      "value_type": "ordinal",
+      "definition": "Near/mid/far variety"
+    },
+    {
+      "tag_id": "env.v1_128.nature_vs_urban_view",
+      "value_type": "ordinal",
+      "definition": "Green vs. built ratio"
+    },
+    {
+      "tag_id": "env.v1_129.natural_material_proportion",
+      "value_type": "ordinal",
+      "definition": "Wood, stone percentage"
+    },
+    {
+      "tag_id": "env.v1_130.biomimetic_forms",
+      "value_type": "ordinal",
+      "definition": "Nature-inspired shapes"
+    },
+    {
+      "tag_id": "env.v1_131.natural_light_patterns",
+      "value_type": "ordinal",
+      "definition": "Dappled light, shadows"
+    },
+    {
+      "tag_id": "env.v2a_106.sociopetal_seating",
+      "value_type": "ordinal",
+      "definition": "Sociopetal seating (faces toward) vs sociofugal (faces away) arrangements."
+    },
+    {
+      "tag_id": "env.v2a_107.density_crowding_proxies_chairs_per_area_people_present_queueing_lines",
+      "value_type": "binary",
+      "definition": "Density/crowding proxies: chairs per area, people present, queueing lines (Evans & Wener, 2007)."
+    },
+    {
+      "tag_id": "env.v2a_108.surveillance_cues_cameras_exposed_workstations_panoramic_visibility",
+      "value_type": "ordinal",
+      "definition": "Surveillance cues: cameras, exposed workstations, panoramic visibility (social evaluative stress)."
+    },
+    {
+      "tag_id": "env.v2a_109.privacy_cues_partitions_doors_curtains",
+      "value_type": "ordinal",
+      "definition": "Privacy cues: partitions, doors, curtains; acoustic barriers."
+    },
+    {
+      "tag_id": "env.v2a_110.territoriality_markers_name_plates",
+      "value_type": "ordinal",
+      "definition": "Territoriality markers: name plates, personal objects, assigned desks."
+    },
+    {
+      "tag_id": "env.v2a_111.norm_cues_formal_vs_informal",
+      "value_type": "ordinal",
+      "definition": "Norm cues: formal vs informal (dress code signs, etiquette cues) affecting anxiety."
+    },
+    {
+      "tag_id": "env.v2a_112.shared_resource_competition_cues",
+      "value_type": "ordinal",
+      "definition": "Shared-resource competition cues (few outlets, few seats) affecting stress."
+    },
+    {
+      "tag_id": "env.v2a_113.social_mixing_affordances",
+      "value_type": "ordinal",
+      "definition": "Social mixing affordances (common tables) vs isolation affordances (booths)."
+    },
+    {
+      "tag_id": "env.v2a_114.conflict_overhearing_risk_cues",
+      "value_type": "ordinal",
+      "definition": "Conflict/overhearing risk cues (tight spacing) affecting willingness to speak."
+    },
+    {
+      "tag_id": "env.v2a_115.waiting_time_cues",
+      "value_type": "ordinal",
+      "definition": "Waiting-time cues (crowded lobby) affecting impatience/irritability."
+    },
+    {
+      "tag_id": "env.v1_132.spatial_density",
+      "value_type": "ordinal",
+      "definition": "m² per person"
+    },
+    {
+      "tag_id": "env.v1_133.social_density",
+      "value_type": "ordinal",
+      "definition": "Persons per m²"
+    },
+    {
+      "tag_id": "env.v1_134.perceived_crowding",
+      "value_type": "ordinal",
+      "definition": "Subjective experience"
+    },
+    {
+      "tag_id": "env.v1_135.visual_privacy",
+      "value_type": "ordinal",
+      "definition": "Being seen protection"
+    },
+    {
+      "tag_id": "env.v1_136.acoustic_privacy",
+      "value_type": "ordinal",
+      "definition": "Being heard protection (SPI)"
+    },
+    {
+      "tag_id": "env.v1_137.territorial_definition",
+      "value_type": "ordinal",
+      "definition": "Owned space clarity"
+    },
+    {
+      "tag_id": "env.v1_138.seating_arrangement",
+      "value_type": "ordinal",
+      "definition": "Sociofugal vs. sociopetal"
+    },
+    {
+      "tag_id": "env.v1_139.collaboration_space_ratio",
+      "value_type": "ordinal",
+      "definition": "Group vs. individual spaces"
+    },
+    {
+      "tag_id": "env.v2a_116.user_controls_visible_and_accessible_dimmers_blinds_thermostats",
+      "value_type": "ordinal",
+      "definition": "User controls visible and accessible: dimmers, blinds, thermostats (Lee & Brand, 2010)."
+    },
+    {
+      "tag_id": "env.v2a_117.furniture_adjustability_movable_chairs_tables",
+      "value_type": "ordinal",
+      "definition": "Furniture adjustability: movable chairs/tables, reconfigurable partitions."
+    },
+    {
+      "tag_id": "env.v2a_118.choice_richness_multiple_zones",
+      "value_type": "ordinal",
+      "definition": "Choice richness: multiple zones (quiet/social/active) enabling self-selection."
+    },
+    {
+      "tag_id": "env.v2a_119.personalization_affordances_pinboards",
+      "value_type": "ordinal",
+      "definition": "Personalization affordances: pinboards, shelves, plant allowance."
+    },
+    {
+      "tag_id": "env.v2a_120.policy_cues_restricting_control",
+      "value_type": "ordinal",
+      "definition": "Policy cues restricting control (signs forbidding moving furniture)."
+    },
+    {
+      "tag_id": "env.v2a_121.control_over_privacy_doors",
+      "value_type": "ordinal",
+      "definition": "Control over privacy: doors, curtains, screens."
+    },
+    {
+      "tag_id": "env.v2a_122.control_over_sound_headsets",
+      "value_type": "ordinal",
+      "definition": "Control over sound: headsets, phone booths, white noise."
+    },
+    {
+      "tag_id": "env.v2a_123.control_over_thermal_fans",
+      "value_type": "ordinal",
+      "definition": "Control over thermal: fans, heaters, seat locations relative to windows."
+    },
+    {
+      "tag_id": "env.v2a_124.control_over_lighting_task_lamps",
+      "value_type": "ordinal",
+      "definition": "Control over lighting: task lamps, individual switches."
+    },
+    {
+      "tag_id": "env.v2a_125.information_control_clear_wayfinding_reduces_uncertainty",
+      "value_type": "ordinal",
+      "definition": "Information control: clear wayfinding reduces uncertainty."
+    },
+    {
+      "tag_id": "env.v1_140.temperature_control",
+      "value_type": "ordinal",
+      "definition": "Thermostat access degree"
+    },
+    {
+      "tag_id": "env.v1_141.lighting_control",
+      "value_type": "ordinal",
+      "definition": "Dimming, switching access"
+    },
+    {
+      "tag_id": "env.v1_142.acoustic_control",
+      "value_type": "ordinal",
+      "definition": "Doors, sound masking access"
+    },
+    {
+      "tag_id": "env.v1_143.window_operation",
+      "value_type": "ordinal",
+      "definition": "Open/close ability"
+    },
+    {
+      "tag_id": "env.v1_144.workspace_personalization",
+      "value_type": "ordinal",
+      "definition": "Decoration permitted"
+    },
+    {
+      "tag_id": "env.v1_145.perceived_control",
+      "value_type": "ordinal",
+      "definition": "Subjective sense of agency"
+    },
+    {
+      "tag_id": "affect.cozy",
+      "value_type": "continuous",
+      "definition": "Operational tag: affect.cozy"
+    },
+    {
+      "tag_id": "affect.jarring",
+      "value_type": "continuous",
+      "definition": "Operational tag: affect.jarring"
+    },
+    {
+      "tag_id": "affect.scary",
+      "value_type": "continuous",
+      "definition": "Operational tag: affect.scary"
+    },
+    {
+      "tag_id": "affect.tranquil",
+      "value_type": "continuous",
+      "definition": "Operational tag: affect.tranquil"
+    },
+    {
+      "tag_id": "affect.welcoming",
+      "value_type": "continuous",
+      "definition": "Operational tag: affect.welcoming"
+    },
+    {
+      "tag_id": "affordance.isovist_area",
+      "value_type": "continuous",
+      "definition": "Operational tag: affordance.isovist_area"
+    },
+    {
+      "tag_id": "affordance.seating_count",
+      "value_type": "ordinal",
+      "definition": "Operational tag: affordance.seating_count"
+    },
+    {
+      "tag_id": "arch.pattern.axial_circulation_clear",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.axial_circulation_clear"
+    },
+    {
+      "tag_id": "arch.pattern.bay_window",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.bay_window"
+    },
+    {
+      "tag_id": "arch.pattern.central_hearth",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.central_hearth"
+    },
+    {
+      "tag_id": "arch.pattern.circulation_maze_like",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.circulation_maze_like"
+    },
+    {
+      "tag_id": "arch.pattern.colonnade",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.colonnade"
+    },
+    {
+      "tag_id": "arch.pattern.corner_window",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.corner_window"
+    },
+    {
+      "tag_id": "arch.pattern.daylight_hard",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.daylight_hard"
+    },
+    {
+      "tag_id": "arch.pattern.daylight_soft",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.daylight_soft"
+    },
+    {
+      "tag_id": "arch.pattern.double_height_space",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.double_height_space"
+    },
+    {
+      "tag_id": "arch.pattern.gallery_edge",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.gallery_edge"
+    },
+    {
+      "tag_id": "arch.pattern.loft_mezzanine",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.loft_mezzanine"
+    },
+    {
+      "tag_id": "arch.pattern.long_view_corridor",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.long_view_corridor"
+    },
+    {
+      "tag_id": "arch.pattern.perimeter_seating",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.perimeter_seating"
+    },
+    {
+      "tag_id": "arch.pattern.prospect_strong",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.prospect_strong"
+    },
+    {
+      "tag_id": "arch.pattern.refuge_nook",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.refuge_nook"
+    },
+    {
+      "tag_id": "arch.pattern.refuge_strong",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.refuge_strong"
+    },
+    {
+      "tag_id": "arch.pattern.skylight_dominant",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.skylight_dominant"
+    },
+    {
+      "tag_id": "arch.pattern.staircase_sculptural",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.staircase_sculptural"
+    },
+    {
+      "tag_id": "arch.pattern.threshold_emphasized",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.threshold_emphasized"
+    },
+    {
+      "tag_id": "arch.pattern.window_seat_niche",
+      "value_type": "continuous",
+      "definition": "Operational tag: arch.pattern.window_seat_niche"
+    },
+    {
+      "tag_id": "biophilia.plant_count",
+      "value_type": "continuous",
+      "definition": "Operational tag: biophilia.plant_count"
+    },
+    {
+      "tag_id": "cnfa.biophilic.natural_material_ratio",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.biophilic.natural_material_ratio"
+    },
+    {
+      "tag_id": "cnfa.cognitive.activity_zones_count",
+      "value_type": "ordinal",
+      "definition": "Operational tag: cnfa.cognitive.activity_zones_count"
+    },
+    {
+      "tag_id": "cnfa.cognitive.landmark_salience",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.cognitive.landmark_salience"
+    },
+    {
+      "tag_id": "cnfa.cognitive.legibility_score",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.cognitive.legibility_score"
+    },
+    {
+      "tag_id": "cnfa.dynamic.optic_flow_magnitude",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.dynamic.optic_flow_magnitude"
+    },
+    {
+      "tag_id": "cnfa.dynamic.path_glare_max",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.dynamic.path_glare_max"
+    },
+    {
+      "tag_id": "cnfa.dynamic.reflection_flow",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.dynamic.reflection_flow"
+    },
+    {
+      "tag_id": "cnfa.dynamic.revelation_rate",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.dynamic.revelation_rate"
+    },
+    {
+      "tag_id": "cnfa.dynamic.texture_gradient",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.dynamic.texture_gradient"
+    },
+    {
+      "tag_id": "cnfa.fluency.anomaly_count",
+      "value_type": "ordinal",
+      "definition": "Operational tag: cnfa.fluency.anomaly_count"
+    },
+    {
+      "tag_id": "cnfa.fluency.clutter_density_count",
+      "value_type": "ordinal",
+      "definition": "Operational tag: cnfa.fluency.clutter_density_count"
+    },
+    {
+      "tag_id": "cnfa.fluency.color_palette_entropy",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fluency.color_palette_entropy"
+    },
+    {
+      "tag_id": "cnfa.fluency.edge_clarity_mean",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fluency.edge_clarity_mean"
+    },
+    {
+      "tag_id": "cnfa.fluency.figure_ground_clarity",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fluency.figure_ground_clarity"
+    },
+    {
+      "tag_id": "cnfa.fluency.hierarchy_depth",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fluency.hierarchy_depth"
+    },
+    {
+      "tag_id": "cnfa.fluency.pattern_rhythm_regularity",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fluency.pattern_rhythm_regularity"
+    },
+    {
+      "tag_id": "cnfa.fluency.processing_load_proxy",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fluency.processing_load_proxy"
+    },
+    {
+      "tag_id": "cnfa.fluency.symmetry_score_horizontal",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fluency.symmetry_score_horizontal"
+    },
+    {
+      "tag_id": "cnfa.fluency.visual_entropy_spatial",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fluency.visual_entropy_spatial"
+    },
+    {
+      "tag_id": "cnfa.fluency.zoning_clarity",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fluency.zoning_clarity"
+    },
+    {
+      "tag_id": "cnfa.fractal_dimension",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fractal_dimension"
+    },
+    {
+      "tag_id": "cnfa.haptic.soft_surface_ratio",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.haptic.soft_surface_ratio"
+    },
+    {
+      "tag_id": "cnfa.haptic.texture_variation_index",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.haptic.texture_variation_index"
+    },
+    {
+      "tag_id": "cnfa.light.brightness_variance",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.light.brightness_variance"
+    },
+    {
+      "tag_id": "cnfa.light.diffuse_vs_direct_ratio",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.light.diffuse_vs_direct_ratio"
+    },
+    {
+      "tag_id": "cnfa.light.vertical_illuminance_proxy",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.light.vertical_illuminance_proxy"
+    },
+    {
+      "tag_id": "cnfa.light.warm_vs_cool_ratio",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.light.warm_vs_cool_ratio"
+    },
+    {
+      "tag_id": "cnfa.spatial.ceiling_height_avg",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.spatial.ceiling_height_avg"
+    },
+    {
+      "tag_id": "cnfa.spatial.enclosure_index",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.spatial.enclosure_index"
+    },
+    {
+      "tag_id": "cnfa.spatial.prospect_to_refuge_ratio",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.spatial.prospect_to_refuge_ratio"
+    },
+    {
+      "tag_id": "cognitive.coherence",
+      "value_type": "continuous",
+      "definition": "Operational tag: cognitive.coherence"
+    },
+    {
+      "tag_id": "cognitive.complexity",
+      "value_type": "continuous",
+      "definition": "Operational tag: cognitive.complexity"
+    },
+    {
+      "tag_id": "cognitive.error",
+      "value_type": "continuous",
+      "definition": "Operational tag: cognitive.error"
+    },
+    {
+      "tag_id": "cognitive.legibility",
+      "value_type": "continuous",
+      "definition": "Operational tag: cognitive.legibility"
+    },
+    {
+      "tag_id": "cognitive.mystery",
+      "value_type": "continuous",
+      "definition": "Operational tag: cognitive.mystery"
+    },
+    {
+      "tag_id": "cognitive.restoration",
+      "value_type": "continuous",
+      "definition": "Operational tag: cognitive.restoration"
+    },
+    {
+      "tag_id": "color.lab_volume",
+      "value_type": "continuous",
+      "definition": "Operational tag: color.lab_volume"
+    },
+    {
+      "tag_id": "color.lightness_contrast",
+      "value_type": "continuous",
+      "definition": "Operational tag: color.lightness_contrast"
+    },
+    {
+      "tag_id": "color.luminance",
+      "value_type": "continuous",
+      "definition": "Operational tag: color.luminance"
+    },
+    {
+      "tag_id": "color.perceptual_lightness",
+      "value_type": "continuous",
+      "definition": "Operational tag: color.perceptual_lightness"
+    },
+    {
+      "tag_id": "color.saturation",
+      "value_type": "continuous",
+      "definition": "Operational tag: color.saturation"
+    },
+    {
+      "tag_id": "color.warmth",
+      "value_type": "continuous",
+      "definition": "Operational tag: color.warmth"
+    },
+    {
+      "tag_id": "color.warmth_ratio",
+      "value_type": "continuous",
+      "definition": "Operational tag: color.warmth_ratio"
+    },
+    {
+      "tag_id": "complexity.edge_density",
+      "value_type": "continuous",
+      "definition": "Operational tag: complexity.edge_density"
+    },
+    {
+      "tag_id": "complexity.shannon_entropy",
+      "value_type": "continuous",
+      "definition": "Operational tag: complexity.shannon_entropy"
+    },
+    {
+      "tag_id": "complexity.spatial_entropy",
+      "value_type": "continuous",
+      "definition": "Operational tag: complexity.spatial_entropy"
+    },
+    {
+      "tag_id": "component.bathroom.fixture.material.brass",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.bathroom.fixture.material.brass"
+    },
+    {
+      "tag_id": "component.bathroom.fixture.material.matte_black",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.bathroom.fixture.material.matte_black"
+    },
+    {
+      "tag_id": "component.bathroom.fixture.type.rain_showerhead",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.bathroom.fixture.type.rain_showerhead"
+    },
+    {
+      "tag_id": "component.ceiling.coffered",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.ceiling.coffered"
+    },
+    {
+      "tag_id": "component.ceiling.cove_lighting",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.ceiling.cove_lighting"
+    },
+    {
+      "tag_id": "component.ceiling.exposed_beam",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.ceiling.exposed_beam"
+    },
+    {
+      "tag_id": "component.ceiling.tray",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.ceiling.tray"
+    },
+    {
+      "tag_id": "component.ceiling.vaulted",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.ceiling.vaulted"
+    },
+    {
+      "tag_id": "component.kitchen.hardware.material.brass",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.kitchen.hardware.material.brass"
+    },
+    {
+      "tag_id": "component.kitchen.hardware.material.chrome",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.kitchen.hardware.material.chrome"
+    },
+    {
+      "tag_id": "component.kitchen.hardware.material.matte_black",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.kitchen.hardware.material.matte_black"
+    },
+    {
+      "tag_id": "component.kitchen.hardware.type.bar_pull",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.kitchen.hardware.type.bar_pull"
+    },
+    {
+      "tag_id": "component.kitchen.hardware.type.handleless",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.kitchen.hardware.type.handleless"
+    },
+    {
+      "tag_id": "component.kitchen.hardware.type.knob",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.kitchen.hardware.type.knob"
+    },
+    {
+      "tag_id": "component.wall.material.brick_exposed",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.wall.material.brick_exposed"
+    },
+    {
+      "tag_id": "component.wall.material.stone_wall",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.wall.material.stone_wall"
+    },
+    {
+      "tag_id": "component.wall.material.wood_slat",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.wall.material.wood_slat"
+    },
+    {
+      "tag_id": "component.wall.treatment.wainscoting",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.wall.treatment.wainscoting"
+    },
+    {
+      "tag_id": "component.wall.treatment.wallpaper_patterned",
+      "value_type": "continuous",
+      "definition": "Operational tag: component.wall.treatment.wallpaper_patterned"
+    },
+    {
+      "tag_id": "fluency.symmetry",
+      "value_type": "continuous",
+      "definition": "Operational tag: fluency.symmetry"
+    },
+    {
+      "tag_id": "isovist.area_25d",
+      "value_type": "continuous",
+      "definition": "Operational tag: isovist.area_25d"
+    },
+    {
+      "tag_id": "isovist.compactness_25d",
+      "value_type": "continuous",
+      "definition": "Operational tag: isovist.compactness_25d"
+    },
+    {
+      "tag_id": "isovist.confidence",
+      "value_type": "continuous",
+      "definition": "Operational tag: isovist.confidence"
+    },
+    {
+      "tag_id": "material.glass_coverage",
+      "value_type": "continuous",
+      "definition": "Operational tag: material.glass_coverage"
+    },
+    {
+      "tag_id": "material.metal_coverage",
+      "value_type": "continuous",
+      "definition": "Operational tag: material.metal_coverage"
+    },
+    {
+      "tag_id": "material.wood_coverage",
+      "value_type": "continuous",
+      "definition": "Operational tag: material.wood_coverage"
+    },
+    {
+      "tag_id": "materials.cues.brightness_mean",
+      "value_type": "continuous",
+      "definition": "Operational tag: materials.cues.brightness_mean"
+    },
+    {
+      "tag_id": "materials.cues.saturation_mean",
+      "value_type": "continuous",
+      "definition": "Operational tag: materials.cues.saturation_mean"
+    },
+    {
+      "tag_id": "materials.cues.specularity_proxy",
+      "value_type": "continuous",
+      "definition": "Operational tag: materials.cues.specularity_proxy"
+    },
+    {
+      "tag_id": "materials.cues.texture_variance",
+      "value_type": "continuous",
+      "definition": "Operational tag: materials.cues.texture_variance"
+    },
+    {
+      "tag_id": "materials.cues.value_mean",
+      "value_type": "continuous",
+      "definition": "Operational tag: materials.cues.value_mean"
+    },
+    {
+      "tag_id": "materials.substrate.plaster_gypsum",
+      "value_type": "continuous",
+      "definition": "Operational tag: materials.substrate.plaster_gypsum"
+    },
+    {
+      "tag_id": "materials.substrate.stone_concrete",
+      "value_type": "continuous",
+      "definition": "Operational tag: materials.substrate.stone_concrete"
+    },
+    {
+      "tag_id": "materials.substrate.tile_ceramic",
+      "value_type": "continuous",
+      "definition": "Operational tag: materials.substrate.tile_ceramic"
+    },
+    {
+      "tag_id": "provenance.architect_kengo_kuma",
+      "value_type": "continuous",
+      "definition": "Operational tag: provenance.architect_kengo_kuma"
+    },
+    {
+      "tag_id": "provenance.architect_le_corbusier",
+      "value_type": "continuous",
+      "definition": "Operational tag: provenance.architect_le_corbusier"
+    },
+    {
+      "tag_id": "provenance.iconic_chair_barcelona",
+      "value_type": "continuous",
+      "definition": "Operational tag: provenance.iconic_chair_barcelona"
+    },
+    {
+      "tag_id": "provenance.iconic_chair_eames",
+      "value_type": "continuous",
+      "definition": "Operational tag: provenance.iconic_chair_eames"
+    },
+    {
+      "tag_id": "psych.coziness",
+      "value_type": "continuous",
+      "definition": "Operational tag: psych.coziness"
+    },
+    {
+      "tag_id": "science.organized_complexity",
+      "value_type": "continuous",
+      "definition": "Operational tag: science.organized_complexity"
+    },
+    {
+      "tag_id": "science.organized_complexity_bin",
+      "value_type": "continuous",
+      "definition": "Operational tag: science.organized_complexity_bin"
+    },
+    {
+      "tag_id": "science.visual_richness",
+      "value_type": "continuous",
+      "definition": "Operational tag: science.visual_richness"
+    },
+    {
+      "tag_id": "science.visual_richness_bin",
+      "value_type": "continuous",
+      "definition": "Operational tag: science.visual_richness_bin"
+    },
+    {
+      "tag_id": "social.occupancy",
+      "value_type": "continuous",
+      "definition": "Operational tag: social.occupancy"
+    },
+    {
+      "tag_id": "social.privacy",
+      "value_type": "continuous",
+      "definition": "Operational tag: social.privacy"
+    },
+    {
+      "tag_id": "social.sociopetal",
+      "value_type": "continuous",
+      "definition": "Operational tag: social.sociopetal"
+    },
+    {
+      "tag_id": "spatial.central_openness",
+      "value_type": "continuous",
+      "definition": "Operational tag: spatial.central_openness"
+    },
+    {
+      "tag_id": "spatial.depth_contrast",
+      "value_type": "continuous",
+      "definition": "Operational tag: spatial.depth_contrast"
+    },
+    {
+      "tag_id": "spatial.depth_mean",
+      "value_type": "continuous",
+      "definition": "Operational tag: spatial.depth_mean"
+    },
+    {
+      "tag_id": "spatial.isovist_openness",
+      "value_type": "continuous",
+      "definition": "Operational tag: spatial.isovist_openness"
+    },
+    {
+      "tag_id": "spatial.refuge_quality",
+      "value_type": "continuous",
+      "definition": "Operational tag: spatial.refuge_quality"
+    },
+    {
+      "tag_id": "spatial.room_function.bathroom",
+      "value_type": "continuous",
+      "definition": "Operational tag: spatial.room_function.bathroom"
+    },
+    {
+      "tag_id": "spatial.room_function.bedroom",
+      "value_type": "continuous",
+      "definition": "Operational tag: spatial.room_function.bedroom"
+    },
+    {
+      "tag_id": "spatial.room_function.home_office",
+      "value_type": "continuous",
+      "definition": "Operational tag: spatial.room_function.home_office"
+    },
+    {
+      "tag_id": "spatial.room_function.kitchen",
+      "value_type": "continuous",
+      "definition": "Operational tag: spatial.room_function.kitchen"
+    },
+    {
+      "tag_id": "spatial.room_function.living_room",
+      "value_type": "continuous",
+      "definition": "Operational tag: spatial.room_function.living_room"
+    },
+    {
+      "tag_id": "spatial.visual_clutter",
+      "value_type": "continuous",
+      "definition": "Operational tag: spatial.visual_clutter"
+    },
+    {
+      "tag_id": "style.bohemian",
+      "value_type": "continuous",
+      "definition": "Operational tag: style.bohemian"
+    },
+    {
+      "tag_id": "style.farmhouse",
+      "value_type": "continuous",
+      "definition": "Operational tag: style.farmhouse"
+    },
+    {
+      "tag_id": "style.industrial",
+      "value_type": "continuous",
+      "definition": "Operational tag: style.industrial"
+    },
+    {
+      "tag_id": "style.japandi",
+      "value_type": "continuous",
+      "definition": "Operational tag: style.japandi"
+    },
+    {
+      "tag_id": "style.mid_century_modern",
+      "value_type": "continuous",
+      "definition": "Operational tag: style.mid_century_modern"
+    },
+    {
+      "tag_id": "style.minimalist",
+      "value_type": "continuous",
+      "definition": "Operational tag: style.minimalist"
+    },
+    {
+      "tag_id": "style.modern",
+      "value_type": "continuous",
+      "definition": "Operational tag: style.modern"
+    },
+    {
+      "tag_id": "style.modernity",
+      "value_type": "continuous",
+      "definition": "Operational tag: style.modernity"
+    },
+    {
+      "tag_id": "style.rustic",
+      "value_type": "continuous",
+      "definition": "Operational tag: style.rustic"
+    },
+    {
+      "tag_id": "style.scandinavian",
+      "value_type": "continuous",
+      "definition": "Operational tag: style.scandinavian"
+    },
+    {
+      "tag_id": "style.traditional",
+      "value_type": "continuous",
+      "definition": "Operational tag: style.traditional"
+    },
+    {
+      "tag_id": "texture.macro.contrast",
+      "value_type": "continuous",
+      "definition": "Operational tag: texture.macro.contrast"
+    },
+    {
+      "tag_id": "texture.macro.homogeneity",
+      "value_type": "continuous",
+      "definition": "Operational tag: texture.macro.homogeneity"
+    },
+    {
+      "tag_id": "texture.micro.contrast",
+      "value_type": "continuous",
+      "definition": "Operational tag: texture.micro.contrast"
+    },
+    {
+      "tag_id": "texture.micro.homogeneity",
+      "value_type": "continuous",
+      "definition": "Operational tag: texture.micro.homogeneity"
+    },
+    {
+      "tag_id": "cnfa.depth.depth_variance",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.depth.depth_variance"
+    },
+    {
+      "tag_id": "cnfa.depth.mean_depth",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.depth.mean_depth"
+    },
+    {
+      "tag_id": "cnfa.fluency.autoencoder_recon_error",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fluency.autoencoder_recon_error"
+    },
+    {
+      "tag_id": "cnfa.fluency.compression_ratio",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fluency.compression_ratio"
+    },
+    {
+      "tag_id": "cnfa.fluency.map.edge_density",
+      "value_type": "region_map",
+      "definition": "Operational tag: cnfa.fluency.map.edge_density"
+    },
+    {
+      "tag_id": "cnfa.fluency.map.fractal_dimension",
+      "value_type": "region_map",
+      "definition": "Operational tag: cnfa.fluency.map.fractal_dimension"
+    },
+    {
+      "tag_id": "cnfa.fluency.map.spatial_entropy",
+      "value_type": "region_map",
+      "definition": "Operational tag: cnfa.fluency.map.spatial_entropy"
+    },
+    {
+      "tag_id": "cnfa.fluency.map.symmetry",
+      "value_type": "region_map",
+      "definition": "Operational tag: cnfa.fluency.map.symmetry"
+    },
+    {
+      "tag_id": "cnfa.fluency.surprisal_mean",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fluency.surprisal_mean"
+    },
+    {
+      "tag_id": "cnfa.fractal.lacunarity",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fractal.lacunarity"
+    },
+    {
+      "tag_id": "cnfa.fractal.multifractal_width",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fractal.multifractal_width"
+    },
+    {
+      "tag_id": "cnfa.fractal.spectral_slope_1overf",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fractal.spectral_slope_1overf"
+    },
+    {
+      "tag_id": "cnfa.fractal_dimension_edges",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fractal_dimension_edges"
+    },
+    {
+      "tag_id": "cnfa.fractal_dimension_luminance",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.fractal_dimension_luminance"
+    },
+    {
+      "tag_id": "cnfa.geometry.curvature_index",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.geometry.curvature_index"
+    },
+    {
+      "tag_id": "cnfa.geometry.fractal_curve_intersection",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.geometry.fractal_curve_intersection"
+    },
+    {
+      "tag_id": "cnfa.geometry.rectilinearity_index",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.geometry.rectilinearity_index"
+    },
+    {
+      "tag_id": "cnfa.layout.opening_ratio",
+      "value_type": "continuous",
+      "definition": "Operational tag: cnfa.layout.opening_ratio"
+    },
+    {
+      "tag_id": "smell.concentration_dfa_exponent",
+      "value_type": "continuous",
+      "definition": "Operational tag: smell.concentration_dfa_exponent"
+    },
+    {
+      "tag_id": "smell.intensity_rating",
+      "value_type": "ordinal",
+      "definition": "Operational tag: smell.intensity_rating"
+    },
+    {
+      "tag_id": "smell.pleasantness_rating",
+      "value_type": "ordinal",
+      "definition": "Operational tag: smell.pleasantness_rating"
+    },
+    {
+      "tag_id": "sound.amplitude_fractal_dimension",
+      "value_type": "continuous",
+      "definition": "Operational tag: sound.amplitude_fractal_dimension"
+    },
+    {
+      "tag_id": "sound.noise_color_beta",
+      "value_type": "continuous",
+      "definition": "Operational tag: sound.noise_color_beta"
+    },
+    {
+      "tag_id": "sound.one_over_f_slope",
+      "value_type": "continuous",
+      "definition": "Operational tag: sound.one_over_f_slope"
+    },
+    {
+      "tag_id": "sound.reverberation_rt60",
+      "value_type": "continuous",
+      "definition": "Operational tag: sound.reverberation_rt60"
+    },
+    {
+      "tag_id": "tag.evidence_pointer",
+      "value_type": "continuous",
+      "definition": "Operational tag: tag.evidence_pointer"
+    },
+    {
+      "tag_id": "tag.request_source",
+      "value_type": "categorical",
+      "definition": "Operational tag: tag.request_source"
+    },
+    {
+      "tag_id": "touch.haptic_fractal_dimension",
+      "value_type": "continuous",
+      "definition": "Operational tag: touch.haptic_fractal_dimension"
+    },
+    {
+      "tag_id": "touch.hardness_rating",
+      "value_type": "ordinal",
+      "definition": "Operational tag: touch.hardness_rating"
+    },
+    {
+      "tag_id": "touch.surface_roughness_spectrum_slope",
+      "value_type": "continuous",
+      "definition": "Operational tag: touch.surface_roughness_spectrum_slope"
+    },
+    {
+      "tag_id": "env.ae.warm_lighting",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Warm Lighting"
+    },
+    {
+      "tag_id": "env.ae.daylighting",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Daylighting"
+    },
+    {
+      "tag_id": "env.ae.indoor_plants",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Indoor Plants"
+    },
+    {
+      "tag_id": "env.ae.high_clutter",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Clutter"
+    },
+    {
+      "tag_id": "env.ae.high_illuminance",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Illuminance"
+    },
+    {
+      "tag_id": "env.ae.low_illuminance",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Low Illuminance"
+    },
+    {
+      "tag_id": "env.ae.cool_lighting_(high_cct)",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Cool Lighting (High CCT)"
+    },
+    {
+      "tag_id": "env.ae.glare_present",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Glare Present"
+    },
+    {
+      "tag_id": "env.ae.high_contrast_lighting",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Contrast Lighting"
+    },
+    {
+      "tag_id": "env.ae.uniform_lighting",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Uniform Lighting"
+    },
+    {
+      "tag_id": "env.ae.dynamic_lighting",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Dynamic Lighting"
+    },
+    {
+      "tag_id": "env.ae.visible_windows",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Visible Windows"
+    },
+    {
+      "tag_id": "env.ae.large_window_area",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Large Window Area"
+    },
+    {
+      "tag_id": "env.ae.view_to_outdoors",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: View to Outdoors"
+    },
+    {
+      "tag_id": "env.ae.warm_color_palette",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Warm Color Palette"
+    },
+    {
+      "tag_id": "env.ae.cool_color_palette",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Cool Color Palette"
+    },
+    {
+      "tag_id": "env.ae.high_saturation",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Saturation"
+    },
+    {
+      "tag_id": "env.ae.low_saturation",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Low Saturation"
+    },
+    {
+      "tag_id": "env.ae.high_color_contrast",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Color Contrast"
+    },
+    {
+      "tag_id": "env.ae.monochrome/minimal_palette",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Monochrome/Minimal Palette"
+    },
+    {
+      "tag_id": "env.ae.natural/earthy_palette",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Natural/Earthy Palette"
+    },
+    {
+      "tag_id": "env.ae.wood_prominent",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Wood Prominent"
+    },
+    {
+      "tag_id": "env.ae.stone/marble_prominent",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Stone/Marble Prominent"
+    },
+    {
+      "tag_id": "env.ae.concrete_prominent",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Concrete Prominent"
+    },
+    {
+      "tag_id": "env.ae.metal_prominent",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Metal Prominent"
+    },
+    {
+      "tag_id": "env.ae.glass_prominent",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Glass Prominent"
+    },
+    {
+      "tag_id": "env.ae.textiles/soft_furnishings",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Textiles/Soft Furnishings"
+    },
+    {
+      "tag_id": "env.ae.high_texture_complexity",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Texture Complexity"
+    },
+    {
+      "tag_id": "env.ae.low_texture_complexity",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Low Texture Complexity"
+    },
+    {
+      "tag_id": "env.ae.repeating_pattern",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Repeating Pattern"
+    },
+    {
+      "tag_id": "env.ae.irregular_pattern",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Irregular Pattern"
+    },
+    {
+      "tag_id": "env.ae.fractal-like_pattern",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Fractal-Like Pattern"
+    },
+    {
+      "tag_id": "env.ae.curvilinear_forms",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Curvilinear Forms"
+    },
+    {
+      "tag_id": "env.ae.rectilinear_forms",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Rectilinear Forms"
+    },
+    {
+      "tag_id": "env.ae.high_symmetry",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Symmetry"
+    },
+    {
+      "tag_id": "env.ae.low_symmetry",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Low Symmetry"
+    },
+    {
+      "tag_id": "env.ae.high_ceiling",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Ceiling"
+    },
+    {
+      "tag_id": "env.ae.low_ceiling",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Low Ceiling"
+    },
+    {
+      "tag_id": "env.ae.large_enclosure_volume",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Large Enclosure Volume"
+    },
+    {
+      "tag_id": "env.ae.narrow_corridor",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Narrow Corridor"
+    },
+    {
+      "tag_id": "env.ae.strong_verticality",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Strong Verticality"
+    },
+    {
+      "tag_id": "env.ae.strong_horizontality",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Strong Horizontality"
+    },
+    {
+      "tag_id": "env.ae.complex_geometry",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Complex Geometry"
+    },
+    {
+      "tag_id": "env.ae.open_plan",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Open Plan"
+    },
+    {
+      "tag_id": "env.ae.compartmentalized_plan",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Compartmentalized Plan"
+    },
+    {
+      "tag_id": "env.ae.clear_sightlines",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Clear Sightlines"
+    },
+    {
+      "tag_id": "env.ae.occluded_sightlines",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Occluded Sightlines"
+    },
+    {
+      "tag_id": "env.ae.strong_central_landmark",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Strong Central Landmark"
+    },
+    {
+      "tag_id": "env.ae.clear_circulation_paths",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Clear Circulation Paths"
+    },
+    {
+      "tag_id": "env.ae.maze-like_layout",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Maze-Like Layout"
+    },
+    {
+      "tag_id": "env.ae.high_orderliness",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Orderliness"
+    },
+    {
+      "tag_id": "env.ae.low_orderliness",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Low Orderliness"
+    },
+    {
+      "tag_id": "env.ae.high_cleanliness",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Cleanliness"
+    },
+    {
+      "tag_id": "env.ae.visible_dirt/decay",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Visible Dirt/Decay"
+    },
+    {
+      "tag_id": "env.ae.nature_imagery",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Nature Imagery"
+    },
+    {
+      "tag_id": "env.ae.naturalistic_forms",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Naturalistic Forms"
+    },
+    {
+      "tag_id": "env.ae.indoor-outdoor_continuity",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Indoor-Outdoor Continuity"
+    },
+    {
+      "tag_id": "env.ae.seating_available",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Seating Available"
+    },
+    {
+      "tag_id": "env.ae.soft_seating",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Soft Seating"
+    },
+    {
+      "tag_id": "env.ae.hard_seating",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Hard Seating"
+    },
+    {
+      "tag_id": "env.ae.high_seating_density",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Seating Density"
+    },
+    {
+      "tag_id": "env.ae.work_surfaces_present",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Work Surfaces Present"
+    },
+    {
+      "tag_id": "env.ae.home-like_decor",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Home-like Decor"
+    },
+    {
+      "tag_id": "env.ae.institutional_decor",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Institutional Decor"
+    },
+    {
+      "tag_id": "env.ae.crowded_space",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Crowded Space"
+    },
+    {
+      "tag_id": "env.ae.sparse_occupancy",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Sparse Occupancy"
+    },
+    {
+      "tag_id": "env.ae.private/enclosed_niche",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Private/Enclosed Niche"
+    },
+    {
+      "tag_id": "env.ae.public/exposed_area",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Public/Exposed Area"
+    },
+    {
+      "tag_id": "env.ae.clear_exits/wayfinding_signage",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Clear Exits/Wayfinding Signage"
+    },
+    {
+      "tag_id": "env.ae.poor_visibility_/_dark_corners",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Poor Visibility / Dark Corners"
+    },
+    {
+      "tag_id": "env.ae.barriers/guards_present",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Barriers/Guards Present"
+    },
+    {
+      "tag_id": "env.ae.hazard_indicators",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Hazard Indicators"
+    },
+    {
+      "tag_id": "env.ae.surveillance_/_cameras_visible",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Surveillance / Cameras Visible"
+    },
+    {
+      "tag_id": "env.ae.soft_acoustic_treatments",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Soft Acoustic Treatments"
+    },
+    {
+      "tag_id": "env.ae.hard_reflective_surfaces",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Hard Reflective Surfaces"
+    },
+    {
+      "tag_id": "env.ae.high_ceiling_+_hard_surfaces",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Ceiling + Hard Surfaces"
+    },
+    {
+      "tag_id": "env.ae.visible_hvac_vents",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Visible HVAC Vents"
+    },
+    {
+      "tag_id": "env.ae.open_windows",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Open Windows"
+    },
+    {
+      "tag_id": "env.ae.fans_visible",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Fans Visible"
+    },
+    {
+      "tag_id": "env.ae.commercial_branding",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Commercial Branding"
+    },
+    {
+      "tag_id": "env.ae.religious_symbols",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Religious Symbols"
+    },
+    {
+      "tag_id": "env.ae.artworks_prominent",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Artworks Prominent"
+    },
+    {
+      "tag_id": "env.ae.text/information_density_high",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Text/Information Density High"
+    },
+    {
+      "tag_id": "env.ae.minimal_signage",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Minimal Signage"
+    },
+    {
+      "tag_id": "env.ae.well_maintained",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Well Maintained"
+    },
+    {
+      "tag_id": "env.ae.worn/degraded",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Worn/Degraded"
+    },
+    {
+      "tag_id": "env.ae.high_edge_density",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Edge Density"
+    },
+    {
+      "tag_id": "env.ae.low_edge_density",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Low Edge Density"
+    },
+    {
+      "tag_id": "env.ae.high_spatial_frequency_content",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Spatial Frequency Content"
+    },
+    {
+      "tag_id": "env.ae.low_spatial_frequency_content",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: Low Spatial Frequency Content"
+    },
+    {
+      "tag_id": "env.ae.high_color_entropy",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Color Entropy"
+    },
+    {
+      "tag_id": "env.ae.high_fractal_dimension_(2d)",
+      "value_type": "binary",
+      "definition": "Article Eater antecedent: High Fractal Dimension (2D)"
+    }
+  ]
+}

@@ -1,0 +1,4250 @@
+{
+  "meta": {
+    "registry_sha256": "54adb89299589db8420366b0d74e0b8e1eba1423da6cd8e3b47155481f97525a",
+    "generated_at_utc": "2025-12-21T18:53:34.889842+00:00",
+    "contract_version": "v0.2.8"
+  },
+  "contract_version": "v0.2.8",
+  "tags": [
+    {
+      "tag_id": "env.v2a_001.color_palette_hue_saturation_lightness_harmony_beyond_cct",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_002.warm_vs_cool_white_appearance_cct_and_perceived_coziness_activation_cajochen_et",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_003.brightness_level_at_eye_vertical_illuminance_vs_task_plane",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_004.brightness_gradients_and_brightness_contrast_ratios",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_005.daylight_presence_sky_view_and_view_to_outside_content",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_006.glare_source_count",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_007.flicker_temporal_modulation_risk_cues_led_drivers",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_008.color_rendering_saturation_rendering",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_009.shadow_softness_hardness",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_010.lighting_control_cues_dimmers_blinds_task_lights",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_011.evening_like_ambience_cues_vs_daytime_like_ambience_cues",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_012.visual_privacy_via_lighting_backlit_silhouettes_vs_evenly_lit_faces",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_013.high_contrast_spotlight_social_exposure_cues",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_014.presence_of_natural_light_patterns",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_015.lighting_temperature_mismatch",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_001.illuminance_level_task_surface",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_002.illuminance_level_ambient",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_003.luminance_distribution",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_004.contrast_ratio",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_005.uniformity_ratio",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_006.daylight_factor",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_007.daylight_autonomy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_008.correlated_color_temperature_cct",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_009.spectral_power_distribution",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_010.color_rendering_index_cri",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_011.melanopic_lux",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_012.dominant_wavelength",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_013.flicker_frequency",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_014.flicker_modulation_depth",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_015.circadian_timing_of_exposure",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_016.rate_of_illuminance_change",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_017.diurnal_variation_pattern",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_018.direct_indirect_ratio",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_019.light_directionality",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_020.unified_glare_rating_ugr",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_021.shadow_characteristics",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_022.natural_artificial_ratio",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_023.point_vs_diffuse_illumination",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_024.window_sky_type_visible",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_025.solar_penetration_depth",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_026.view_to_exterior",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_067.ceiling_height_and_openness_processing_style",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_068.room_scale_cues",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_069.enclosure_ratio_wall_to_window_balance",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_070.prospect_refuge_ability_to_see_without_being_seen",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_071.exit_visibility_and_path_to_exit_complexity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_072.blind_corners_vs_transparent_partitions",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_073.distance_to_others",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_074.wayfinding_legibility_straight_sightlines",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_075.spatial_complexity_branching_corridors_vs_simple_loops",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_076.perceived_territoriality_defined_zones_vs_ambiguous_shared_space",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_077.barrier_permeability_half_walls_vs_full_walls",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_078.visual_access_to_outdoors_nature_as_escape_affordance",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_079.seating_prospect_facing_entrance_vs_back_to_entrance",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_080.verticality_cues",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_081.personal_safety_affordances_lighting_in_corners",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_090.ceiling_height",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_091.room_volume",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_092.floor_area",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_093.aspect_ratios",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_094.degree_of_enclosure",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_095.boundary_definition",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_096.visual_permeability",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_097.spatial_layering",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_098.visual_access_extent",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_099.prospect_quality",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_100.refuge_degree",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_101.prospect_refuge_balance",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_102.defensible_space",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_103.plan_complexity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_104.spatial_hierarchy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_105.wayfinding_affordances",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_106.mystery",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_107.coherence",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_108.legibility",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_109.angular_vs_curvilinear",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_110.symmetry",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_111.proportion",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_112.fractal_dimension",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_113.self_similarity_scale_range",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_082.curvature_prevalence_vs_sharp_angles",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_083.symmetry_and_regularity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_084.fractal_self_similar_edge_statistics",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_085.clutter_disorder_object_density_occlusion_surface_coverage",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_086.cleanliness_maintenance_stains_damage_wear",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_087.color_diversity_and_saturation",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_088.texture_density",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_089.artwork_density_and_semantic_content",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_090.naturalness_of_materials",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_091.visual_complexity_gradients",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_092.signage_density_informational_load",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_093.visual_affordances_for_organization",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_094.orderliness_of_lines_alignment",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_095.perceptual_mystery_cues",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_114.visual_entropy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_115.edge_density",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_116.color_diversity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_117.element_count",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_118.visual_noise",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_119.pattern_regularity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_120.figure_ground_clarity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_121.visual_hierarchy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_096.visible_vegetation_quantity_proximity_and_distribution",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_097.window_view_content_greenery_sky_water_vs_built_up",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_098.natural_materials_wood_stone",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_099.blue_space",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_100.prospect_to_distant_views",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_101.natural_ventilation_cues",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_102.natural_sound_sources",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_103.daylight_nature_coupling",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_104.seasonal_cues",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_105.animal_presence_cues",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_122.vegetation_density",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_123.vegetation_diversity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_124.water_features",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_125.sky_visibility",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_126.natural_landforms",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_127.view_distance_layers",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_128.nature_vs_urban_view",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_129.natural_material_proportion",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_130.biomimetic_forms",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_131.natural_light_patterns",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_106.sociopetal_seating",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_107.density_crowding_proxies_chairs_per_area_people_present_queueing_lines",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_108.surveillance_cues_cameras_exposed_workstations_panoramic_visibility",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_109.privacy_cues_partitions_doors_curtains",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_110.territoriality_markers_name_plates",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_111.norm_cues_formal_vs_informal",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_112.shared_resource_competition_cues",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_113.social_mixing_affordances",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_114.conflict_overhearing_risk_cues",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_115.waiting_time_cues",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_132.spatial_density",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_133.social_density",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_134.perceived_crowding",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_135.visual_privacy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_136.acoustic_privacy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_137.territorial_definition",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_138.seating_arrangement",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_139.collaboration_space_ratio",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_116.user_controls_visible_and_accessible_dimmers_blinds_thermostats",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_117.furniture_adjustability_movable_chairs_tables",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_118.choice_richness_multiple_zones",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_119.personalization_affordances_pinboards",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_120.policy_cues_restricting_control",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_121.control_over_privacy_doors",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_122.control_over_sound_headsets",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_123.control_over_thermal_fans",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_124.control_over_lighting_task_lamps",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v2a_125.information_control_clear_wayfinding_reduces_uncertainty",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_140.temperature_control",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_141.lighting_control",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_142.acoustic_control",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_143.window_operation",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_144.workspace_personalization",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.v1_145.perceived_control",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "affect.cozy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "latent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "affect.jarring",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "latent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "affect.scary",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "latent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "affect.tranquil",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "latent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "affect.welcoming",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "latent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "affordance.isovist_area",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "affordance.seating_count",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.axial_circulation_clear",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.bay_window",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.central_hearth",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.circulation_maze_like",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.colonnade",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.corner_window",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.daylight_hard",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.daylight_soft",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.double_height_space",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.gallery_edge",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.loft_mezzanine",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.long_view_corridor",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.perimeter_seating",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.prospect_strong",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.refuge_nook",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.refuge_strong",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.skylight_dominant",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.staircase_sculptural",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.threshold_emphasized",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "arch.pattern.window_seat_niche",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "biophilia.plant_count",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.biophilic.natural_material_ratio",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.cognitive.activity_zones_count",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.cognitive.landmark_salience",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.cognitive.legibility_score",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.dynamic.optic_flow_magnitude",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.dynamic.path_glare_max",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.dynamic.reflection_flow",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.dynamic.revelation_rate",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.dynamic.texture_gradient",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.anomaly_count",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.clutter_density_count",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.color_palette_entropy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.edge_clarity_mean",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.figure_ground_clarity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.hierarchy_depth",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.pattern_rhythm_regularity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.processing_load_proxy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.symmetry_score_horizontal",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.visual_entropy_spatial",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.zoning_clarity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fractal_dimension",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.haptic.soft_surface_ratio",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.haptic.texture_variation_index",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.light.brightness_variance",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.light.diffuse_vs_direct_ratio",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.light.vertical_illuminance_proxy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.light.warm_vs_cool_ratio",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.spatial.ceiling_height_avg",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.spatial.enclosure_index",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.spatial.prospect_to_refuge_ratio",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cognitive.coherence",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cognitive.complexity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cognitive.error",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cognitive.legibility",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cognitive.mystery",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cognitive.restoration",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "color.lab_volume",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "color.lightness_contrast",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "color.luminance",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "color.perceptual_lightness",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "color.saturation",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "color.warmth",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "color.warmth_ratio",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "complexity.edge_density",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "complexity.shannon_entropy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "complexity.spatial_entropy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.bathroom.fixture.material.brass",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.bathroom.fixture.material.matte_black",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.bathroom.fixture.type.rain_showerhead",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.ceiling.coffered",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.ceiling.cove_lighting",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.ceiling.exposed_beam",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.ceiling.tray",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.ceiling.vaulted",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.kitchen.hardware.material.brass",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.kitchen.hardware.material.chrome",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.kitchen.hardware.material.matte_black",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.kitchen.hardware.type.bar_pull",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.kitchen.hardware.type.handleless",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.kitchen.hardware.type.knob",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.wall.material.brick_exposed",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.wall.material.stone_wall",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.wall.material.wood_slat",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.wall.treatment.wainscoting",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "component.wall.treatment.wallpaper_patterned",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "fluency.symmetry",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "isovist.area_25d",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "isovist.compactness_25d",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "isovist.confidence",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "material.glass_coverage",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "material.metal_coverage",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "material.wood_coverage",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "materials.cues.brightness_mean",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "materials.cues.saturation_mean",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "materials.cues.specularity_proxy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "materials.cues.texture_variance",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "materials.cues.value_mean",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "materials.substrate.plaster_gypsum",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "materials.substrate.stone_concrete",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "materials.substrate.tile_ceramic",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "provenance.architect_kengo_kuma",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "provenance.architect_le_corbusier",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "provenance.iconic_chair_barcelona",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "provenance.iconic_chair_eames",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "psych.coziness",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "science.organized_complexity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "science.organized_complexity_bin",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "science.visual_richness",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "science.visual_richness_bin",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "social.occupancy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "social.privacy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "social.sociopetal",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "spatial.central_openness",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "spatial.depth_contrast",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "spatial.depth_mean",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "spatial.isovist_openness",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "spatial.refuge_quality",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "spatial.room_function.bathroom",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "spatial.room_function.bedroom",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "spatial.room_function.home_office",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "spatial.room_function.kitchen",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "spatial.room_function.living_room",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "spatial.visual_clutter",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "style.bohemian",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "style.farmhouse",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "style.industrial",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "style.japandi",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "style.mid_century_modern",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "style.minimalist",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "style.modern",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "style.modernity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "style.rustic",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "style.scandinavian",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "style.traditional",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "texture.macro.contrast",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "texture.macro.homogeneity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "texture.micro.contrast",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "texture.micro.homogeneity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.depth.depth_variance",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.depth.mean_depth",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.autoencoder_recon_error",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.compression_ratio",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.map.edge_density",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.map.fractal_dimension",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.map.spatial_entropy",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.map.symmetry",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fluency.surprisal_mean",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fractal.lacunarity",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fractal.multifractal_width",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fractal.spectral_slope_1overf",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fractal_dimension_edges",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.fractal_dimension_luminance",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.geometry.curvature_index",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.geometry.fractal_curve_intersection",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.geometry.rectilinearity_index",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "cnfa.layout.opening_ratio",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "smell.concentration_dfa_exponent",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "smell.intensity_rating",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "smell.pleasantness_rating",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "sound.amplitude_fractal_dimension",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "sound.noise_color_beta",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "sound.one_over_f_slope",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "sound.reverberation_rt60",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "tag.evidence_pointer",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "tag.request_source",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "touch.haptic_fractal_dimension",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "touch.hardness_rating",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "touch.surface_roughness_spectrum_slope",
+      "bn": {
+        "demand_state": "optional",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.warm_lighting",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.daylighting",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.indoor_plants",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_clutter",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_illuminance",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.low_illuminance",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.cool_lighting_(high_cct)",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.glare_present",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_contrast_lighting",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.uniform_lighting",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.dynamic_lighting",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.visible_windows",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.large_window_area",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.view_to_outdoors",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.warm_color_palette",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.cool_color_palette",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_saturation",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.low_saturation",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_color_contrast",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.monochrome/minimal_palette",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.natural/earthy_palette",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.wood_prominent",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.stone/marble_prominent",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.concrete_prominent",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.metal_prominent",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.glass_prominent",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.textiles/soft_furnishings",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_texture_complexity",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.low_texture_complexity",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.repeating_pattern",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.irregular_pattern",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.fractal-like_pattern",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.curvilinear_forms",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.rectilinear_forms",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_symmetry",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.low_symmetry",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_ceiling",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.low_ceiling",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.large_enclosure_volume",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.narrow_corridor",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.strong_verticality",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.strong_horizontality",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.complex_geometry",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.open_plan",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.compartmentalized_plan",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.clear_sightlines",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.occluded_sightlines",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.strong_central_landmark",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.clear_circulation_paths",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.maze-like_layout",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_orderliness",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.low_orderliness",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_cleanliness",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.visible_dirt/decay",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.nature_imagery",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.naturalistic_forms",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.indoor-outdoor_continuity",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.seating_available",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.soft_seating",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.hard_seating",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_seating_density",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.work_surfaces_present",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.home-like_decor",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.institutional_decor",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.crowded_space",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.sparse_occupancy",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.private/enclosed_niche",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.public/exposed_area",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.clear_exits/wayfinding_signage",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.poor_visibility_/_dark_corners",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.barriers/guards_present",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.hazard_indicators",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.surveillance_/_cameras_visible",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.soft_acoustic_treatments",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.hard_reflective_surfaces",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_ceiling_+_hard_surfaces",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.visible_hvac_vents",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.open_windows",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.fans_visible",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.commercial_branding",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.religious_symbols",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.artworks_prominent",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.text/information_density_high",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.minimal_signage",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.well_maintained",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.worn/degraded",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_edge_density",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.low_edge_density",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_spatial_frequency_content",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.low_spatial_frequency_content",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_color_entropy",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    },
+    {
+      "tag_id": "env.ae.high_fractal_dimension_(2d)",
+      "bn": {
+        "demand_state": "required",
+        "evidence_role": "stimulus_antecedent",
+        "consumable": true,
+        "parent_tags": null,
+        "child_tags": null
+      }
+    }
+  ]
+}

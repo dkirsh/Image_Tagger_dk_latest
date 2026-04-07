@@ -1,0 +1,14 @@
+FROM python:3.11-slim
+WORKDIR /app
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl \
+  && rm -rf /var/lib/apt/lists/*
+COPY backend/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+COPY backend/app /app/app
+COPY core /app/core
+EXPOSE 8401
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8401"]
+
+# Localized attribute dependencies (added by rebuild script)
+RUN pip install torch transformers --no-cache-dir

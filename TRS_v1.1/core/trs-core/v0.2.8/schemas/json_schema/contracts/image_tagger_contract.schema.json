@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Image Tagger Contract",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "tags"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "pattern": "^v\\d+\\.\\d+\\.\\d+$"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "tag_id",
+          "value_type",
+          "extractability"
+        ],
+        "properties": {
+          "tag_id": {
+            "type": "string"
+          },
+          "value_type": {
+            "type": "string",
+            "enum": [
+              "binary",
+              "ordinal",
+              "continuous",
+              "categorical",
+              "region_map"
+            ]
+          },
+          "extractability": {
+            "type": "object",
+            "required": [
+              "from_2d"
+            ],
+            "properties": {
+              "from_2d": {
+                "type": "string",
+                "enum": [
+                  "yes",
+                  "partial",
+                  "no",
+                  "unknown"
+                ]
+              },
+              "from_3d_vr": {
+                "type": "string",
+                "enum": [
+                  "yes",
+                  "partial",
+                  "no",
+                  "unknown"
+                ]
+              },
+              "monocular_3d_approx": {
+                "type": "string",
+                "enum": [
+                  "yes",
+                  "partial",
+                  "no",
+                  "unknown"
+                ]
+              },
+              "region_support": {
+                "type": "boolean"
+              },
+              "confidence_available": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": true
+          },
+          "extraction": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}
