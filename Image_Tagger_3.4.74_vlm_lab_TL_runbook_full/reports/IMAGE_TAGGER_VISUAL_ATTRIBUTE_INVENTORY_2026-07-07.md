@@ -49,7 +49,11 @@ The unified historical extractor says it combines MPIB Berlin features with MATL
 
 ## Live Canonical Math Already Implemented
 
-The active v3.4.74 code has Python analyzers for many related low-level features, but it does not directly expose the MPIB MATLAB header names.
+The active code now has a deterministic Python MPIB-compatible analyzer installed in the live science pipeline:
+
+- `/Users/davidusa/REPOS/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full/backend/science/math/mpib_low_level.py`
+
+Canonical science runs are bumped to `3.4.75-canonical-mpib-v1`, enable `enable_mpib_low_level` by default, and persist a `mpib_low_level_json` science artifact with 20 MPIB-compatible feature names. This is an installed Python subset, not a full MATLAB Image Decomposer parity claim.
 
 Implemented active analyzers include:
 
@@ -138,7 +142,8 @@ The safest first sprint should not begin with VLM-dependent semantics. It should
 
 ## Caveats
 
-1. The MPIB MATLAB feature headers are not directly wired into the active v3.4.74 canonical app.
+1. The MPIB-compatible deterministic Python subset is wired into the active canonical app and tested.
 2. `features_canonical.jsonl` is not normal JSONL: it uses literal `\n` separators in at least part of the file and needs special parsing.
 3. Several registry entries are marked `active` in `features_canonical.jsonl` while coverage marks them `stub_only`. For operational truth, use `science_tag_coverage_v1.json` and `backend/science/feature_stubs.py`.
-4. The live canonical docs say affordance inference is not reliable in the current environment because of a LightGBM pickle compatibility issue.
+4. Full MATLAB Image Decomposer parity remains a later validation sprint.
+5. The live canonical docs say affordance inference is not reliable in the current environment because of a LightGBM pickle compatibility issue.

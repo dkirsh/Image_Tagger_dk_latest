@@ -28,6 +28,12 @@ Every sprint must satisfy these rules.
 | Search inspection | Implemented tags must be searchable in a results gallery when they are ready for user-facing exploration. |
 | Last mile | Each sprint writes an acceptance report under `reports/` with actual outputs, commands run, pass/fail results, and status `ACCEPTED`, `PARTIAL`, or `BLOCKED`. |
 
+Installed MPIB bridge:
+
+- Treat `/Users/davidusa/REPOS/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full/backend/science/math/mpib_low_level.py` as the live installed MPIB-compatible low-level feature bridge.
+- Treat `/Users/davidusa/REPOS/Image_Tagger_dk_latest/image_decomposition/`, `/Users/davidusa/REPOS/Image_Tagger_dk_latest/TRS_v1.1/`, and `/Users/davidusa/REPOS/Image_Tagger_dk_latest/low-level-image-features/` as historical source material only unless a sprint explicitly tells you otherwise.
+- Do not claim full MATLAB Image Decomposer parity unless a later sprint validates exact feature-by-feature parity against fixtures.
+
 Minimum shared tests unless the sprint says otherwise:
 
 ```bash

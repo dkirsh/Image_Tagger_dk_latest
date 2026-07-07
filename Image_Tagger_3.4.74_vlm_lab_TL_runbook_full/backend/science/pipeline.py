@@ -21,6 +21,7 @@ from backend.science.core import AnalysisFrame
 # v3.4 Modular Imports
 from backend.science.math.color import ColorAnalyzer
 from backend.science.math.complexity import ComplexityAnalyzer
+from backend.science.math.mpib_low_level import MPIBLowLevelAnalyzer
 from backend.science.math.glcm import TextureAnalyzer
 from backend.science.math.fractals import FractalAnalyzer
 from backend.science.math.symmetry import SymmetryAnalyzer
@@ -43,6 +44,7 @@ class SciencePipelineConfig:
     def __init__(self, enable_all: bool = True):
         self.enable_color = enable_all
         self.enable_complexity = enable_all
+        self.enable_mpib_low_level = enable_all
         self.enable_texture = enable_all
         self.enable_fractals = enable_all
         self.enable_spatial = enable_all
@@ -76,6 +78,7 @@ class SciencePipelineConfig:
         return {
             "enable_color": self.enable_color,
             "enable_complexity": self.enable_complexity,
+            "enable_mpib_low_level": self.enable_mpib_low_level,
             "enable_texture": self.enable_texture,
             "enable_fractals": self.enable_fractals,
             "enable_spatial": self.enable_spatial,
@@ -104,6 +107,7 @@ class SciencePipeline:
         # Init Analyzers
         self.color = ColorAnalyzer()
         self.complexity = ComplexityAnalyzer()
+        self.mpib_low_level = MPIBLowLevelAnalyzer()
         self.texture = TextureAnalyzer()
         self.fractals = FractalAnalyzer()
         self.symmetry = SymmetryAnalyzer()
@@ -140,6 +144,8 @@ class SciencePipeline:
                 self.color.analyze(frame)
             if self.config.enable_complexity:
                 self.complexity.analyze(frame)
+            if self.config.enable_mpib_low_level:
+                self.mpib_low_level.analyze(frame)
             if self.config.enable_texture:
                 self.texture.analyze(frame)
             if self.config.enable_fractals:
@@ -318,6 +324,8 @@ class SciencePipeline:
                 self.color.analyze(frame)
             if self.config.enable_complexity:
                 self.complexity.analyze(frame)
+            if self.config.enable_mpib_low_level:
+                self.mpib_low_level.analyze(frame)
             if self.config.enable_texture:
                 self.texture.analyze(frame)
             if self.config.enable_fractals:
@@ -440,6 +448,17 @@ class SciencePipeline:
                     image_id=image_id,
                     artifact_type="materials_json",
                     meta_json=materials_summary,
+                    content_type="application/json",
+                )
+
+            mpib_summary = frame.metadata.get("mpib_low_level")
+            if isinstance(mpib_summary, dict):
+                persist_science_artifact(
+                    self.db,
+                    run_id=run.id,
+                    image_id=image_id,
+                    artifact_type="mpib_low_level_json",
+                    meta_json=mpib_summary,
                     content_type="application/json",
                 )
 

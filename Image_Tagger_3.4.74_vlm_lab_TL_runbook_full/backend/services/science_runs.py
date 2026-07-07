@@ -30,7 +30,7 @@ logger = logging.getLogger("v3.services.science_runs")
 # ── Active science version ─────────────────────────────────────────────────────
 # Bump this string when the canonical pipeline config changes so that existing
 # COMPLETED runs are not invalidated implicitly.
-ACTIVE_SCIENCE_VERSION = "3.4.74-canonical-v2"
+ACTIVE_SCIENCE_VERSION = "3.4.75-canonical-mpib-v1"
 
 def _env_flag(name: str, default: bool = False) -> bool:
     raw = os.getenv(name)
@@ -48,6 +48,7 @@ def build_canonical_config() -> dict:
     return {
         "enable_color": True,
         "enable_complexity": True,
+        "enable_mpib_low_level": True,
         "enable_texture": True,
         "enable_fractals": True,
         "enable_spatial": True,
