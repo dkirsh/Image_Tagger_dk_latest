@@ -1,6 +1,15 @@
-# STUDENT START HERE – Image Tagger 3.4.74_vlm_lab_notebook_TL_runbook
+# STUDENT START HERE - Image Tagger 3.4.75 MPIB Bridge
 
 If you are a **student** using Image Tagger for a course, this is your entry point.
+
+The active app root is:
+
+```bash
+Image_Tagger_3.4.74_vlm_lab_TL_runbook_full
+```
+
+Historical sibling folders are reference-only unless a sprint contract explicitly
+tells you otherwise.
 
 ## 1. What you should do first
 
@@ -16,6 +25,22 @@ If you are a **student** using Image Tagger for a course, this is your entry poi
      You will use the `notebooks/VLM_Health_Lab.ipynb` notebook in Google Colab to run a small “VLM Health Lab.”
 
 Once you know your track, follow the corresponding section in the Student Quickstart.
+
+If you are contributing code for the architectural tag sprint, also read:
+
+- `docs/STUDENT_ARCHITECTURAL_TAG_SPRINT_CONTRACTS_2026-07-07.md`
+- `docs/ARCHITECTURAL_TAG_OPERATIONAL_BACKLOG_2026-07-07.md`
+- `reports/IMAGE_TAGGER_VISUAL_ATTRIBUTE_INVENTORY_2026-07-07.md`
+
+To verify the installed MPIB-compatible low-level bridge locally:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements-install.txt
+PYTHONPATH=. pytest tests/test_mpib_low_level.py
+```
 
 ## 2. Quick mental model
 

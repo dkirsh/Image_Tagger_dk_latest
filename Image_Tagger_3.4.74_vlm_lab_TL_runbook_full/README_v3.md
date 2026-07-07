@@ -1,9 +1,9 @@
-# Image Tagger v3.4.74
+# Image Tagger v3.4.75
 
 Image Tagger is a multi-app research system for architectural and interior-image
 annotation, science feature extraction, and downstream exploratory analysis.
 
-The current `3.4.74` line includes a versioned canonical science pipeline with
+The current `3.4.75` line includes a versioned canonical science pipeline with
 explicit run tracking, structured artifacts, and Explorer-facing status APIs.
 
 ## Architecture
@@ -39,12 +39,13 @@ Key behavior:
 - Structured outputs are stored in `science_artifacts`
 - Numeric science attributes are still persisted to `Validation`
 
-The active version is defined in code and is currently the `3.4.74` canonical
-line.
+The active version is defined in code and is currently
+`3.4.75-canonical-mpib-v1`.
 
 Current default canonical outputs:
 
 - deterministic science attributes
+- MPIB-compatible low-level feature artifact, `mpib_low_level_json`
 - room detection attributes plus `room_json`
 - material heuristic summaries when available
 
@@ -64,6 +65,25 @@ From the app root:
 ./install.sh
 docker-compose -f deploy/docker-compose.yml up -d
 ```
+
+For the safer student installer, use:
+
+```bash
+./auto_install.sh
+```
+
+For a light local MPIB verification without running Docker:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements-install.txt
+PYTHONPATH=. pytest tests/test_mpib_low_level.py
+```
+
+The backend Docker image installs `scikit-image`; `requirements-install.txt`
+also declares it for direct local checks that import `skimage`.
 
 Primary URLs:
 
@@ -91,6 +111,7 @@ operator tool for large backfills.
 
 Useful current tests:
 
+- `PYTHONPATH=. pytest tests/test_mpib_low_level.py -v`
 - `pytest tests/test_v3_api.py -v`
 - `pytest tests/test_explorer_smoke.py -v`
 - `pytest tests/test_tag_derivation.py -v`
