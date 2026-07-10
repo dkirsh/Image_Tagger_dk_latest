@@ -19,6 +19,8 @@ from .permissive.operators_v2_adapter import OperatorsV2Adapter
 from .permissive.proximal_stats_adapter import ProximalStatsAdapter
 from .permissive.skimage_texture_adapter import SkimageTextureAdapter
 from .permissive.visual_clutter_adapter import VisualClutterAdapter
+from .spatial.acoustic_adapter import AcousticPrivacyAdapter
+from .spatial.reflection_adapter import ReflectionExposureAdapter
 from .spatial.isovist_adapter import IsovistAdapter
 from .spatial.prospect_refuge import ProspectRefugeAdapter
 from .workers.aesthetic_score_adapter import AestheticScoreAdapter
@@ -39,6 +41,8 @@ PERMISSIVE_ADAPTERS: List[type[AnalyzerAdapter]] = [
     OperatorsV2Adapter,   # Codex flagship five (canonical names)
     IsovistAdapter,     # plan-side; no-ops on image-only frames
     ProspectRefugeAdapter,   # plan-side; prospect/refuge/privacy/dead-ground
+    AcousticPrivacyAdapter,  # plan-side; calibrated speech-privacy (needs pyroomacoustics)
+    ReflectionExposureAdapter,  # plan-side; specular self-exposure + seen-via-reflection
 ]
 
 WORKER_ADAPTERS: List[type[AnalyzerAdapter]] = [
@@ -145,6 +149,17 @@ STUB_TO_FUNCTION: Dict[str, str] = {
     "cnfa.spatial.privacy_index": "spatial.prospect_refuge (1 - exposure)",
     "cnfa.spatial.prospect_refuge_index": "spatial.prospect_refuge (depth x enclosure x (1-dead_ground))",
     "cnfa.social.covisibility_potential": "spatial.prospect_refuge.social_covisibility",
+    # calibrated acoustics — pyroomacoustics RIR + ISO-3382 STI (MIT)
+    "cnfa.acoustic.rt60": "spatial.acoustic_pyroom.calibrated_fields->rt60",
+    "cnfa.acoustic.speech_privacy": "spatial.acoustic_pyroom (1 - overheard STI fraction)",
+    "cnfa.acoustic.overheard_fraction": "spatial.acoustic_pyroom (STI>threshold floor fraction)",
+    "cnfa.acoustic.sti_mean": "spatial.acoustic_pyroom.calibrated_fields->mean STI",
+    # specular self-exposure — mirror-image optics (clean-room)
+    "cnfa.reflection.self_exposure": "spatial.reflection_exposure.self_exposure (raw reflectance*subtended)",
+    "cnfa.reflection.self_exposure_index": "spatial.reflection_exposure.self_exposure (squashed 0..1)",
+    "cnfa.reflection.self_image_count": "spatial.reflection_exposure.self_images (count)",
+    "cnfa.reflection.nearest_self_image_distance": "spatial.reflection_exposure (min round-trip 2d)",
+    "cnfa.reflection.reflected_exposure": "spatial.reflection_exposure.seen_via_reflection (bounced-sightline fraction)",
     # depth worker — MiDaS (MIT)
     "cnfa.spatial.enclosure_index": "midas_worker->reduce",
     "cnfa.spatial.isovist_openness": "midas_worker->reduce",
