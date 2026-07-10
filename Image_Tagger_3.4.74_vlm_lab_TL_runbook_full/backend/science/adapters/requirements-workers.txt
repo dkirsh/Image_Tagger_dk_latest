@@ -1,0 +1,22 @@
+# Model-worker adapters — OPTIONAL, heavy, and each best installed in its OWN
+# isolated venv (point the adapter at it with the CNFA_*_PYTHON env var), because
+# these tools have conflicting Torch builds and some carry non-commercial weights.
+# Do NOT install these into the main science env alongside the permissive deps.
+
+# --- depth (MiDaS) : CNFA_MIDAS_PYTHON
+# torch torchvision timm
+
+# --- segmentation (SAM / OneFormer) : CNFA_SEG_PYTHON
+# torch torchvision transformers segment-anything
+
+# --- saliency (DeepGaze; weights research-only) : CNFA_SALIENCY_PYTHON
+# torch deepgaze-pytorch          # or rely on the permissive spectral-residual fallback
+
+# --- memorability (ResMem / ViTMem; non-commercial weights) : CNFA_MEM_PYTHON
+# torch resmem                    # or: vitmem
+
+# --- aesthetic score (pyiqa; validation only) : CNFA_IQA_PYTHON
+# torch pyiqa
+
+# --- material-from-image (research) : CNFA_MATERIAL_PYTHON
+# torch  + the chosen perceived-gloss / intrinsic-decomposition repo

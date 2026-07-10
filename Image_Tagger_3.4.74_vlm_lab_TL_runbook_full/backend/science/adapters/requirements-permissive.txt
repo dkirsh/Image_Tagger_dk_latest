@@ -1,0 +1,13 @@
+# Permissive deterministic adapters — safe to ship. All MIT/BSD/Apache.
+numpy>=1.23
+scipy>=1.9
+scikit-image>=0.20
+opencv-python>=4.6
+Pillow>=9.0
+colour-science>=0.4.2
+statsmodels>=0.13        # Aesthetics-Toolbox Fourier slope
+mahotas>=1.4             # Haralick / LBP / Zernike
+visual-clutter>=1.0      # Rosenholtz Feature Congestion + Subband Entropy
+pyrtools>=1.0            # visual-clutter dependency (steerable pyramids)
+# The MIT Aesthetics-Toolbox is vendored under third_party/aesthetics-toolbox
+# (auto-located); set AESTHETICS_TOOLBOX_PATH to override.
