@@ -1,0 +1,6 @@
+# .gitignore
+
+# Python virtual environment
+
+low-level-env/
+.idea/
