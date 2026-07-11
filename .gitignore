@@ -22,3 +22,13 @@ ai_*.md
 *llm*.md
 *AI_COLLAB*.md
 *QUICKSTART*.md
+
+# --- build/runtime junk (added for clean handoff) ---
+**/__pycache__/
+*.pyc
+*.pyo
+**/.venv/
+**/venv/
+**/node_modules/
+*.egg-info/
+.ipynb_checkpoints/
