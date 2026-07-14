@@ -1,0 +1,352 @@
+{
+  "meta": {
+    "image": "/home/claude/cnfa_demo/inputs/angular_modern.png",
+    "depth": "geometric_vp_groundplane(M2-geo)",
+    "vp_conf": 0.8,
+    "plane_conf": 0.45
+  },
+  "attributes": [
+    {
+      "key": "cnfa.light.brightness_variance",
+      "scalar": 0.2534,
+      "has_field": true,
+      "regions": [],
+      "confidence": 0.9,
+      "method": "local luminance SD, 31px window (M1)",
+      "failure_modes": [
+        "exposure/HDR of source photo",
+        "shadows vs true material change"
+      ],
+      "extras": {}
+    },
+    {
+      "key": "cnfa.fluency.edge_clarity_mean",
+      "scalar": 0.8754,
+      "has_field": true,
+      "regions": [],
+      "confidence": 0.9,
+      "method": "Sobel gradient magnitude on Canny support (M1)",
+      "failure_modes": [
+        "motion blur/low-res source reads as low clarity"
+      ],
+      "extras": {}
+    },
+    {
+      "key": "cnfa.fluency.symmetry_score_horizontal",
+      "scalar": 0.4282,
+      "has_field": true,
+      "regions": [],
+      "confidence": 0.9,
+      "method": "SSIM(image, mirrored); field = local asymmetry (M1)",
+      "failure_modes": [
+        "off-center camera breaks symmetry of a symmetric room"
+      ],
+      "extras": {}
+    },
+    {
+      "key": "cnfa.fluency.color_palette_entropy",
+      "scalar": 0.9613,
+      "has_field": true,
+      "regions": [],
+      "confidence": 0.85,
+      "method": "k-means(k=8) Lab palette; Shannon entropy of proportions (M1)",
+      "failure_modes": [
+        "k sensitivity (fixed k=8, fixed seed)"
+      ],
+      "extras": {
+        "palette": [
+          "#b0b6c0",
+          "#474e51",
+          "#f6f8fc",
+          "#676d73",
+          "#212a29",
+          "#9299a5",
+          "#d1d7e6",
+          "#989158"
+        ],
+        "proportions": [
+          0.157,
+          0.151,
+          0.083,
+          0.152,
+          0.143,
+          0.18,
+          0.102,
+          0.032
+        ]
+      }
+    },
+    {
+      "key": "cnfa.fluency.processing_load_proxy",
+      "scalar": 0.0959,
+      "has_field": true,
+      "regions": [],
+      "confidence": 0.7,
+      "method": "JPEG bytes/pixel @Q75, global + 32px tiles (M1)",
+      "failure_modes": [
+        "sensor noise inflates load",
+        "smooth CGI deflates it"
+      ],
+      "extras": {}
+    },
+    {
+      "key": "cnfa.fractal_dimension",
+      "scalar": 1.307,
+      "has_field": true,
+      "regions": [],
+      "confidence": 0.75,
+      "method": "box-counting on Canny edges, global + per-tile (M1)",
+      "failure_modes": [
+        "scale range 2..16px only",
+        "edge-detector dependence"
+      ],
+      "extras": {}
+    },
+    {
+      "key": "glare-risk",
+      "scalar": 0.621,
+      "has_field": true,
+      "regions": [],
+      "confidence": 0.65,
+      "method": "overexposure mask + top-hat local contrast (M1)",
+      "failure_modes": [
+        "blown sky through window vs true discomfort glare",
+        "no eye position -> not DGP-calibrated"
+      ],
+      "extras": {}
+    },
+    {
+      "key": "cnfa.light.warm_vs_cool_ratio",
+      "scalar": 0.1686,
+      "has_field": true,
+      "regions": [],
+      "confidence": 0.8,
+      "method": "hue-band warm/cool share, sat-gated (M1)",
+      "failure_modes": [
+        "camera white balance shifts the split"
+      ],
+      "extras": {}
+    },
+    {
+      "key": "cnfa.light.vertical_illuminance_proxy",
+      "scalar": 0.609,
+      "has_field": true,
+      "regions": [],
+      "confidence": 0.5,
+      "method": "mean luminance over wall-plane mask (M2)",
+      "failure_modes": [
+        "segmentation quality",
+        "camera exposure not radiometric"
+      ],
+      "extras": {}
+    },
+    {
+      "key": "cnfa.spatial.enclosure_index",
+      "scalar": 0.8377,
+      "has_field": true,
+      "regions": [],
+      "confidence": 0.5,
+      "method": "nearness-weighted solid boundary vs aperture share (M2)",
+      "failure_modes": [
+        "mirrors/art read as openings",
+        "open door to enclosed room counts as aperture",
+        "heuristic plane segmentation"
+      ],
+      "extras": {}
+    },
+    {
+      "key": "cnfa.spatial.prospect",
+      "scalar": 4.3702,
+      "has_field": true,
+      "regions": [],
+      "confidence": 0.5,
+      "method": "P95 view-depth over visible floor (M2); field = view-depth heatmap",
+      "failure_modes": [
+        "monocular depth compresses far range",
+        "window views not separated from interior depth"
+      ],
+      "extras": {}
+    },
+    {
+      "key": "cnfa.cognitive.landmark_salience",
+      "scalar": 0.4865,
+      "has_field": true,
+      "regions": [
+        {
+          "kind": "bbox",
+          "coords": [
+            108,
+            92,
+            109,
+            110
+          ],
+          "label": "landmark dE=18",
+          "value": 18.4504
+        }
+      ],
+      "confidence": 0.6,
+      "method": "spectral-residual saliency + Lab surround contrast (M1)",
+      "failure_modes": [
+        "bright window outsalients a memorable object",
+        "salience != wayfinding anchor (semantic gap)"
+      ],
+      "extras": {}
+    },
+    {
+      "key": "acoustic_absorption_proxy",
+      "scalar": 0.161,
+      "has_field": true,
+      "regions": [],
+      "confidence": 0.5,
+      "method": "visual material classes -> mid-band alpha table -> area-weighted mean; RT_rel=(1-a)/a scaled (M2). NO absolute seconds without metric scale.",
+      "failure_modes": [
+        "unseen surfaces behind camera omitted",
+        "lab alpha != in-situ",
+        "material heuristic (no VLM) misclassifies",
+        "Sabine diffuse-field limits"
+      ],
+      "extras": {
+        "rt_relative_echoiness": 0.2606,
+        "alpha_table": {
+          "hard_floor": 0.05,
+          "carpet_rug": 0.3,
+          "wall_paint": 0.05,
+          "ceiling": 0.1,
+          "glass": 0.03,
+          "curtain": 0.5,
+          "upholstery": 0.55,
+          "wood_furniture": 0.1,
+          "plant": 0.2,
+          "unknown": 0.15
+        },
+        "class_shares": {
+          "hard_floor": 0.08,
+          "carpet_rug": 0.046,
+          "wall_paint": 0.449,
+          "ceiling": 0.079,
+          "glass": 0.135,
+          "upholstery": 0.203,
+          "plant": 0.008
+        }
+      }
+    },
+    {
+      "key": "sociopetal_seating",
+      "scalar": 1.0,
+      "has_field": false,
+      "regions": [
+        {
+          "kind": "bbox",
+          "coords": [
+            508,
+            190,
+            300,
+            200
+          ],
+          "label": "sofa"
+        },
+        {
+          "kind": "bbox",
+          "coords": [
+            246,
+            128,
+            90,
+            90
+          ],
+          "label": "armchair L"
+        },
+        {
+          "kind": "bbox",
+          "coords": [
+            360,
+            120,
+            80,
+            84
+          ],
+          "label": "armchair R"
+        },
+        {
+          "kind": "line",
+          "coords": [
+            658.0,
+            290.0,
+            291.0,
+            173.0
+          ],
+          "color": [
+            0,
+            220,
+            60
+          ]
+        },
+        {
+          "kind": "line",
+          "coords": [
+            658.0,
+            290.0,
+            400.0,
+            162.0
+          ],
+          "color": [
+            0,
+            220,
+            60
+          ]
+        },
+        {
+          "kind": "line",
+          "coords": [
+            291.0,
+            173.0,
+            400.0,
+            162.0
+          ],
+          "color": [
+            0,
+            220,
+            60
+          ]
+        }
+      ],
+      "confidence": 0.55,
+      "method": "proxemic band (0.45-3.7m est., Hall social zone) x mutual facing x pairs; detector-pluggable (demo: manual boxes) (M2)",
+      "failure_modes": [
+        "facing from single view is weak",
+        "depth-scaled distances approximate",
+        "off-frame seats missing"
+      ],
+      "extras": {
+        "pairs": 3,
+        "n_seats": 3
+      }
+    },
+    {
+      "key": "cnfa.spatial.prospect_to_refuge_ratio",
+      "scalar": 0.4024,
+      "has_field": false,
+      "regions": [],
+      "confidence": 0.34,
+      "method": "mean prospect vs refuge over inferred-plan free cells (M2.5)",
+      "failure_modes": [
+        "single-view plan covers visible region only",
+        "depth fallback quality"
+      ],
+      "extras": {
+        "plan_method": "inferred plan: depth backprojection of floor + footprints; viewpoint = nearest visible-floor cell to camera (M2.5)",
+        "plan_conf": 0.4
+      }
+    },
+    {
+      "key": "spatial.isovist_openness_plan",
+      "scalar": 0.5931,
+      "has_field": false,
+      "regions": [],
+      "confidence": 0.34,
+      "method": "mean isovist radial (m-ish) over inferred plan (M2.5)",
+      "failure_modes": [
+        "scale from assumed camera height/FOV"
+      ],
+      "extras": {}
+    }
+  ]
+}

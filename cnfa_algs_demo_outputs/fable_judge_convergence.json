@@ -1,0 +1,58 @@
+{
+  "acoustic_absorption_proxy": {
+    "n": 8,
+    "spearman_rho": 0.34,
+    "p": 0.4105,
+    "kendall_tau": 0.275,
+    "judge_mean_sd": 0.0,
+    "verdict": "WEAK"
+  },
+  "cnfa.cognitive.landmark_salience": {
+    "n": 8,
+    "spearman_rho": -0.296,
+    "p": 0.4758,
+    "kendall_tau": -0.276,
+    "judge_mean_sd": 0.0,
+    "verdict": "FAILING"
+  },
+  "cnfa.fluency.processing_load_proxy": {
+    "n": 8,
+    "spearman_rho": 0.933,
+    "p": 0.0007,
+    "kendall_tau": 0.849,
+    "judge_mean_sd": 0.0,
+    "verdict": "CONVERGING"
+  },
+  "cnfa.light.warm_vs_cool_ratio": {
+    "n": 8,
+    "spearman_rho": 0.036,
+    "p": 0.9319,
+    "kendall_tau": -0.038,
+    "judge_mean_sd": 0.0,
+    "verdict": "FAILING"
+  },
+  "cnfa.spatial.enclosure_index": {
+    "n": 8,
+    "spearman_rho": 0.814,
+    "p": 0.014,
+    "kendall_tau": 0.768,
+    "judge_mean_sd": 0.0,
+    "verdict": "CONVERGING"
+  },
+  "cnfa.spatial.prospect": {
+    "n": 8,
+    "spearman_rho": 0.27,
+    "p": 0.5177,
+    "kendall_tau": 0.231,
+    "judge_mean_sd": 0.0,
+    "verdict": "FAILING"
+  },
+  "glare-risk": {
+    "n": 8,
+    "spearman_rho": 0.038,
+    "p": 0.9282,
+    "kendall_tau": 0.041,
+    "judge_mean_sd": 0.0,
+    "verdict": "FAILING"
+  }
+}

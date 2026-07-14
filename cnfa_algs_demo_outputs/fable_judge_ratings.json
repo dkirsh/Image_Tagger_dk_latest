@@ -1,0 +1,78 @@
+{
+  "provider": "claude-fable-5 (SAME-FAMILY STAND-IN — author-contaminated; mechanics demo only. Clean run = Gemini via vlm_judge.py)",
+  "repeats": 1,
+  "ratings": {
+    "BalancedCare_Render_Corridor2_wpeople1_9": {
+      "cnfa.spatial.enclosure_index": {"ordinal": [{"rating": 6, "reason": "Solid walls both sides, closed ceiling but two skylights; openness only along the axis."}]},
+      "cnfa.spatial.prospect": {"ordinal": [{"rating": 7, "reason": "Exceptionally long unobstructed axial view down the corridor."}]},
+      "cnfa.fluency.processing_load_proxy": {"ordinal": [{"rating": 1, "reason": "Almost empty visual field; spare healthcare surfaces."}]},
+      "cnfa.light.warm_vs_cool_ratio": {"ordinal": [{"rating": 4, "reason": "Neutral palette; warm wood accent and sconces balance cool daylight."}]},
+      "acoustic_absorption_proxy": {"ordinal": [{"rating": 4, "reason": "Likely acoustic ceiling tile and resilient floor; walls hard - moderate."}]},
+      "cnfa.cognitive.landmark_salience": {"ordinal": [{"rating": 3, "reason": "Wood wall and plant are the only anchors; modest."}]},
+      "glare-risk": {"ordinal": [{"rating": 3, "reason": "Bright skylights against darker ceiling; moderate."}]}
+    },
+    "korridor": {
+      "cnfa.spatial.enclosure_index": {"ordinal": [{"rating": 4, "reason": "Large glazed wall left, double-height void and open mezzanine; only ceiling fully closed."}]},
+      "cnfa.spatial.prospect": {"ordinal": [{"rating": 5, "reason": "Long diagonal view across atrium into corridor beyond."}]},
+      "cnfa.fluency.processing_load_proxy": {"ordinal": [{"rating": 2, "reason": "Spare white space, few objects."}]},
+      "cnfa.light.warm_vs_cool_ratio": {"ordinal": [{"rating": 5, "reason": "Warm cream/beige monochrome."}]},
+      "acoustic_absorption_proxy": {"ordinal": [{"rating": 2, "reason": "Big hard-surfaced volume; clap would ring."}]},
+      "cnfa.cognitive.landmark_salience": {"ordinal": [{"rating": 6, "reason": "Tiered social stair dominates and anchors the whole space."}]},
+      "glare-risk": {"ordinal": [{"rating": 4, "reason": "Bright window walls against white surfaces."}]}
+    },
+    "50_day_street_offices_norwalk_1200x1165_": {
+      "cnfa.spatial.enclosure_index": {"ordinal": [{"rating": 5, "reason": "Enclosed timber loft; windows one side plus skylight."}]},
+      "cnfa.spatial.prospect": {"ordinal": [{"rating": 3, "reason": "View blocked by plant shelving within several metres."}]},
+      "cnfa.fluency.processing_load_proxy": {"ordinal": [{"rating": 6, "reason": "Plants, shelving, exposed services, pattern-rich wood everywhere."}]},
+      "cnfa.light.warm_vs_cool_ratio": {"ordinal": [{"rating": 7, "reason": "Saturated timber and warm lamps dominate."}]},
+      "acoustic_absorption_proxy": {"ordinal": [{"rating": 4, "reason": "Rug and velvet chairs versus much hard wood; middling."}]},
+      "cnfa.cognitive.landmark_salience": {"ordinal": [{"rating": 4, "reason": "Brass drum table or plant wall; several competing candidates."}]},
+      "glare-risk": {"ordinal": [{"rating": 3, "reason": "Skylight and windows moderate against absorbing wood."}]}
+    },
+    "Ludwig_Mies_van_der_Rohe_Farnsworth_Hous": {
+      "cnfa.spatial.enclosure_index": {"ordinal": [{"rating": 2, "reason": "Two full glass walls; landscape visually continuous with interior."}]},
+      "cnfa.spatial.prospect": {"ordinal": [{"rating": 6, "reason": "Sightlines run out through glazing into deep landscape."}]},
+      "cnfa.fluency.processing_load_proxy": {"ordinal": [{"rating": 2, "reason": "A few iconic pieces; very spare."}]},
+      "cnfa.light.warm_vs_cool_ratio": {"ordinal": [{"rating": 5, "reason": "Primavera wood core and travertine warm; green daylight cools it."}]},
+      "acoustic_absorption_proxy": {"ordinal": [{"rating": 3, "reason": "Hard floor and glass; rug and leather absorb some."}]},
+      "cnfa.cognitive.landmark_salience": {"ordinal": [{"rating": 5, "reason": "The wood core wall clearly anchors orientation."}]},
+      "glare-risk": {"ordinal": [{"rating": 5, "reason": "Vast bright glazing fills the field of view."}]}
+    },
+    "Industrial_open_concept_office_project_b": {
+      "cnfa.spatial.enclosure_index": {"ordinal": [{"rating": 5, "reason": "Enclosed room; one large window band."}]},
+      "cnfa.spatial.prospect": {"ordinal": [{"rating": 4, "reason": "Medium view to the window bay."}]},
+      "cnfa.fluency.processing_load_proxy": {"ordinal": [{"rating": 6, "reason": "Exposed ducts, big mural, many furniture pieces."}]},
+      "cnfa.light.warm_vs_cool_ratio": {"ordinal": [{"rating": 3, "reason": "Concrete greys and black dominate, small warm notes."}]},
+      "acoustic_absorption_proxy": {"ordinal": [{"rating": 3, "reason": "Mostly hard shell; rug and upholstery help slightly."}]},
+      "cnfa.cognitive.landmark_salience": {"ordinal": [{"rating": 6, "reason": "The giant skull mural is unmistakable."}]},
+      "glare-risk": {"ordinal": [{"rating": 3, "reason": "Bright window against dark interior; contrast moderate."}]}
+    },
+    "Office_Grade_1_1536x838": {
+      "cnfa.spatial.enclosure_index": {"ordinal": [{"rating": 4, "reason": "Full-height street glazing along one side."}]},
+      "cnfa.spatial.prospect": {"ordinal": [{"rating": 4, "reason": "View down the lobby roughly ten metres."}]},
+      "cnfa.fluency.processing_load_proxy": {"ordinal": [{"rating": 5, "reason": "Plants, layered materials, several furniture groups."}]},
+      "cnfa.light.warm_vs_cool_ratio": {"ordinal": [{"rating": 6, "reason": "Timber slats, warm cove light, rust velvet."}]},
+      "acoustic_absorption_proxy": {"ordinal": [{"rating": 4, "reason": "Rug, sofa and plants versus marble and concrete."}]},
+      "cnfa.cognitive.landmark_salience": {"ordinal": [{"rating": 5, "reason": "Marble reception desk against lit slat wall is a strong anchor."}]},
+      "glare-risk": {"ordinal": [{"rating": 3, "reason": "Street glazing bright but balanced interior."}]}
+    },
+    "originalfile1769166756859_4785": {
+      "cnfa.spatial.enclosure_index": {"ordinal": [{"rating": 6, "reason": "Enclosed suite; windows distant and screened."}]},
+      "cnfa.spatial.prospect": {"ordinal": [{"rating": 4, "reason": "Diagonal view down the aisle between screens."}]},
+      "cnfa.fluency.processing_load_proxy": {"ordinal": [{"rating": 3, "reason": "Orderly and calm; repeated slats but few objects."}]},
+      "cnfa.light.warm_vs_cool_ratio": {"ordinal": [{"rating": 6, "reason": "Pervasive light timber."}]},
+      "acoustic_absorption_proxy": {"ordinal": [{"rating": 5, "reason": "Carpet tile, fabric screens and slat walls absorb well."}]},
+      "cnfa.cognitive.landmark_salience": {"ordinal": [{"rating": 3, "reason": "Slat screens anchor weakly; repeated, nothing singular."}]},
+      "glare-risk": {"ordinal": [{"rating": 2, "reason": "Soft, even lighting."}]}
+    },
+    "Corridors_of_Classroom_Complex": {
+      "cnfa.spatial.enclosure_index": {"ordinal": [{"rating": 3, "reason": "Open-air sides onto courtyards; roof above only."}]},
+      "cnfa.spatial.prospect": {"ordinal": [{"rating": 6, "reason": "Long axial walkway view to the stair."}]},
+      "cnfa.fluency.processing_load_proxy": {"ordinal": [{"rating": 2, "reason": "Columns and railings only."}]},
+      "cnfa.light.warm_vs_cool_ratio": {"ordinal": [{"rating": 4, "reason": "Warm photographic cast over grey concrete."}]},
+      "acoustic_absorption_proxy": {"ordinal": [{"rating": 1, "reason": "All hard concrete and stone; a clap would crack and ring."}]},
+      "cnfa.cognitive.landmark_salience": {"ordinal": [{"rating": 3, "reason": "Stair at the end; modest anchor."}]},
+      "glare-risk": {"ordinal": [{"rating": 4, "reason": "Bright open courtyards against the shaded walkway."}]}
+    }
+  }
+}

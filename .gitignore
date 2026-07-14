@@ -32,3 +32,22 @@ ai_*.md
 **/node_modules/
 *.egg-info/
 .ipynb_checkpoints/
+
+# --- secrets: never commit API keys / credentials ---
+.env
+.env.*
+*.key
+*.secret
+secrets/
+**/.env
+**/.env.*
+
+# CNFA external collection and generated dataset artifacts
+cnfa_external_collect/cnfa_external/
+cnfa_external_collect/datasets_local/
+cnfa_external_collect/.venv/
+structured3d/*.zip
+cnfa_algs_demo_outputs/*.zip
+*.pyc
+__pycache__/
+.DS_Store
