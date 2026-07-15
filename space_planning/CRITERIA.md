@@ -1,13 +1,22 @@
 # CRITERIA.md — Scoring Rubric for Floor-Plate Layouts
 
-*Space-planning workstream, `space_planning/`. Drafted 2026-07-15 (Fable/Claude Opus). This turns the C1–C18
-rubric in `STATE_OF_KNOWLEDGE.md` §2 into a **scorer specification**: for a candidate layout on a fixed shell,
-the measurable criteria, their directions and thresholds, the exact quantity a program computes, which piece of
-the `cnfa_algs` engine computes it (or must be built to), the evidence tag, and the form of the output. It is
-the cognitive code — and, from this revision on, the **well-being code** — rendered for the floor plate. It sits
-above `BASELINE_REQUIREMENTS.md` (the physical-code floor): baseline requirements decide what is **admissible**;
-the criteria here **rank within** the admissible. Nothing scored here is trusted as fact until it clears the
-validation gate in §6.*
+*Space-planning workstream, `space_planning/`. Drafted 2026-07-15 (Fable/Claude Opus); revised same day to
+ground it in the keystone paper, Kirsh, *From Physical Code to Cognitive Code* (working paper, 9 July 2026;
+`../../../Post_Occupancy_Evals/POE_Cognitive_Code_v1_2026-07-09.md`). This turns the C1–C18 rubric in
+`STATE_OF_KNOWLEDGE.md` §2 into a **scorer specification**: for a candidate layout on a fixed shell, the
+measurable criteria, their directions and thresholds, the exact quantity a program computes, which piece of the
+`cnfa_algs` engine computes it (or must be built to), the evidence tag, and the form of the output. It is the
+cognitive code — and, from this revision on, the **well-being** strand within it — rendered for the floor plate.
+It sits above `BASELINE_REQUIREMENTS.md` (the physical-code floor): baseline requirements decide what is
+**admissible**; the criteria here **rank within** the admissible. Nothing scored here is trusted as fact until it
+clears the validation gate in §6.*
+
+**The three transformations this rubric must honour (keystone paper §3).** The physical code measures the
+*aggregate*, the *report*, and the *snapshot*; the cognitive code measures the **signal** (melanopic not lux; STI
+not dBA), the **generator** (physiology/behaviour, not the satisfaction Likert), and the **trajectory and fit**
+(dose across the day, per-task-per-type, not one number for "the building"). Every criterion below is written to
+compute a signal, to be validated against a generator (§6), and to be reported as a trajectory/fit rather than a
+snapshot (§5). Where a criterion still leans on an aggregate or a snapshot, that is a known weakness, flagged.
 
 ---
 
@@ -32,6 +41,41 @@ but **two**, and every criterion is tagged by which it serves.
 The objective tag is not cosmetic: it sets which weighting profile a criterion enters (§4) and which validation
 target it is checked against (§6). A layout is scored against *both* objectives and can be strong on one and weak
 on the other — that divergence is a finding, not an error.
+
+**How this squares with the keystone paper.** Kirsh uses "cognitive code" as the *umbrella* term for a
+specification written in human-relevant constructs spanning "cognition, affect, physiology, and behaviour" — so
+well-being is not outside his cognitive code, it is a strand already inside it (dimensions 3, 6, 7, 8 and the
+physiological methods layer). Our COG/WB split is therefore a **refinement, not a rival taxonomy**: we lift the
+affective/physiological/health strand out as its own *scored objective* with its own outcome constructs (stress,
+sleep, mood, connectedness, movement) and its own validation targets, while keeping it inside the one cognitive-
+code framework. WB is a lens on the same computed signals, not a second code. `WELLBEING_STATE_OF_KNOWLEDGE.md`
+will make that strand's evidence base explicit; nothing here contradicts the paper's eight dimensions.
+
+### 0.1 Grounding in the eight canonical dimensions
+
+The keystone paper collapses the 38-item POE inventory into **eight substantive dimensions + a methods layer + two
+cross-cutting principles**. Every criterion here operationalizes one of those dimensions on the plan; the map keeps
+the rubric answerable to the theory rather than to an ad-hoc grouping:
+
+| Paper dimension | Criteria that compute it |
+|---|---|
+| **1. Acoustic cognition** (STI, irrelevant-speech, privacy) | C7, C8, C20 |
+| **2. Light as biological/cognitive signal** (melanopic, CCT, glare, timing) | C9 (view/glazing), C10, C22; glare via `attributes.glare_risk` |
+| **3. Thermal experience** (adaptive opportunity, MRT, alliesthesia) | C21 |
+| **4. Air** (perceived air quality, VOC/PM + cognition) | C18 |
+| **5. Spatial cognition & wayfinding** (cognitive-map accuracy, legibility cues) | C3, C4 |
+| **6. Spatial affordance** (prospect–refuge, crowding-under-control, territory) | C11, C12, C16 |
+| **7. Restoration, affect, aesthetics** (view content, neuroaesthetics, biophilia) | C9 (content), C19, C23, C24 |
+| **8. Agency & the active body** (control efficacy, movement/metabolic) | C15, C17 |
+
+**One structural note the paper implies.** The eight dimensions are *individual-experiential* — they score what a
+seat does to the person in it. The **configurational/social layer** (encounter, movement, collaboration:
+**C1, C2, C5, C6**) is not one of the eight; it is the space-syntax substrate the paper invokes specifically in §6
+(space planning) as *the layer the floor-plate optimizer runs on* — it sets *where people are and whose paths
+cross*, which then modulates the eight experiential dimensions. So the rubric has two strata: a configurational
+substrate (C1–C6) and the eight experiential dimensions layered on it. Keeping them distinct matters because the
+substrate predicts opportunity (movement, co-presence) confidently but interaction weakly (§1.3), whereas the
+experiential dimensions predict individual outcomes more directly.
 
 ---
 
@@ -190,12 +234,33 @@ the fights are scored as penalties, not averaged away:
   more-visible paths to shared amenities/stairs are also rewarded — the two are reconciled by *whose* path and
   *to what*, not by a single distance term.
 
+**Non-additivity (keystone paper, cross-cutting principle 27).** The dimensions **interact non-additively** — a
+thermally neutral room is judged too warm when it is also acoustically stressful (Schweiker et al. 2020). So the
+weighted sums above are a *first-order* aggregation, explicitly acknowledged as incomplete: the scorer must carry
+known interaction terms rather than pretend the criteria are independent. The seed interactions to model (each to
+be fit at L3, not hand-set): acoustic stress **amplifies** thermal and crowding discomfort (C7/C20 × C21/C12);
+glare **negates** daylight benefit (glare_risk × C10); and a criterion that is individually acceptable can tip a
+seat into failure only in combination. Until these are fit against data, the aggregate score is reported with an
+"interactions un-modelled" caveat, and the per-criterion maps — which do not hide behind a sum — are the primary
+evidence. A single blended scalar that conceals an interaction is exactly the false precision the paper warns
+against.
+
 ---
 
 ## 5. The top-level deliverable: a fit matrix, not a grade
 
 The scorer's headline output is a **matrix of occupant type × setting type**, each cell a fit score with its
-evidence tag and fidelity tier, plus the per-seat and field maps that back it. A layout is summarized by:
+evidence tag and fidelity tier, plus the per-seat and field maps that back it.
+
+**The demand profile is the Q-sort occupant types (keystone paper §5).** The rows of the matrix are not invented;
+they are the shared viewpoints a Q-sort/20-sort surfaces among the actual occupants, which the paper reduces to a
+canonical three whose needs *conflict by construction*: the **sanctuary** type (wants enclosure, low speech
+intelligibility, refuge at the back wall — weights C7/C11/C14 heavily), the **hub** type (wants visibility, buzz,
+prospect over the floor — weights C1/C11-prospect/C23), and the **nomad** (indifferent to territory, optimizes
+for the nearest free surface — weights C13-variety/C15, discounts C16). A uniform open plan satisfies none; the
+whole point of the matrix is that a layout must clear a *minimum* for each type, which is what forces zoning. For
+a real project the three are re-derived from that site's Q-sort; absent one, these three are the default demand
+profile. A layout is summarized by:
 
 1. its **worst-served segment** under each objective (the binding constraint — §1.2),
 2. the **per-objective profile** (COG vector, WB vector) so a space strong for focus-workers' cognition but poor
@@ -220,9 +285,20 @@ Every criterion is a **hypothesis about human outcomes** until validated on the 
   soft room), the discipline already run on the 16 repo example images.
 - **L2 VLM/human judges** — ordinary-language descriptions of the criterion, judged by a checker ≠ author (AG /
   Gemini), Spearman ρ against the metric, pre-registered bands (ρ≥0.6 CONVERGING / 0.3–0.6 WEAK / <0.3 FAILING).
-- **L3 behavior/physiology** — the criterion predicts measured outcomes (movement traces, badge co-presence,
-  cortisol/HRV for the WB criteria, wayfinding error) via the experiment platform and, eventually, real
-  post-occupancy data.
+- **L3 behavior/physiology** — the criterion predicts measured outcomes via the experiment platform and,
+  eventually, real post-occupancy data, using the paper's methods layer with the **right instrument per
+  dimension**: immediate **serial recall** for the acoustic criteria (the task most sensitive to the irrelevant-
+  speech effect), **PVT / n-back / Stroop** for attention and working memory, **salivary cortisol, HRV, and EDA**
+  (EDA spikes within a second of a glare or noise event the slower measures average away) plus **skin-temperature
+  gradient** for the thermal/stress WB criteria, **pointing-error / sketch-map** tasks for wayfinding (C3/C4),
+  **Experience Sampling** for the trajectory, and **movement traces / badge co-presence** for the configurational
+  substrate (C1–C6).
+
+**A tag the paper insists on: "promising-import."** Some measures (the IAT, adaptive-preference/counterfactual
+elicitation, Q-sort) are bedrock in their home disciplines but **scarcely tested in a built-environment setting** —
+so a criterion validated *only* by such a measure carries a distinct `promising-import` marker: its POE payoff is a
+hypothesis we are helping to establish, not a settled result. This sits beside the STRONG/CONTESTED/PROMISING
+evidence tag and further caps how hard the optimizer may push.
 
 A criterion may inform a *ranking* at L1, but it is not trusted as *fact* — and its threshold is not treated as
 real — until L2 converges and L3 is at least designed. The WB criteria (C19–C24) especially must reach L3 against
