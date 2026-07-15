@@ -342,7 +342,93 @@ def format_claim(pred: ActivityPrediction,
     lines.append("")
 
     return "\n".join(lines)
-"""
-cnfa_algs.vlm_activity_prompt — Structured VLM prompt protocol for
-activity-likelihood rating and cross-validation with attribute predictions.
-"""
+
+# ═══════════════════════════════════════════════════════════════════════
+#  SECOND-PASS: Populated-space VLM query
+# ═══════════════════════════════════════════════════════════════════════
+
+POPULATED_RESPONSE_FORMAT = """Respond in this EXACT JSON format:
+{
+  "flow_matches_intuition": true|false,
+  "flow_mismatch_reason": "string or null",
+  "high_density_activities": ["activity1", "activity2", ...],
+  "low_density_activities": ["activity1", "activity2", ...],
+  "unexpected_patterns": "string describing anything the model finds surprising, or null"
+}"""
+
+
+def build_populated_prompt(
+    occupancy_scalar: float = 0.0,
+    n_free_cells: int = 0,
+    clustering_scalar: float = 0.0,
+    trace_entropy: float = 0.0,
+    context: str = "",
+) -> str:
+    """Build the second-pass VLM prompt for occupancy-overlay evaluation.
+
+    This prompt accompanies a composite image: the original space photo
+    with the predicted occupancy heatmap overlaid. The VLM is asked
+    whether the predicted flow matches its spatial intuition and what
+    activities would occur at high vs. low density locations.
+
+    The composite image must be sent alongside this text prompt.
+
+    Citation: The two-pass protocol (attributes → simulation → VLM)
+    is a project convention; no published source for this specific
+    prompt design. The underlying occupancy model is grounded in
+    Hillier 1996 and Turner 2001.
+
+    Args:
+        occupancy_scalar: mean predicted occupancy [0, 1]
+        n_free_cells: number of walkable cells in the BEV grid
+        clustering_scalar: fraction of agents in top-10% density cells
+        trace_entropy: normalised Shannon entropy of movement paths
+        context: optional additional context string
+
+    Returns:
+        Prompt text (the composite image is sent separately).
+    """
+    parts = [
+        "SECOND-PASS EVALUATION: Predicted Human Occupancy",
+        "",
+        "This image shows a space with PREDICTED HUMAN OCCUPANCY overlaid as a heatmap.",
+        "Brighter/warmer areas indicate where MORE people are predicted to walk or gather,",
+        "based on a Visibility Graph Analysis of the spatial configuration (Turner et al. 2001)",
+        "and an agent-based simulation using Hillier's natural movement model (1996).",
+        "",
+        "KEY STATISTICS from the simulation:",
+        f"  • Mean occupancy density: {occupancy_scalar:.3f}",
+        f"  • Walkable area: {n_free_cells} grid cells",
+        f"  • Clustering index: {clustering_scalar:.3f} "
+        "(fraction of flow concentrated in top 10% of cells)",
+        f"  • Path diversity (entropy): {trace_entropy:.3f} "
+        "(higher = more diverse movement patterns)",
+        "",
+        "QUESTIONS — answer based on what you see in the image:",
+        "",
+        "1. FLOW VALIDATION: Does the predicted occupancy pattern match your",
+        "   spatial intuition about how people would move through and use this",
+        "   space? If not, what does the model get wrong?",
+        "",
+        "2. HIGH-DENSITY LOCATIONS: What specific activities would you expect",
+        "   at the hotspots (bright areas)? Name concrete activities, not",
+        "   abstract descriptions.",
+        "",
+        "3. LOW-DENSITY LOCATIONS: What activities would you expect in the",
+        "   quiet zones (dark areas)? These are predicted refuges — places",
+        "   people tend NOT to pass through.",
+        "",
+        "4. UNEXPECTED PATTERNS: Is there anything about the predicted flow",
+        "   that surprises you? A hotspot where you'd expect quiet, or a",
+        "   dead zone where you'd expect activity?",
+    ]
+
+    if context:
+        parts.append("")
+        parts.append(f"ADDITIONAL CONTEXT: {context}")
+
+    parts.append("")
+    parts.append(POPULATED_RESPONSE_FORMAT)
+
+    return "\n".join(parts)
+

@@ -301,14 +301,7 @@ def stair_prominence(pg, entrance: RC, stair: RC, elevator: RC,
                               "visibility is 2D line-of-sight; ignores stair finish/daylight quality (spec)"]}
 
 
-def _visible(grid: np.ndarray, a: RC, b: RC) -> bool:
-    """2D line-of-sight: does the straight segment a->b stay in free space?"""
-    r0, c0 = a
-    r1, c1 = b
-    n = int(max(abs(r1 - r0), abs(c1 - c0))) + 1
-    rs = np.linspace(r0, r1, n).round().astype(int)
-    cs = np.linspace(c0, c1, n).round().astype(int)
-    return bool(np.all(grid[rs, cs] == FREE))
+from .los import segment_is_free as _visible   # supercover LOS (diagonal walls block) — panel fix S1
 
 
 # --------------------------------------------------------------------------- self-test

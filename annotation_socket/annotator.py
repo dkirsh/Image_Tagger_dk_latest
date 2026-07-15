@@ -1,0 +1,202 @@
+"""
+annotation_socket.annotator — the WORKER (socket properties 1,2,3,4,7).
+
+Pull-driven: claims one unit (an image) from the controller-written queue, annotates it,
+writes the record to quarantine/, emits events. It NEVER writes accepted/, control.jsonl,
+verdicts.jsonl (the CPP [W:] boundary — enforced by cpp.stage.assert_can_write), and it
+never self-assigns work (claim via O_EXCL).
+
+Every predicate value is built ONLY through derivation.scored/abstain/unknown — the vision
+trust chokepoint. Content-addressed: unit_id = sha256(image_bytes + MODEL_VERSION); a unit
+already carrying a verdict or accepted output is skipped BEFORE claiming (zero redundant
+work on re-run).
+"""
+from __future__ import annotations
+import hashlib, json, sys, time
+from pathlib import Path
+from typing import Dict, FrozenSet, List
+
+sys.path.insert(0, "/home/claude/_control_deps")     # cpp library (sandbox vendored copy)
+sys.path.insert(0, "/home/claude")                    # cnfa_algs
+sys.path.insert(0, "/Users/davidusa/REPOS/_control")  # cpp library (Mac path)
+from cpp import stage
+
+from . import registry as R
+from . import derivation as D
+
+WORKER_ID = "cnfa-annotator"
+
+
+# --------------------------------------------------------------------- content addressing
+def unit_id_for(image_path: str) -> str:
+    b = Path(image_path).read_bytes()
+    return hashlib.sha256(b + R.MODEL_VERSION.encode()).hexdigest()[:16]
+
+
+# --------------------------------------------------------------------- the annotation core
+def _field_argmax_bbox(field, img_shape, tile: int = 3):
+    """Honest image_region locator for a field-carrying attribute: the bbox (x0,y0,x1,y1)
+    of the field's hottest tile, scaled to image coords."""
+    import numpy as np
+    f = np.nan_to_num(np.asarray(field, float))
+    fh, fw = f.shape[:2]
+    H, W = img_shape[:2]
+    r, c = np.unravel_index(int(f.argmax()), f.shape[:2])
+    sy, sx = H / fh, W / fw
+    y0, x0 = int(max(0, (r - tile // 2) * sy)), int(max(0, (c - tile // 2) * sx))
+    y1, x1 = int(min(H, (r + tile // 2 + 1) * sy)), int(min(W, (c + tile // 2 + 1) * sx))
+    return [x0, y0, x1, y1]
+
+
+def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -> Dict:
+    """Compute the annotation record for one image: geometry once, then every APPLICABLE
+    predicate through the chokepoint; every inapplicable one ABSTAINED with the named
+    missing inputs. Returns the quarantine-ready record."""
+    import cv2, numpy as np
+    import cnfa_algs as ca
+    from cnfa_algs import attributes as A
+    from cnfa_algs.plan import infer_plan_from_image, FREE
+    from cnfa_algs import space_syntax as ss, setting_classifier as st, affordance as af
+
+    img = cv2.imread(image_path)
+    if img is None:
+        raise ValueError(f"unreadable image: {image_path}")
+    scale = 900 / max(img.shape[:2])
+    if scale < 1:
+        img = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+    H, W = img.shape[:2]
+
+    # ---- shared geometry (computed once; every plan metric cites it as upstream) ----
+    vx, vy, vconf = ca.estimate_vanishing_point(img)
+    planes, pconf = ca.segment_planes(img, (vx, vy))
+    Z, _, dconf = ca.DepthProvider()(img, planes, (vx, vy))
+    pg = infer_plan_from_image(img, planes, Z)
+    gh = D.grid_hash(pg.grid)
+    chain = [{"step": "vanishing_point", "value": [round(vx, 1), round(vy, 1)], "conf": round(vconf, 2)},
+             {"step": "segment_planes", "signal": "kmeans-heuristic(seed1234)", "conf": round(pconf, 2)},
+             {"step": "depth", "signal": "geometric_vp_fallback", "conf": round(dconf, 2)},
+             {"step": "plan", "grid_hash": gh, "cell_m": round(pg.cell_m, 4),
+              "conf": round(getattr(pg, "confidence", 0.4), 2)}]
+    geom_conf = min(pconf, dconf, getattr(pg, "confidence", 0.4))
+
+    def img_ev(res, kind_default="global_image"):
+        """Evidence from an AttributeResult: region if it carries a field, else global."""
+        if getattr(res, "field", None) is not None:
+            return D.evidence_image("image_region", _field_argmax_bbox(res.field, (H, W)),
+                                    res.method, res.confidence)
+        return D.evidence_image(kind_default, "full_frame", res.method, res.confidence)
+
+    def plan_ev(signal: str, conf: float):
+        return D.evidence_image("plan_chain", {"grid_hash": gh, "free_cells": int((pg.grid == FREE).sum())},
+                                signal, min(conf, geom_conf), upstream=chain)
+
+    scores: List[Dict] = []
+    have = frozenset(unit_inputs)
+
+    # ---- Tier-A attributes ----
+    attr_fns = {
+        "cnfa.light.brightness_variance":         lambda: A.brightness_variance(img),
+        "cnfa.fluency.edge_clarity_mean":         lambda: A.edge_clarity(img),
+        "cnfa.fluency.symmetry_score_horizontal": lambda: A.symmetry_horizontal(img),
+        "cnfa.fluency.color_palette_entropy":     lambda: A.palette_entropy(img),
+        "cnfa.fluency.processing_load_proxy":     lambda: A.processing_load(img),
+        "cnfa.fractal_dimension":                 lambda: A.fractal_dimension_local(img),
+        "glare-risk":                             lambda: A.glare_risk(img),
+        "cnfa.light.warm_vs_cool_ratio":          lambda: A.warmth_ratio(img),
+        "cnfa.cognitive.landmark_salience":       lambda: A.landmark_salience(img),
+        "cnfa.spatial.enclosure_index":           lambda: A.enclosure_index(img, planes, Z),
+        "cnfa.spatial.prospect":                  lambda: A.prospect(img, planes, Z),
+        "acoustic_absorption_proxy":              lambda: A.acoustic_absorption(img, planes, Z),
+        "cnfa.light.vertical_illuminance_proxy":  lambda: A.vertical_illuminance_proxy(img, planes),
+    }
+    # ---- plan metrics from the inferred plan alone ----
+    def _vga():
+        return ss.vga_metrics(pg, stride=3)
+    _vga_cache = {}
+    def vga():
+        if "v" not in _vga_cache:
+            _vga_cache["v"] = _vga()
+        return _vga_cache["v"]
+
+    plan_fns = {
+        "C1.visual_integration":  lambda: (vga()["extras"]["integration_norm"], vga()["method"], vga()["confidence"]),
+        "C2.connectivity":        lambda: (vga()["extras"]["connectivity_norm"], vga()["method"], vga()["confidence"]),
+        "C3.intelligibility":     lambda: (vga()["scalar"], vga()["method"], vga()["confidence"]),
+        "C4.wayfinding_load":     lambda: (lambda w: (w["scalar"], w["method"], w["confidence"]))(ss.wayfinding_load(pg, stride=3)),
+        "C13.setting_fit":        lambda: (lambda f: (f["scalar"], f["method"], f["confidence"]))(st.segment_fit(st.classify_settings(pg))),
+        "C24.spatial_generosity": lambda: (lambda g: (g["scalar"], g["method"], g["confidence"]))(af.spatial_generosity(pg)),
+    }
+
+    for spec in R.PREDICATES:
+        pid = spec["id"]
+        if not (spec["requires"] <= (have | {"plan"})):
+            scores.append(D.abstain(pid, spec["requires"] - (have | {"plan"})))
+            continue
+        try:
+            if pid in attr_fns:
+                res = attr_fns[pid]()
+                scores.append(D.scored(pid, res.scalar, img_ev(res), spec["tier_hint"], (H, W)))
+            elif pid in plan_fns:
+                val, signal, conf = plan_fns[pid]()
+                scores.append(D.scored(pid, val, plan_ev(signal, conf), spec["tier_hint"], (H, W)))
+            else:
+                # applicable per requirements but no binding on an image-only unit path
+                scores.append(D.unknown(pid, "no_binding_for_supplied_inputs"))
+        except Exception as e:
+            scores.append(D.unknown(pid, f"compute_failed:{type(e).__name__}"))
+
+    n_scored = sum(1 for s in scores if s["status"] == D.SCORED)
+    n_abst = sum(1 for s in scores if s["status"] == D.ABSTAINED)
+    n_unknown = len(scores) - n_scored - n_abst
+    return {
+        "unit_id": unit_id_for(image_path),
+        "image_path": image_path,
+        "image_sha256": hashlib.sha256(Path(image_path).read_bytes()).hexdigest(),
+        "model_version": R.MODEL_VERSION,
+        "unit_inputs": sorted(have),
+        "geometry_chain": chain,
+        "scores": scores,
+        "coverage": {"applicable": n_scored + n_unknown, "scored": n_scored,
+                     "abstained": n_abst, "unknown": n_unknown,
+                     "total_registry": len(R.PREDICATES)},
+        "worker": WORKER_ID, "ts_ms": int(time.time() * 1000),
+    }
+
+
+# --------------------------------------------------------------------- the pull loop
+def run_worker(stage_dir: str, max_units: int = 10) -> Dict:
+    """Claim->annotate->quarantine->events, until the queue is drained. Skips units already
+    verdicted/accepted BEFORE claiming (content-addressed idempotency)."""
+    paths = stage.ensure_stage(stage_dir)
+    done_units = stage.accepted_units(paths) | set(stage.verdict_by_unit(paths))
+    processed, skipped = [], []
+    for _ in range(max_units):
+        unit = None
+        for u in stage.read_queue_units(paths):
+            uid = u["unit_id"]
+            if uid in done_units or uid in stage.claimed_units(paths):
+                if uid in done_units and uid not in skipped:
+                    skipped.append(uid)
+                continue
+            if stage.claim(paths, uid, WORKER_ID):
+                unit = u
+                break
+        if unit is None:
+            break
+        uid = unit["unit_id"]
+        stage.emit_event(paths, uid, WORKER_ID, "started")
+        try:
+            rec = annotate_image(unit["image_path"], frozenset(unit.get("inputs", [])))
+            if rec["unit_id"] != uid:
+                stage.emit_event(paths, uid, WORKER_ID, "failed",
+                                 reason=f"content-address mismatch {rec['unit_id']}!={uid}")
+                continue
+            stage.emit_event(paths, uid, WORKER_ID, "heartbeat",
+                             note=f"scored={rec['coverage']['scored']}")
+            stage.write_quarantine(paths, uid, rec, worker=WORKER_ID)
+            stage.emit_event(paths, uid, WORKER_ID, "done",
+                             coverage=rec["coverage"])
+            processed.append(uid)
+        except Exception as e:
+            stage.emit_event(paths, uid, WORKER_ID, "failed", reason=repr(e)[:200])
+    return {"processed": processed, "skipped_content_addressed": skipped}

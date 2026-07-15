@@ -148,7 +148,54 @@ limitations. Parameters without citations are marked honestly.
 | Morning brightness boost | 1.15× | Cajochen et al. 2005, 2011 — melatonin suppression by blue-enriched light | Morning cortisol peak requires bright light for alertness | Effects measured in laboratory; may not transfer to architectural image analysis |
 | Evening warmth boost | 1.15× | Same | Warm dim light prevents melatonin disruption in evening | Same limitation |
 
+## Space Syntax Simulation (spatial_syntax.py)
+
+### BEV grid construction (floor_to_bev)
+
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| Grid resolution | 0.25 m/cell | Thrun, Burgard & Fox 2005, "Probabilistic Robotics", Ch. 9 | Standard for indoor occupancy grids; captures furniture-scale obstacles at ~16 cells/m² | Not calibrated to our monocular depth scale; proportional accuracy only |
+| FOV assumption | 65° horizontal | Same as geometry.py convention | Standard indoor camera FOV; used for pinhole deprojection | True FOV unknown; ±10° error changes grid proportions ~15% |
+| Max grid size | 400×400 cells | Project convention, no published source | Caps memory at ~640KB; VGA subsampling handles computation | Arbitrary ceiling; large atriums may be undersampled |
+| Morphological close kernel | 3×3 ellipse | Standard occupancy grid post-processing (Thrun et al. 2005) | Fills single-pixel gaps between projected floor pixels | May merge distinct walkable regions separated by narrow obstacles |
+
+### Visibility Graph Analysis (compute_vga)
+
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| VGA = closeness centrality on visibility graph | Integration metric | Turner, Doxa, O'Sullivan & Penn 2001, "From isovists to visibility graphs", E&PB 28(1), 103–121 | Mathematically equivalent to Hillier's integration for grid-based visibility graphs; validated on multiple urban and museum datasets | Assumes 360° visibility from each cell; our single image provides ~65° FOV |
+| Ray-casting method | Bresenham's line algorithm | Bresenham 1965, "Algorithm for computer control of a digital plotter", IBM Sys. J. 4(1), 25–30 | Standard integer-arithmetic line rasterisation; exact for pixel-grid visibility | Discrete approximation; can miss narrow gaps at grazing angles (~1 cell wide diagonals) |
+| Max VGA nodes | 2000 | Project convention, no published source | 2000 nodes → ~2M ray-casts at ~1μs each → <2s computation; stable integration estimates in pilot tests | Subsampled grids use morphological dilation interpolation, which smooths integration gradients |
+| Integration approximation | 2-step depth | Hillier & Hanson 1984, "The Social Logic of Space" (simplified) | Full BFS integration is O(N²·N); 2-step approximation (direct + visible-of-visible) captures the primary spatial contrast at O(N²) cost | Undercounts the penalty for deeply hidden corners; coarser than full graph-theoretic integration |
+
+### Agent simulation (simulate_agents)
+
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| Movement rule | Transition probability ∝ integration value | Hillier 1996, "Space is the Machine", Ch. 4 "Cities as movement economies" | Pedestrian flow is proportional to spatial integration; 60–80% of flow variance explained in empirical studies (London, Tokyo) | Calibrated on urban grids, not indoor rooms; indoor R² typically lower (~0.3–0.5 per Peponis et al. 2004) |
+| n_agents | 50 | Project convention, no published source | Pilot tests (10 seeds) show CV < 1% in occupancy density at n=50 | Not derived from any crowd simulation standard; sufficient for rank-order stability, not absolute density calibration |
+| n_steps | 200 | Project convention, no published source | ~50m of walking at 0.25m grid resolution; enough to traverse a typical room 2–3 times | Not calibrated to any empirical indoor pedestrian trace data |
+| Spawn weighting | Proportional to integration | Project convention; heuristic from Hillier 1996 observation that entries are high-integration nodes | High-integration cells are likely building entrances or main corridors | Real entry points may be low-integration (service doors, back entrances) |
+| Neighbourhood | Moore (8-connected) | Standard grid neighbourhood for pedestrian simulation | Allows diagonal movement, which is more realistic than Von Neumann (4-connected) | Does not model inertia or preferred-direction persistence |
+| Random seed | 42 | Project convention | Deterministic for reproducibility per adversarial review requirement | Fixed seed means no variance estimate; run with multiple seeds for uncertainty quantification |
+
+### Attribute computation
+
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| Trace entropy normalisation | Shannon entropy / log₂(n_free) | Shannon 1948, "A Mathematical Theory of Communication" | Normalised entropy gives [0,1] diversity measure independent of grid size | Measures movement *diversity*, not movement *quality*; uniform random walk would score 1.0 |
+| Hotspot threshold | 90th percentile of non-zero occupancy | Project convention, no published source | Top 10% captures the strongest attractor cells | Arbitrary percentile; 80th or 95th would give different clustering scalars |
+| Confidence cap | 0.45 max | Project convention, no published source | Single-image FOV (~65° of ~360°) provides at most ~18% of the full floor plan; confidence must reflect this fundamental incompleteness | Not empirically calibrated; 0.45 is a conservative upper bound reflecting that VGA on a partial plan still captures local spatial structure |
+
+### Rendering
+
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| Default style | Heatmap (TURBO colormap) | Project convention, no published source | Heatmaps are less likely to confuse VLM models than figurative representations (stick figures could be mistaken for real people) | No empirical comparison of VLM performance across rendering styles |
+| Overlay alpha | 0.45 | Project convention, no published source | Balances visibility of both the original image and the overlay | Subjective aesthetic choice |
+
 ```
 Table authored: 2026-07-14
 Last updated: 2026-07-15
 ```
+

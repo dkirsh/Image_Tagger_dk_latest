@@ -36,14 +36,7 @@ except Exception:
 RC = Tuple[int, int]
 
 
-def _los(grid: np.ndarray, a: RC, b: RC) -> bool:
-    r0, c0 = a; r1, c1 = b
-    n = int(max(abs(r1 - r0), abs(c1 - c0))) + 1
-    if n <= 1:
-        return True
-    rs = np.linspace(r0, r1, n).round().astype(int)
-    cs = np.linspace(c0, c1, n).round().astype(int)
-    return bool(np.all(grid[rs, cs] == FREE))
+from .los import segment_is_free as _los   # supercover LOS (diagonal walls block) — panel fix S1
 
 
 def _sample_cells(grid: np.ndarray, stride: int, max_cells: int = 500) -> np.ndarray:
@@ -81,9 +74,17 @@ def vga_metrics(pg, stride: int = 3, max_cells: int = 500) -> Dict:
     dmat = shortest_path(csr_matrix(adj.astype(int)), method="D", unweighted=True)
     finite = np.isfinite(dmat)
     md = np.array([dmat[i, finite[i]].sum() / max(finite[i].sum() - 1, 1) for i in range(N)])  # mean depth
-    # relative asymmetry RA = 2(MD-1)/(N-2); integration = 1/RA (higher = more integrated)
+    # relative asymmetry RA = 2(MD-1)/(N-2) in [0,1]; integration = 1/RA (Turner units).
+    # PANEL FIX S3: the old integration_norm was a within-plan percentile SKEWNESS statistic
+    # (`_norm`) that INVERTED ranks — an open studio scored 0.0, a snake corridor 0.378. The
+    # bounded ABSOLUTE integration score is 1-RA (higher = shallower mean depth = more
+    # integrated), which ranks correctly and is comparable across plans.
     ra = 2 * (md - 1) / max(N - 2, 1)
-    integration = 1.0 / np.clip(ra, 1e-6, None)     # C1
+    integration = 1.0 / np.clip(ra, 1e-6, None)          # Turner integration (reporting)
+    # bounded, monotonic, DISCRIMINATING map I/(I+K): open studio -> ~1, deep/snake -> low,
+    # without the mid-range saturation of 1-RA (K sets the office-relevant midpoint).
+    _K_INTEG = 3.0
+    integ_score01 = integration / (integration + _K_INTEG)
 
     # C3 intelligibility = R^2 of connectivity vs integration across cells
     if np.std(connectivity) > 1e-9 and np.std(integration) > 1e-9:
@@ -92,9 +93,7 @@ def vga_metrics(pg, stride: int = 3, max_cells: int = 500) -> Dict:
     else:
         intelligibility = float("nan")
 
-    def _norm(v):
-        lo, hi = np.nanpercentile(v, 2), np.nanpercentile(v, 98)
-        return float(np.clip((np.nanmean(v) - lo) / (hi - lo + 1e-9), 0, 1))
+    conn_frac = float(np.mean(connectivity) / max(N - 1, 1))   # absolute: mean fraction of cells seen
 
     return {"key": "cnfa.plan.vga", "criterion": "C1-C3",
             "scalar": (None if np.isnan(intelligibility) else round(intelligibility, 3)),  # C3 headline
@@ -103,14 +102,64 @@ def vga_metrics(pg, stride: int = 3, max_cells: int = 500) -> Dict:
                        "integration_spread": round(float(np.std(integration)), 3),
                        "mean_connectivity": round(float(np.mean(connectivity)), 2),
                        "intelligibility_R2": (None if np.isnan(intelligibility) else round(intelligibility, 3)),
-                       "integration_norm": round(_norm(integration), 3),
-                       "connectivity_norm": round(_norm(connectivity), 3)},
-            "cells": cells, "integration": integration, "connectivity": connectivity,
+                       "integration_norm": round(float(np.mean(integ_score01)), 3),   # C1: absolute, higher=better
+                       "connectivity_norm": round(conn_frac, 3)},                     # C2: fraction visible
+            "cells": cells, "integration": integration, "integration_score01": integ_score01,
+            "connectivity": connectivity,
             "confidence": 0.5,
             "method": "sampled visibility-graph VGA (Turner 2001): integration, connectivity, intelligibility",
             "failure_modes": ["cells sampled at a stride -> magnitudes approximate (ranks ok)",
                               "cross-check absolute values against depthmapX before publication",
                               "single-plan; multi-floor VGA needs stacked/linked graphs"]}
+
+
+def integration_at(vga_result: Dict, points: Sequence[RC]) -> List[float]:
+    """ABSOLUTE [0,1] visual integration (1-RA) at each point (nearest sampled VGA cell).
+    PANEL FIX S3: uses the bounded absolute score, NOT a per-call percentile normalization
+    (which made C14's 'high-integration' threshold collapse to nobody on a uniform plan,
+    so C14 passed the unzoned floor it exists to catch)."""
+    cells = vga_result.get("cells")
+    norm = vga_result.get("integration_score01")
+    if norm is None:                                  # fallback: derive from Turner integration
+        integ = vga_result.get("integration")
+        norm = None if integ is None else (np.asarray(integ, float) / (np.asarray(integ, float) + 3.0))
+    if cells is None or norm is None or len(cells) == 0:
+        return [float("nan")] * len(points)
+    norm = np.asarray(norm, float)
+    cells = np.asarray(cells)
+    out = []
+    for p in points:
+        d2 = (cells[:, 0] - p[0]) ** 2 + (cells[:, 1] - p[1]) ** 2
+        out.append(float(norm[int(d2.argmin())]))
+    return out
+
+
+def focus_collab_separation(pg, focus_seats: Sequence[RC], focus_sti: Sequence[float],
+                            vga_result: Optional[Dict] = None, stride: int = 3) -> Dict:
+    """C14 — focus:collaboration separation. A focus seat that is BOTH in a high-encounter
+    (high visual-integration) location AND acoustically intruded (STI >= 0.5) is a zoning
+    FAILURE: focus and collaboration were not separated. Score = fraction of focus seats
+    that avoid that double-bind (STATE_OF_KNOWLEDGE G3 / CRITERIA §4 conflict penalty)."""
+    if vga_result is None:
+        vga_result = vga_metrics(pg, stride=stride)
+    integ = integration_at(vga_result, focus_seats)
+    rows, fails = [], 0
+    for k, seat in enumerate(focus_seats):
+        ig = integ[k] if k < len(integ) else float("nan")
+        sti = float(focus_sti[k]) if k < len(focus_sti) else 0.0
+        fail = bool((not np.isnan(ig)) and ig > 0.6 and sti >= 0.5)
+        fails += int(fail)
+        rows.append({"focus_seat": k, "integration_norm": (None if np.isnan(ig) else round(ig, 3)),
+                     "sti": round(sti, 3), "separation_fail": fail})
+    return {"key": "cnfa.plan.focus_collab_separation", "criterion": "C14",
+            "rows": rows,
+            "scalar": (round(1 - fails / len(focus_seats), 3) if focus_seats else None),
+            "extras": {"n_focus_seats": len(focus_seats), "n_separation_fails": fails},
+            "confidence": 0.45,
+            "method": "focus seat in high-integration AND speech-intruded = zoning failure (conflict penalty)",
+            "failure_modes": ["derived from C1 (integration) x C7 (STI) at focus seats",
+                              "thresholds (integ>0.6, STI>=0.5) are conventions to tune at L3",
+                              "which seats are 'focus' is a spec input (the zoning intent)"]}
 
 
 def wayfinding_load(pg, landmarks: Optional[List[RC]] = None, stride: int = 3) -> Dict:

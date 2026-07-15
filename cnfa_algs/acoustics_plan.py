@@ -107,13 +107,7 @@ def iso3382_single_numbers(L_s_1m: float = L_SPEECH_1M_DEFAULT,
 
 
 # ------------------------------------------------------------------ STI field (C7)
-def _los(grid: np.ndarray, a: RC, b: RC) -> bool:
-    """2D line-of-sight: straight segment a->b stays in free space (walls block speech)."""
-    r0, c0 = a; r1, c1 = b
-    n = int(max(abs(r1 - r0), abs(c1 - c0))) + 1
-    rs = np.linspace(r0, r1, n).round().astype(int)
-    cs = np.linspace(c0, c1, n).round().astype(int)
-    return bool(np.all(grid[rs, cs] == FREE))
+from .los import segment_is_free as _los   # supercover LOS (diagonal walls block) — panel fix S1
 
 
 def sti_field(pg, source: RC, L_s_1m: float = L_SPEECH_1M_DEFAULT,
@@ -172,6 +166,44 @@ def focus_zone_privacy(pg, sources: Sequence[RC], focus_seats: Sequence[RC],
                               "masking (raising L_noise) pulls contours in without moving walls"]}
 
 
+# ------------------------------------------------------------------ C20 chronic-stress soundscape
+def chronic_stress_soundscape(pg, sources: Sequence[RC], L_src_1m: float = 60.0,
+                              d2s: float = D2S_DEFAULT, L_floor: float = 40.0,
+                              positive_zones: int = 0, stress_hi_db: float = 55.0,
+                              comfort_db: float = 45.0) -> Dict:
+    """C20 — sustained A-weighted sound LEVEL over the plan (distinct from C7 speech
+    INTELLIGIBILITY): chronic level drives arousal/cortisol (WELLBEING C20), so this scores
+    the area-weighted sustained level, not STI. Sources contribute by spatial decay;
+    energy-summed; no LOS requirement (sustained noise wraps). Lower = better."""
+    grid = pg.grid if hasattr(pg, "grid") else np.asarray(pg)
+    cell = float(getattr(pg, "cell_m", 1.0))
+    H, W = grid.shape
+    free = (grid == FREE)
+    rr, cc = np.mgrid[0:H, 0:W]
+    energy = np.full((H, W), 10 ** (L_floor / 10.0))     # background floor (energy)
+    for (sr, sc) in sources:
+        d_m = np.maximum(np.hypot(rr - sr, cc - sc) * cell, 1.0)
+        L = L_src_1m - d2s * np.log2(d_m)
+        energy += 10 ** (L / 10.0)
+    level = 10 * np.log10(energy)
+    level = np.where(free, level, np.nan)
+    mean_level = float(np.nanmean(level))
+    # score: comfort_db -> 1, stress_hi_db -> 0; small bonus for positive soundscape zones
+    base = float(np.clip((stress_hi_db - mean_level) / (stress_hi_db - comfort_db), 0, 1))
+    score = float(np.clip(base + 0.05 * min(positive_zones, 2), 0, 1))
+    return {"key": "cnfa.acoustic.chronic_soundscape", "criterion": "C20",
+            "scalar": round(score, 3),
+            "field": level,
+            "extras": {"area_weighted_level_dbA": round(mean_level, 1),
+                       "comfort_db": comfort_db, "stress_hi_db": stress_hi_db,
+                       "n_sources": len(sources), "positive_zones": positive_zones},
+            "confidence": 0.4,
+            "method": "energy-summed spatial-decay sustained level (arousal, not intelligibility)",
+            "failure_modes": ["distinct from C7 STI — this is absolute LEVEL (cortisol/arousal)",
+                              "source levels & positive-soundscape zones are spec inputs",
+                              "PROMISING evidence; direction (lower sustained level better) is the safe claim"]}
+
+
 # --------------------------------------------------------------------------- self-test
 if __name__ == "__main__":
     print("cnfa_algs.acoustics_plan self-test (analytic L0)\n" + "-" * 48)
@@ -226,5 +258,14 @@ if __name__ == "__main__":
     print("C7 rows :", [(r["focus_seat"], r["worst_sti"], r["violation"]) for r in res7["rows"]])
     assert res7["rows"][0]["violation"] is True, "near focus seat should be violated"
     assert res7["rows"][1]["violation"] is False, "far focus seat should be protected"
+
+    # --- 6. C20 chronic soundscape: quiet room scores high, loud multi-source room low ---
+    grid2 = np.full((40, 40), FREE, np.int8)
+    pgq = type("PG", (), {"grid": grid2, "cell_m": 0.5})()
+    quiet = chronic_stress_soundscape(pgq, sources=[(20, 20)], L_src_1m=55, L_floor=38)
+    loud = chronic_stress_soundscape(pgq, sources=[(10, 10), (10, 30), (30, 20)], L_src_1m=68, L_floor=45)
+    print(f"C20 soundscape: quiet level={quiet['extras']['area_weighted_level_dbA']}dB score={quiet['scalar']} | "
+          f"loud level={loud['extras']['area_weighted_level_dbA']}dB score={loud['scalar']}")
+    assert quiet["scalar"] > loud["scalar"], "quieter sustained soundscape should score higher"
 
     print("-" * 48 + "\nacoustics_plan self-test: PASS")

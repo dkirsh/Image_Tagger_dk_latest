@@ -34,6 +34,8 @@ from . import daylight_view as _dl
 from . import thermal_plan as _th
 from . import setting_classifier as _st
 from . import space_syntax as _ss
+from . import affordance as _af
+from . import wellbeing_plan as _wb
 
 RC = Tuple[int, int]
 
@@ -54,6 +56,17 @@ CRITERIA = {
     "C15": {"name": "active-design movement",  "obj": "SHARED", "evid": "STRONG",  "cog_w": 0.3, "wb_w": 0.7, "form": "scalar+field"},
     # C6 path-overlap is an OPPORTUNITY estimate (not a good/bad axis) -> reported, weight 0.
     "C6":  {"name": "path overlap (opportunity)","obj": "COG",  "evid": "STRONG",  "cog_w": 0.0, "wb_w": 0.0, "form": "pair"},
+    "C11": {"name": "prospect-refuge quality",  "obj": "SHARED", "evid": "STRONG",  "cog_w": 0.5, "wb_w": 0.6, "form": "per-seat"},
+    "C12": {"name": "perceived-crowding risk",  "obj": "SHARED", "evid": "STRONG",  "cog_w": 0.4, "wb_w": 0.6, "form": "per-seat"},
+    "C14": {"name": "focus:collab separation",  "obj": "COG",    "evid": "STRONG",  "cog_w": 0.7, "wb_w": 0.4, "form": "penalty"},
+    "C16": {"name": "territory provision",      "obj": "WB",     "evid": "PROMISING","cog_w": 0.0, "wb_w": 0.4, "form": "scalar"},
+    "C17": {"name": "functioning local control","obj": "SHARED", "evid": "CONTESTED","cog_w": 0.2, "wb_w": 0.4, "form": "per-zone"},
+    "C18": {"name": "air-quality spec",         "obj": "WB",     "evid": "CONTESTED","cog_w": 0.2, "wb_w": 0.4, "form": "per-zone"},
+    "C19": {"name": "restoration / nature",     "obj": "WB",     "evid": "CONTESTED","cog_w": 0.2, "wb_w": 0.7, "form": "per-seat"},
+    "C20": {"name": "chronic-stress soundscape","obj": "WB",     "evid": "PROMISING","cog_w": 0.2, "wb_w": 0.6, "form": "field"},
+    "C22": {"name": "circadian day-night",      "obj": "WB",     "evid": "STRONG",  "cog_w": 0.2, "wb_w": 0.7, "form": "per-seat"},
+    "C23": {"name": "social connectedness",     "obj": "WB",     "evid": "PROMISING","cog_w": 0.1, "wb_w": 0.6, "form": "per-seat"},
+    "C24": {"name": "awe / spatial generosity", "obj": "WB",     "evid": "PROMISING","cog_w": 0.2, "wb_w": 0.4, "form": "field"},
 }
 
 
@@ -102,11 +115,19 @@ def score_layout(scenario: Dict) -> Dict:
         raw["C7"] = r7
         if "scalar" in r7 and r7.get("scalar") is not None:
             scores["C7"] = r7["scalar"]
-    r8 = _safe(_ac.iso3382_single_numbers, d2s=scenario.get("d2s", _ac.D2S_DEFAULT),
-               L_noise=scenario.get("L_noise", _ac.L_NOISE_DEFAULT))
-    raw["C8"] = r8
-    if r8.get("extras"):
-        scores["C8"] = _r_d_score(r8["extras"]["r_D_m"])
+    # PANEL FIX S4/C8: iso3382 is a FLOOR-GLOBAL spec (function of d2s/L_noise), not a
+    # per-layout field — scoring it from defaults made every layout read 0.88 at a
+    # dominant weight. Score it ONLY when the caller supplies acoustic parameters; else
+    # drop it with a note (a global acoustic spec cannot rank two layouts by itself).
+    if ("d2s" in scenario) or ("L_noise" in scenario) or scenario.get("acoustic"):
+        r8 = _safe(_ac.iso3382_single_numbers, d2s=scenario.get("d2s", _ac.D2S_DEFAULT),
+                   L_noise=scenario.get("L_noise", _ac.L_NOISE_DEFAULT))
+        raw["C8"] = r8
+        if r8.get("extras"):
+            scores["C8"] = _r_d_score(r8["extras"]["r_D_m"])
+    else:
+        notes.append("C8 dropped: no acoustic parameters supplied (a floor-global spec, "
+                     "not layout-discriminating by default)")
 
     if scenario.get("glazing"):
         gl = scenario["glazing"]
@@ -150,16 +171,95 @@ def score_layout(scenario: Dict) -> Dict:
     if isinstance(fit, dict) and fit.get("scalar") is not None:
         scores["C13"] = fit["scalar"]
 
-    # ---- aggregate the two profiles (first-order weighted mean) ----
+    # ---- affordance: prospect-refuge (C11), crowding (C12), generosity (C24) ----
+    if seats:
+        r11 = _safe(_af.prospect_refuge_quality, pg, seats); raw["C11"] = r11
+        if r11.get("scalar") is not None:
+            scores["C11"] = r11["scalar"]
+        r12 = _safe(_af.perceived_crowding_risk, pg, seats, retreats=scenario.get("retreats")); raw["C12"] = r12
+        if r12.get("scalar") is not None:
+            scores["C12"] = r12["scalar"]
+    r24 = _safe(_af.spatial_generosity, pg); raw["C24"] = r24
+    if r24.get("scalar") is not None:
+        scores["C24"] = r24["scalar"]
+
+    # ---- C14 focus:collaboration separation (derived from C1 VGA x C7 STI) ----
+    # PANEL FIX S4/C14: require C7 to be ACTUALLY scored. The old code defaulted missing
+    # STI to 0.0 (= perfect privacy) and fabricated a perfect C14=1.0 when acoustics were
+    # absent — rewarding a layout for withholding its worst evidence.
+    if (scenario.get("focus_seats") is not None and isinstance(raw.get("C1-C3"), dict)
+            and "C7" in scores):
+        fseats = [seats[i] for i in scenario["focus_seats"]]
+        sti_map = {row["focus_seat"]: row.get("worst_sti", 0.0)
+                   for row in (raw.get("C7", {}) or {}).get("rows", [])}
+        focus_sti = [sti_map.get(i, 0.0) for i in range(len(fseats))]
+        r14 = _safe(_ss.focus_collab_separation, pg, fseats, focus_sti, raw["C1-C3"]); raw["C14"] = r14
+        if r14.get("scalar") is not None:
+            scores["C14"] = r14["scalar"]
+    elif scenario.get("focus_seats") is not None:
+        notes.append("C14 dropped: requires C7 (focus STI) to be scored — not fabricated from a default")
+
+    # ---- well-being (spec + geometry): C19, C16, C17, C18, C20, C22, C23 ----
+    if scenario.get("nature_cells") and seats:
+        r19 = _safe(_wb.restoration_nature, pg, seats, scenario["nature_cells"], scenario.get("retreats"))
+        raw["C19"] = r19
+        if r19.get("scalar") is not None:
+            scores["C19"] = r19["scalar"]
+    if scenario.get("territory"):
+        t = scenario["territory"]
+        r16 = _safe(_wb.territory_provision, t.get("assigned_seats", 0), t.get("headcount", len(seats) or 1),
+                    t.get("teams_with_anchor", 0), t.get("n_teams", 0), t.get("personalizable_frac", 0.0))
+        raw["C16"] = r16
+        if r16.get("scalar") is not None:
+            scores["C16"] = r16["scalar"]
+    if scenario.get("control_zones_wb"):
+        r17 = _safe(_wb.local_control, scenario["control_zones_wb"]); raw["C17"] = r17
+        if r17.get("scalar") is not None:
+            scores["C17"] = r17["scalar"]
+    if scenario.get("air"):
+        a = scenario["air"]
+        r18 = _safe(_wb.air_quality, a.get("headcount", len(seats) or 1), a.get("floor_area_m2", 100.0),
+                    a.get("outdoor_air_lps_per_person", 8.5), a.get("voc_low_emitting", True))
+        raw["C18"] = r18
+        if r18.get("scalar") is not None:
+            scores["C18"] = r18["scalar"]
+    _noise = scenario.get("noise_sources") or scenario.get("collab_sources")
+    if _noise:
+        r20 = _safe(_ac.chronic_stress_soundscape, pg, _noise,
+                    positive_zones=scenario.get("positive_soundscape_zones", 0)); raw["C20"] = r20
+        if r20.get("scalar") is not None:
+            scores["C20"] = r20["scalar"]
+    if scenario.get("glazing") and seats:
+        wins22 = [g[0] for g in scenario["glazing"]]
+        r22 = _safe(_dl.circadian_contrast, pg, seats, wins22, scenario.get("evening_light_low", True))
+        raw["C22"] = r22
+        if r22.get("scalar") is not None:
+            scores["C22"] = r22["scalar"]
+    if scenario.get("commons") and seats:
+        r23 = _safe(_wb.social_connectedness, pg, seats, scenario["commons"], scenario.get("headcount"))
+        raw["C23"] = r23
+        if r23.get("scalar") is not None:
+            scores["C23"] = r23["scalar"]
+
+    # ---- aggregate the two profiles ----
+    # PANEL FIX S4: report (a) the weighted MEAN (honestly labelled — not "min-not-mean"),
+    # (b) COVERAGE = scored weight / total available weight (so a layout cannot look good by
+    # withholding its worst dimensions — low coverage is a warning), and (c) a BINDING score
+    # that the weakest criterion actually caps (min(mean, weakest+0.25)) so a catastrophic
+    # weakness is visible in a single number, not averaged away.
     def profile(wkey: str) -> Dict:
         rows = [(cid, scores[cid], CRITERIA[cid][wkey], CRITERIA[cid])
                 for cid in scores if CRITERIA.get(cid, {}).get(wkey, 0) > 0]
+        total_avail_w = sum(spec[wkey] for spec in CRITERIA.values() if spec.get(wkey, 0) > 0)
         if not rows:
-            return {"score": None, "weakest": None, "rows": []}
+            return {"score": None, "binding_score": None, "coverage": 0.0, "weakest": None, "rows": []}
         wsum = sum(w for _, _, w, _ in rows)
         weighted = sum(s * w for _, s, w, _ in rows) / wsum
         weakest = min(rows, key=lambda r: r[1])
-        return {"score": round(weighted, 3),
+        binding = min(weighted, weakest[1] + 0.25)          # the weakest caps the headline
+        return {"score": round(weighted, 3),                # weighted mean (NOT a min)
+                "binding_score": round(binding, 3),          # mean capped by the weakest
+                "coverage": round(wsum / max(total_avail_w, 1e-9), 3),  # scored weight fraction
                 "weakest": {"criterion": weakest[0], "name": weakest[3]["name"], "score": round(weakest[1], 3)},
                 "rows": [{"criterion": c, "name": m["name"], "score": round(s, 3),
                           "weight": w, "evidence": m["evid"], "objective": m["obj"]} for c, s, w, m in rows]}
@@ -181,10 +281,9 @@ def score_layout(scenario: Dict) -> Dict:
     # ---- provenance panel ----
     tier = getattr(pg, "method", "") or ("Tier C (real plan)" if getattr(pg, "confidence", 0) > 0.9 else "Tier B (inferred)")
     built = list(scores.keys())
-    still_open = ["C10 certified melanopic (needs spectral daylight sim)",
+    still_open = ["C10/C22 certified melanopic (needs spectral daylight sim; current tier is a geometric screen)",
                   "C6 interdependence gating",
-                  "C19/C20/C23 restoration/soundscape/social plan metrics",
-                  "C16/C17/C18 territory/control/air (spec-driven inputs)"]
+                  "L2/L3 validation of all criteria against VLM/human/physiological outcomes"]
     evidence_present = sorted(set(CRITERIA[c]["evid"] for c in built))
 
     return {
@@ -192,11 +291,15 @@ def score_layout(scenario: Dict) -> Dict:
         "fit_matrix": fit_matrix,
         "worst_served_segment": worst_served,
         "headline": {
-            # min-not-mean: the binding constraints, surfaced first
+            # the weighted MEAN, plus the binding (weakest-capped) score and coverage that
+            # keep a good average from hiding a failing dimension or thin coverage.
             "cognitive": cog["score"], "wellbeing": wb["score"],
+            "cognitive_binding": cog["binding_score"], "wellbeing_binding": wb["binding_score"],
+            "cognitive_coverage": cog["coverage"], "wellbeing_coverage": wb["coverage"],
             "binding": {"cog_weakest": cog["weakest"], "wb_weakest": wb["weakest"],
                         "worst_occupant_type": worst_served},
         },
+        "notes": notes,
         "criteria_scored": {c: round(scores[c], 3) for c in built},
         "opportunities": {"C6_path_overlap": raw.get("C6", {}).get("scalar")},
         "provenance": {
@@ -242,6 +345,18 @@ def demo_scenario():
                           {"name": "mixed", "orientations": ["S", "INT"]}],
         "demand": {"sanctuary": 0.4, "hub": 0.4, "nomad": 0.2},
         "hemisphere": "N",
+        # ---- spec inputs for the well-being + affordance criteria ----
+        "retreats": [(6, 48)],                              # the focus room as a retreat
+        "nature_cells": [(2, 6), (2, 20)],                  # planted / nature-facing points
+        "commons": [(14, 34)],                              # the amenity doubles as a social node
+        "headcount": 5,
+        "territory": {"assigned_seats": 4, "headcount": 5, "teams_with_anchor": 1, "n_teams": 2,
+                      "personalizable_frac": 0.8},
+        "control_zones_wb": [{"name": "open", "binding_stressor": "acoustic", "controls": ["thermal"]},
+                             {"name": "focus", "binding_stressor": "acoustic", "controls": ["acoustic"]}],
+        "air": {"headcount": 5, "floor_area_m2": 300.0, "outdoor_air_lps_per_person": 10.0},
+        "evening_light_low": True, "positive_soundscape_zones": 1,
+        "d2s": 7.0, "L_noise": 42.0,                        # acoustic spec so C8 is scored
     }
 
 
@@ -266,6 +381,12 @@ if __name__ == "__main__":
     assert out["objective_scores"]["wellbeing"]["score"] is not None, "WB score missing"
     assert {"C7", "C8", "C21", "C9", "C10"} <= set(out["criteria_scored"]), "dominant criteria not all scored"
     assert {"C1", "C3", "C4"} <= set(out["criteria_scored"]), "configurational substrate (VGA) not scored"
+    # the full rubric: every scored criterion C1-C24 except C6 (opportunity, weight 0) should be present
+    expect = {f"C{i}" for i in range(1, 25)} - {"C6"}
+    got = set(out["criteria_scored"])
+    missing = expect - got
+    print("criteria scored:", len(got), "/ 23 expected |", ("all present" if not missing else f"MISSING {sorted(missing)}"))
+    assert not missing, f"full C1-C24 rubric not fully scored; missing {sorted(missing)}"
     assert out["fit_matrix"] is not None and out["worst_served_segment"] is not None, "fit matrix missing"
     assert 0.0 <= out["objective_scores"]["cognitive"]["score"] <= 1.0
     # the mixed thermal zone should pull C21 below a perfect 1.0

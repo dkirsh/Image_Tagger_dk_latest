@@ -20,8 +20,7 @@ Self-test (run on a machine with pyroomacoustics):
     python -m cnfa_algs.adapters.acoustics_sim
 """
 from __future__ import annotations
-from typing import Callable, Dict, List, Optional, Sequence
-import time
+from typing import Dict, List, Optional, Sequence
 import numpy as np
 
 
@@ -41,26 +40,27 @@ def grid_to_polygon(grid, cell_m: float, epsilon_cells: float = 2.0):
 
 def simulate_rt60(polygon_m: np.ndarray, height_m: float = 2.8,
                   alpha: float | Sequence[float] = 0.15,
-                  fs: int = 16000, max_order: int = 24,
+                  fs: int = 16000, max_order: int = 3,
+                  ray_tracing: bool = True, n_rays: int = 5000,
                   src: Optional[Sequence[float]] = None,
-                  mic: Optional[Sequence[float]] = None,
-                  progress: Optional[Callable[[str], None]] = None) -> Dict:
-    """Image-source simulation of a polygonal room extruded to height_m.
+                  mic: Optional[Sequence[float]] = None) -> Dict:
+    """Room-acoustics simulation of a polygonal room extruded to height_m.
+
+    METHOD (fixed 2026-07-14): a LOW image-source order (early specular
+    reflections) plus RAY TRACING for the diffuse tail. This is both fast
+    (seconds on CPU) and correctly absorption-dependent. The earlier pure
+    image-source approach was wrong twice: max_order=6 truncated the decay
+    (hard==soft==0.13s), and max_order=24 fixed the physics but exploded the
+    image count and pinned the CPU for minutes. Ray tracing gives the tail
+    cheaply, so RT60 tracks absorption as it must.
+
     alpha: single mean absorption or per-wall list (len = #polygon edges).
     Returns measured RT60, Sabine estimate, and diagnostics."""
-    started = time.monotonic()
-
-    def emit(message: str) -> None:
-        if progress is not None:
-            progress(f"{message} elapsed_s={time.monotonic() - started:.2f}")
-
-    emit("importing pyroomacoustics")
     try:
         import pyroomacoustics as pra
     except ImportError as e:
         raise ImportError("pip install pyroomacoustics (see collect_external.sh)") from e
 
-    emit(f"building room fs={fs} max_order={max_order}")
     poly = np.asarray(polygon_m, float)
     n_edges = len(poly)
     if np.isscalar(alpha):
@@ -73,25 +73,30 @@ def simulate_rt60(polygon_m: np.ndarray, height_m: float = 2.8,
 
     materials = [pra.Material(a) for a in alphas]
     room = pra.Room.from_corners(poly.T, fs=fs, max_order=max_order,
-                                 materials=materials, air_absorption=True)
+                                 materials=materials, air_absorption=True,
+                                 ray_tracing=ray_tracing)
     room.extrude(height_m, materials=pra.Material(a_floor))
+    if ray_tracing:
+        # receiver sphere + ray budget sized for a room this scale; energy
+        # threshold sets how deep into the tail we trace (RT60-adequate).
+        room.set_ray_tracing(receiver_radius=0.5, n_rays=n_rays,
+                             energy_thres=1e-7)
 
     ctr = poly.mean(0)
     src = src or [ctr[0] - 0.5, ctr[1], 1.2]
     mic = mic or [ctr[0] + 0.8, ctr[1] + 0.3, 1.2]
     room.add_source(src)
     room.add_microphone(mic)
-    emit("computing RIR")
     room.compute_rir()
     rir = room.rir[0][0]
 
-    # decay_db=20 (T20 extrapolated) is robust to truncated tails; max_order
-    # must be high enough that truncation, not absorption, is never the
-    # dominant decay (the 2026-07-14 collector run caught max_order=6 making
-    # hard and soft rooms measure identically at 0.13s).
-    emit(f"measuring RT60 rir_samples={len(rir)}")
-    rt60_meas = float(pra.experimental.rt60.measure_rt60(rir, fs=fs, decay_db=20))
-    emit("measured RT60")
+    # T30 (decay_db=30) off the ray-traced RIR: the tail is now long enough
+    # that the Schroeder curve is well-conditioned. Falls back to T20 if the
+    # RIR is short.
+    try:
+        rt60_meas = float(pra.experimental.rt60.measure_rt60(rir, fs=fs, decay_db=30))
+    except Exception:
+        rt60_meas = float(pra.experimental.rt60.measure_rt60(rir, fs=fs, decay_db=20))
 
     # Sabine for comparison (the proxy the tagger uses)
     area2d = 0.5 * abs(np.dot(poly[:, 0], np.roll(poly[:, 1], -1))
@@ -115,20 +120,17 @@ def simulate_rt60(polygon_m: np.ndarray, height_m: float = 2.8,
 
 
 if __name__ == "__main__":
-    def log(message: str) -> None:
-        print(f"[acoustics_sim] {message}", flush=True)
-
-    # Bounded smoke: the full 6x4x2.8 m / max_order=24 comparison is a
-    # calibration job and can spend minutes in native pyroomacoustics compute.
-    # This tiny case proves the dependency, geometry path, RIR generation, and
-    # Schroeder measurement are working without hiding long production runs.
-    box = np.array([[0, 0], [2.4, 0], [2.4, 1.8], [0, 1.8]], float)
-    log("bounded self-test start: 2.4x1.8x2.4m fs=8000 max_order=3")
-    hard = simulate_rt60(box, height_m=2.4, alpha=0.05, fs=8000, max_order=3, progress=log)
-    soft = simulate_rt60(box, height_m=2.4, alpha=0.40, fs=8000, max_order=3, progress=log)
-    print("hard room:", hard)
-    print("soft room:", soft)
-    if hard["rt60_sabine_s"] <= soft["rt60_sabine_s"]:
-        raise AssertionError("sanity: Sabine hard-room estimate must exceed soft-room estimate")
-    print("acoustics_sim bounded self-test: PASS")
-    print("note: use larger max_order offline for calibrated hard-vs-soft simulated RT60 separation")
+    # shoebox self-test: 6x4x2.8 m, hard room vs soft room. Ray tracing keeps
+    # this to a few seconds on CPU (the point of the 2026-07-14 fix).
+    import time
+    box = np.array([[0, 0], [6, 0], [6, 4], [0, 4]], float)
+    t0 = time.time()
+    hard = simulate_rt60(box, alpha=0.05)
+    soft = simulate_rt60(box, alpha=0.40)
+    dt = time.time() - t0
+    print(f"hard room: {hard}")
+    print(f"soft room: {soft}")
+    print(f"(both simulations took {dt:.1f}s total)")
+    assert hard["rt60_simulated_s"] > 1.5 * soft["rt60_simulated_s"], \
+        "sanity: hard room must ring clearly longer than soft"
+    print("acoustics_sim self-test: PASS")

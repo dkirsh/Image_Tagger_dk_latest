@@ -34,6 +34,7 @@ try:
     from .plan import FREE, OBST
 except Exception:
     FREE, OBST = 1, 2
+from .los import segment_is_free   # panel fix S5: glazing effects must not pass through walls
 
 RC = Tuple[int, int]
 
@@ -83,6 +84,8 @@ def radiant_asymmetry_risk(pg, seats: Sequence[RC], glazing: Sequence[Tuple[RC, 
                 run = run_by_orient.get(o, 1)
                 if run < big_run_cells:              # only LARGE glazing drives asymmetry
                     continue
+                if not segment_is_free(grid, s, (int(cells[idx, 0]), int(cells[idx, 1]))):
+                    continue                         # S5: a wall between seat & glazing blocks radiant effect
                 proximity = 1.0 - 0.5 * (min(d[idx], near_m) / near_m)  # 1.0 at glazing -> 0.5 at near_m
                 solar = solar_gain_index(o, hemisphere)
                 # summer(solar-weighted) OR winter(cold, orientation-independent) — take worst
@@ -112,16 +115,32 @@ def thermal_zone_mismatch(pg, zones: Sequence[Dict], hemisphere: str = "N",
     serves that thermostat zone (include 'INT' for interior/no-glazing). A zone is
     mismatched if the spread of solar-gain indices across its served orientations
     exceeds `mismatch_gap` — one setpoint cannot satisfy both a hot and a cool load."""
+    # PANEL FIX S7/C21: a solar-INDEX spread alone misses the textbook failures. East and
+    # West have SIMILAR annual indices but OPPOSITE peak TIMES (morning vs afternoon sun) —
+    # one thermostat cannot serve both; likewise any perimeter+interior mix. Add an explicit
+    # peak-time / perimeter-vs-core opposition test alongside the index spread.
+    def _bucket(o):
+        o = o.upper()
+        if o in ("INT", "INTERIOR", "CORE"):
+            return "core"
+        if "E" in o and "W" not in o:
+            return "am"          # east-ish: morning peak
+        if "W" in o:
+            return "pm"          # west-ish: afternoon peak
+        return "mid"             # N/S: no strong am/pm bias
     rows = []
     for z in zones:
         os = z.get("orientations", [])
-        loads = []
-        for o in os:
-            loads.append(0.0 if o.upper() in ("INT", "INTERIOR", "CORE") else solar_gain_index(o, hemisphere))
+        loads = [0.0 if o.upper() in ("INT", "INTERIOR", "CORE") else solar_gain_index(o, hemisphere) for o in os]
         spread = (max(loads) - min(loads)) if loads else 0.0
+        buckets = {_bucket(o) for o in os}
+        peak_conflict = ("am" in buckets and "pm" in buckets)              # E + W
+        perimeter_core = ("core" in buckets and len(buckets - {"core"}) > 0 and max(loads) >= 0.6)  # glazed + interior
+        mismatch = bool(spread > mismatch_gap or peak_conflict or perimeter_core)
         rows.append({"zone": z.get("name", "?"), "orientations": os,
                      "load_spread": round(float(spread), 3),
-                     "mismatch": bool(spread > mismatch_gap)})
+                     "peak_time_conflict": peak_conflict, "perimeter_core_mix": perimeter_core,
+                     "mismatch": mismatch})
     n_bad = sum(1 for r in rows if r["mismatch"])
     return {"key": "cnfa.thermal.zone_mismatch", "criterion": "C21",
             "rows": rows,
@@ -143,19 +162,25 @@ def solar_patch_opportunity(pg, seats: Sequence[RC], glazing: Sequence[Tuple[RC,
     grid = pg.grid if hasattr(pg, "grid") else np.asarray(pg)
     cell = float(getattr(pg, "cell_m", 1.0))
     cells, orients = _glazing_arrays(glazing)
+    # PANEL FIX S7/WB-C7: the docstring promised an overheat exclusion that did not exist.
+    # Compute the radiant-overheat set (seats at risk from large high-solar glazing) and
+    # EXCLUDE them from the pleasure opportunity — a seat cannot be both at-risk and a patch.
+    overheat = {r["seat"] for r in radiant_asymmetry_risk(pg, seats, glazing,
+                                                          hemisphere=hemisphere)["rows"] if r["at_risk"]}
     rows = []
     for k, s in enumerate(seats):
         opp = 0.0; o_hit = None
-        if len(cells):
+        if k not in overheat and len(cells):
             d = np.hypot(cells[:, 0] - s[0], cells[:, 1] - s[1]) * cell
             for idx in np.where(d <= near_m)[0]:
                 solar = solar_gain_index(orients[idx], hemisphere)
-                if solar >= 0.8:                       # sun-facing façade
+                if solar >= 0.8 and segment_is_free(grid, s, (int(cells[idx, 0]), int(cells[idx, 1]))):
                     score = solar * (1.0 - d[idx] / near_m)
                     if score > opp:
                         opp = score; o_hit = orients[idx]
         rows.append({"seat": k, "solar_patch_score": round(float(opp), 3),
-                     "has_opportunity": bool(opp >= 0.3), "orientation": o_hit})
+                     "has_opportunity": bool(opp >= 0.3), "overheat_excluded": bool(k in overheat),
+                     "orientation": o_hit})
     n_opp = sum(1 for r in rows if r["has_opportunity"])
     return {"key": "cnfa.thermal.solar_patch", "criterion": "WB-C7",
             "rows": rows,
@@ -188,17 +213,22 @@ if __name__ == "__main__":
     print("C21 radiant:", [(r["seat"], r["radiant_risk"], r["at_risk"], r["driver_orientation"]) for r in res["rows"]])
     assert res["rows"][0]["at_risk"] and not res["rows"][1]["at_risk"], "near-glazing seat at risk, far seat safe"
 
-    # zone mismatch: a zone spanning S + interior (big load spread) vs a clean interior zone
+    # zone mismatch: S+INT (perimeter+core), E+W (peak-time conflict) both fail; N+N coherent
     zres = thermal_zone_mismatch(pg, zones=[
-        {"name": "Z1", "orientations": ["S", "INT"]},      # hot glazing + cool interior on one stat -> mismatch
+        {"name": "Z1", "orientations": ["S", "INT"]},      # hot glazing + cool interior -> mismatch
         {"name": "Z2", "orientations": ["N", "N"]},        # coherent
+        {"name": "Z3", "orientations": ["E", "W"]},        # opposite peak TIMES -> mismatch (was missed)
     ], mismatch_gap=0.4)
-    print("C21 zones :", [(r["zone"], r["load_spread"], r["mismatch"]) for r in zres["rows"]])
+    print("C21 zones :", [(r["zone"], r["load_spread"], r["peak_time_conflict"], r["mismatch"]) for r in zres["rows"]])
     assert zres["rows"][0]["mismatch"] and not zres["rows"][1]["mismatch"], "S+INT mismatched, N+N coherent"
+    assert zres["rows"][2]["mismatch"] and zres["rows"][2]["peak_time_conflict"], "E+W is a peak-time conflict"
 
-    # solar-patch pleasure: seat near S-glazing has an opportunity
-    sp = solar_patch_opportunity(pg, seats=[(10, 3), (10, 25)], glazing=glaz, near_m=4.0)
-    print("WB-C7 sun :", [(r["seat"], r["solar_patch_score"], r["has_opportunity"]) for r in sp["rows"]])
-    assert sp["rows"][0]["has_opportunity"] and not sp["rows"][1]["has_opportunity"], "near S-glazing = patch opp"
+    # solar-patch pleasure: a seat SET BACK from S-glazing (winter patch, not summer overheat)
+    # gets the opportunity; a seat pressed against the large glazing is overheat-EXCLUDED.
+    sp = solar_patch_opportunity(pg, seats=[(10, 4), (10, 1), (10, 25)], glazing=glaz, near_m=4.0)
+    print("WB-C7 sun :", [(r["seat"], r["solar_patch_score"], r["has_opportunity"], r["overheat_excluded"]) for r in sp["rows"]])
+    assert sp["rows"][0]["has_opportunity"], "set-back seat gets the winter patch"
+    assert sp["rows"][1]["overheat_excluded"], "seat against large S-glazing is overheat-excluded (not a patch)"
+    assert not sp["rows"][2]["has_opportunity"], "far interior seat: no patch"
 
     print("-" * 46 + "\nthermal_plan self-test: PASS")

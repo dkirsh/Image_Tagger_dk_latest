@@ -16,3 +16,5 @@ from .geometry import estimate_vanishing_point, segment_planes, DepthProvider, \
 from . import attributes
 from .plan import infer_plan_from_image, plan_from_floorplan_image, \
     isovist_fields, camera_isovist_polygon, render_plan_topo, PlanGrid
+from .composition import rule_of_thirds, visual_balance
+

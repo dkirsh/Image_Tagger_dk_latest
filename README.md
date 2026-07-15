@@ -1,8 +1,32 @@
 # Image_Tagger_dk_latest
 
-This repository contains the current student-ready Image Tagger work surface.
+This repository contains both the **Image Tagger web application** (student-ready
+work surface) and the **Cognitive-Code computation engine** (`cnfa_algs/`) — the
+research core that computes environmental-cognition attributes of interior spaces
+from visual input.
 
-## Active App Root
+## The Research Engine — `cnfa_algs/`
+
+The cognitive-code computation engine turns David Kirsh's cognitive-code
+dimensions into computable, localisable, displayable annotations of interior
+spaces. Start here:
+
+1. **Why this exists:** [`docs/VISION_AND_DIRECTION_2026-07-14.md`](docs/VISION_AND_DIRECTION_2026-07-14.md)
+   — "Reading Space", the founding direction document.
+2. **Architecture & module map:** [`cnfa_algs/ARCHITECTURE.md`](cnfa_algs/ARCHITECTURE.md)
+   — dependency graph, data flow, all 26 modules with purpose and exports.
+3. **Pipeline contract:** [`cnfa_algs/CONTRACT.md`](cnfa_algs/CONTRACT.md)
+   — Stage 0→3 pipeline schema, parallelism rules, `AttributeResult` schema.
+4. **Scientific parameters:** [`cnfa_algs/JUSTIFICATION_TABLE.md`](cnfa_algs/JUSTIFICATION_TABLE.md)
+   — every parameter → citation → rationale → limitation.
+5. **Change history:** [`cnfa_algs/CHANGELOG.md`](cnfa_algs/CHANGELOG.md)
+6. **Run instructions:** [`cnfa_algs/README.md`](cnfa_algs/README.md)
+
+**Master status** (cross-project): `/Users/davidusa/REPOS/MASTER_STATUS_ALL_PROJECTS_2026-07-14.md`
+
+## The Web Application
+
+### Active App Root
 
 Work in this folder:
 
@@ -14,6 +38,7 @@ Historical sibling folders such as `TRS_v1.1/`, `image_decomposition/`,
 `low-level-image-features/`, and `ImageDecomposer/` are reference material.
 Do not implement student sprint work there unless a sprint contract explicitly
 says so.
+
 
 ## What Was Added For The Student Handoff
 

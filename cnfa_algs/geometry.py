@@ -84,6 +84,7 @@ def segment_planes(img_bgr: np.ndarray, vp: Tuple[float, float],
     feats = np.stack([lab[..., 0] / 255 * 2, lab[..., 1] / 255 * 3, lab[..., 2] / 255 * 3,
                       xs / W * 1.0, ys / H * 2.0], -1).reshape(-1, 5).astype(np.float32)
     K = 12
+    cv2.setRNGSeed(1234)   # panel fix S2: deterministic segmentation (was RNG-order dependent)
     _, klab, kcent = cv2.kmeans(feats, K, None,
                                 (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 12, 0.5),
                                 2, cv2.KMEANS_PP_CENTERS)

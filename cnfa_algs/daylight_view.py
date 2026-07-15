@@ -35,16 +35,7 @@ except Exception:
 RC = Tuple[int, int]
 
 
-def _los(grid: np.ndarray, a: RC, b: RC) -> bool:
-    r0, c0 = a; r1, c1 = b
-    n = int(max(abs(r1 - r0), abs(c1 - c0))) + 1
-    rs = np.linspace(r0, r1, n).round().astype(int)
-    cs = np.linspace(c0, c1, n).round().astype(int)
-    seg = grid[rs, cs]
-    # allow the endpoints (seat cell, window cell) to be non-FREE; interior must be free
-    if n <= 2:
-        return True
-    return bool(np.all(seg[1:-1] == FREE))
+from .los import segment_is_free as _los   # supercover LOS, endpoints exempt (window on wall) — S1
 
 
 def windows_from_boundary(grid: np.ndarray, segments: Sequence[Tuple[RC, RC]]) -> List[RC]:
@@ -136,6 +127,29 @@ def daylight_proximity(pg, seats: Sequence[RC], windows: Sequence[RC],
                               "penetration depth is a rule-of-thumb, not a compliance value"]}
 
 
+# ------------------------------------------------------------- C22 circadian day-night contrast
+def circadian_contrast(pg, seats: Sequence[RC], windows: Sequence[RC],
+                       evening_electric_low: bool = True,
+                       head_height_m: float = 2.7, penetration_factor: float = 2.5) -> Dict:
+    """C22 — sleep/circadian health as the DAY-NIGHT CONTRAST (WELLBEING B1): high daytime
+    daylight AND low evening light. Daytime term reuses the C10 daylight-zone fraction; the
+    evening term is a spec flag (does the design restrain evening electric light). Shares
+    the C10 geometric screen — NOT a certified melanopic trajectory."""
+    day = daylight_proximity(pg, seats, windows, head_height_m, penetration_factor)
+    day_frac = day["scalar"] if day.get("scalar") is not None else 0.0
+    evening = 1.0 if evening_electric_low else 0.5
+    score = float(0.7 * day_frac + 0.3 * evening)
+    return {"key": "cnfa.light.circadian_contrast", "criterion": "C22",
+            "scalar": round(score, 3),
+            "extras": {"daytime_daylight_frac": day_frac, "evening_restraint": evening_electric_low,
+                       "daylight_zone_depth_m": day["extras"].get("penetration_depth_m")},
+            "confidence": 0.4,
+            "method": "0.7*daytime-daylight-fraction (C10 screen) + 0.3*evening-light-restraint (B1 contrast)",
+            "failure_modes": ["shares the C10 geometric screen — not a certified melanopic trajectory",
+                              "evening restraint is a spec input (lighting controls/design)",
+                              "sleep effect is behaviorally mediated; geometry gives opportunity only"]}
+
+
 # --------------------------------------------------------------------------- self-test
 if __name__ == "__main__":
     print("cnfa_algs.daylight_view self-test (analytic L0)\n" + "-" * 47)
@@ -164,5 +178,11 @@ if __name__ == "__main__":
     v2 = view_equity(pg2, [(10, 10)], windows, max_view_m=15)  # seat is behind the wall
     print("C9 walled-off seat has_view:", v2["rows"][0]["has_view"], "(expect False)")
     assert v2["rows"][0]["has_view"] is False, "full partition should block all window views"
+
+    # C22 circadian contrast: daylight + evening restraint scores higher than daylight alone
+    c_hi = circadian_contrast(pg, seats, windows, evening_electric_low=True)
+    c_lo = circadian_contrast(pg, seats, windows, evening_electric_low=False)
+    print("C22 contrast: evening-restraint score=", c_hi["scalar"], "| no-restraint score=", c_lo["scalar"])
+    assert c_hi["scalar"] > c_lo["scalar"], "evening light restraint should raise the circadian score"
 
     print("-" * 47 + "\ndaylight_view self-test: PASS")
