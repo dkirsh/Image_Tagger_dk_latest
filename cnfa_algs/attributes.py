@@ -95,21 +95,31 @@ def processing_load(img) -> AttributeResult:
         failure_modes=["sensor noise inflates load", "smooth CGI deflates it"])
 
 
+def _boxcount_D_r2(e):
+    """Box-count fractal dimension + fit R^2 (R^2<~0.98 => broken/absent scaling)."""
+    if e.sum() < 20:
+        return 0.0, 0.0
+    sizes, counts = [], []
+    for s in (2, 4, 8, 16):
+        S = (e.reshape(e.shape[0] // s, s, e.shape[1] // s, s).max(axis=(1, 3)) > 0).sum()
+        if S > 0:
+            sizes.append(np.log(1 / s)); counts.append(np.log(S))
+    if len(sizes) < 3:
+        return 0.0, 0.0
+    x, y = np.array(sizes), np.array(counts)
+    slope, intercept = np.polyfit(x, y, 1)
+    yhat = slope * x + intercept
+    ss_res = float(np.sum((y - yhat) ** 2)); ss_tot = float(np.sum((y - y.mean()) ** 2))
+    r2 = 1.0 - ss_res / ss_tot if ss_tot > 1e-12 else 1.0
+    return float(slope), float(max(0.0, min(1.0, r2)))
+
+
 def fractal_dimension_local(img, tile: int = 64) -> AttributeResult:
     g = (_gray(img) * 255).astype(np.uint8)
     edges = cv2.Canny(g, 60, 160)
 
     def boxcount_D(e):
-        if e.sum() < 20:
-            return 0.0
-        sizes, counts = [], []
-        for s in (2, 4, 8, 16):
-            S = (e.reshape(e.shape[0] // s, s, e.shape[1] // s, s).max(axis=(1, 3)) > 0).sum()
-            if S > 0:
-                sizes.append(np.log(1 / s)); counts.append(np.log(S))
-        if len(sizes) < 3:
-            return 0.0
-        return float(np.polyfit(sizes, counts, 1)[0])
+        return _boxcount_D_r2(e)[0]
 
     H, W = edges.shape
     Ht, Wt = (H // tile) * tile, (W // tile) * tile
@@ -117,11 +127,14 @@ def fractal_dimension_local(img, tile: int = 64) -> AttributeResult:
     for i in range(0, Ht, tile):
         for j in range(0, Wt, tile):
             fld[i // tile, j // tile] = boxcount_D(edges[i:i + tile, j:j + tile])
-    D_global = boxcount_D(edges[:Ht, :Wt])
+    D_global, R2_global = _boxcount_D_r2(edges[:Ht, :Wt])
     return AttributeResult(
         key="cnfa.fractal_dimension",
         scalar=D_global, field=normalize01(fld), confidence=0.75,
         method="box-counting on Canny edges, global + per-tile (M1)",
+        # V9 (fractal_mid_d_band) reads these RAW values — the `field` above is normalized and
+        # cannot give band coverage; exposing the raw D field + fit R^2 keeps V9 from recomputing.
+        extras={"fld_raw": fld.copy(), "D_global": float(D_global), "R2_global": float(R2_global)},
         failure_modes=["scale range 2..16px only", "edge-detector dependence"])
 
 

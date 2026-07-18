@@ -1,0 +1,1456 @@
+{
+ "candidates": [
+  {
+   "id": "V1",
+   "name": "contour_angularity_index",
+   "construct": "Curvilinear vs angular contour character of the interior: sharp angular contours elicit threat-related response and lower liking; curvilinear interiors are judged more beautiful and elicit approach. The most-replicated form-affect finding proposed to the panel, converged on independently by four seats.",
+   "code": "SHARED",
+   "merged_from": [
+    "ulrich-stress:contour_angularity_index",
+    "ellard-psychogeography:contour_angularity_index",
+    "chatterjee-neuroaesthetics:contour_curvature_ratio",
+    "materials-naturalness:biomorphic_contour_ratio"
+   ],
+   "literature": [
+    "Bar & Neta 2006 (Psychological Science): curved objects preferred over matched sharp-angled ones",
+    "Bar & Neta 2007 (Neuropsychologia): sharp contours elevate amygdala activation (threat interpretation)",
+    "Vartanian et al. 2013 (PNAS): curvilinear architectural interiors judged more beautiful, engage ACC, predict approach decisions",
+    "Dazkir & Read 2012 (Environment and Behavior): curvilinear furniture settings elicit higher pleasure/relaxation",
+    "Chuquichambi et al. 2022 (meta-analysis; venue hedged): curvature preference reliable across stimulus types and cultures, moderate effect"
+   ],
+   "computation": "Tier A, deterministic OpenCV. Canny edges -> linked contour chains above minimum length -> Douglas-Peucker/turning-angle analysis with local circle fits. Decompose arclength into straight / smooth-arc / sharp-corner segments. Outputs: curve fraction (curved length / total contour length, 0-1) and corner density (sharp angles per unit contour length) as a separate threat subscore; optional eye-level-band weighting. Feeds the existing fluency-hedonics layer as a signed valence input. Base variant needs no segmentation; the person-masked variant rides segmentation and drops to AMBER.",
+   "tier": "A",
+   "ceiling": "GREEN",
+   "rank_score": 9.5,
+   "rationale": "Four independent seats proposed the same construct+computation; multi-lab, meta-analytically supported evidence; fully deterministic; measures contour SHAPE, orthogonal to existing edge clarity (sharpness) and fractal D (complexity).",
+   "collision_with_existing": "Edge clarity/sharpness measures edge definition; fractal D measures scaling complexity \u2014 neither carries the curved-vs-angular sign. Genuinely new valence-bearing shape statistic."
+  },
+  {
+   "id": "V2",
+   "name": "spectral_discomfort_deviation",
+   "construct": "Visual discomfort / visual stress from deviation of the image's Fourier amplitude spectrum from natural 1/f statistics, especially excess mid-spatial-frequency energy (Wilkins pattern-glare line); slope also indexes naturalness of spatial statistics.",
+   "code": "WB",
+   "merged_from": [
+    "kaplan-restoration:spectral_naturalness",
+    "oliva-scene-statistics:spectral_discomfort_deviation",
+    "materials-naturalness:spectral_naturalness",
+    "taylor-fractal-fluency:spectral_slope_1f"
+   ],
+   "literature": [
+    "Field 1987 (JOSA A): natural scenes have ~1/f amplitude spectra",
+    "Fernandez & Wilkins 2008 (Perception): discomfort predicted by deviation from 1/f, excess energy at medium spatial frequencies",
+    "Juricevic, Land, Wilkins & Webster 2010 (Perception): discomfort tracks departure from natural image statistics",
+    "Penacchio & Wilkins 2015 (Vision Research): computational model \u2014 discomfort rises with CSF-weighted departure of Fourier energy from the natural 1/f profile",
+    "Graham & Field 2007; Redies et al. 2007 (Spatial Vision): artworks share natural-scene spectral statistics (naturalness side)"
+   ],
+   "computation": "Tier A, pure numpy/FFT, sandbox-verified by the proposing seat (recovered slope -1.95 on synthetic 1/f^2 noise, target -2.0). Grayscale -> Hann window -> 2D FFT -> radially averaged power spectrum over >=4 octaves -> OLS log-log slope alpha (with R^2). Outputs: (a) naturalness = closeness of alpha to natural value; (b) discomfort deviation = CSF-weighted positive mid-band residual per Penacchio-Wilkins; (c) orientation-resolved stripe-peak detector for high-contrast periodic slats/louvers (from the Oliva-seat variant). Cycles/degree calibration rests on a DECLARED FOV/viewing-distance assumption emitted with the score.",
+   "tier": "A",
+   "ceiling": "GREEN",
+   "rank_score": 9.2,
+   "rationale": "Four-seat convergence; the single best-replicated statistics->discomfort mechanism in the literature with an explicit published computational model; deterministic, model-free; complements glare risk (luminance) with pattern-induced discomfort.",
+   "collision_with_existing": "Fractal D (box-counting on binarized edges) is correlated but misses spectral anomalies (stripes/grids) that keep edge density normal; glare risk is luminance-based. Fourier-domain complement, not a duplicate."
+  },
+  {
+   "id": "V3",
+   "name": "visible_vegetation_fraction",
+   "construct": "Visible live vegetation in the occupant's actual view (plants, green walls, foliage through openings) \u2014 the core Stress Recovery Theory / Attention Restoration predictor: unthreatening natural content drives parasympathetic recovery and directed-attention restoration.",
+   "code": "WB",
+   "merged_from": [
+    "kaplan-restoration:visible_vegetation_fraction",
+    "ulrich-stress:nature_content_fraction",
+    "poe-workplace:visible_greenery_fraction"
+   ],
+   "literature": [
+    "Ulrich 1984 (Science): tree-view patients recovered faster post-surgery than wall-view patients",
+    "Ulrich et al. 1991 (J. Environmental Psychology): faster physiological stress recovery during natural vs urban scene exposure",
+    "Nieuwenhuis, Knight, Postmes & Haslam 2014 (JEP: Applied): green offices ~15% productivity gain over lean offices in field experiments",
+    "Bringslimark, Hartig & Patil 2009 (J. Environmental Psychology, review): modest but recurrent benefits; heterogeneous effect sizes support an uncertainty band"
+   ],
+   "computation": "Tier A, classical CV. (1) White-balance sanity check (gray-world deviation); ABSTAIN on grayscale/heavy cast. (2) HSV foliage-hue mask (green band, S/V thresholds) INTERSECT high local texture (Laplacian variance / local fractal-D above floor \u2014 excludes flat green paint and fabric). (3) Morphological cleanup. Outputs: pixel fraction 0-1, blob count, largest-blob share (one big plant vs distributed greenery), confidence flag; ABSTAIN when hue fires but texture test is ambiguous. Declared proxy: 'visible plausibly-living green material', not botanically verified.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 9,
+   "rationale": "Three-seat convergence on the strongest construct link in the whole proposal set (Ulrich 1984 canonical); cheap deterministic computation; AMBER honestly retained for the heuristic vegetation classifier.",
+   "collision_with_existing": "C19 restoration/nature-contact is Tier-B plan ADJACENCY (can you reach nature); this is photographic evidence of nature visible from the viewpoint \u2014 catches the desk-facing-blank-wall inversion C19 cannot see."
+  },
+  {
+   "id": "V4",
+   "name": "mystery_occlusivity",
+   "construct": "Mystery \u2014 the promise of more information upon moving deeper (Kaplans' strongest preference predictor), formalized as Benedikt's isovist occlusivity: the fraction of the visible-field boundary that is an occluding edge to hidden, reachable space rather than a solid surface.",
+   "code": "SHARED",
+   "merged_from": [
+    "kaplan-restoration:mystery_occlusivity",
+    "benedikt-isovist:isovist_occlusivity",
+    "materials-naturalness:mystery_occlusion_index"
+   ],
+   "literature": [
+    "Kaplan & Kaplan 1989 (The Experience of Nature): mystery the most consistent positive predictor in the preference-matrix studies",
+    "Benedikt 1979 (Environment and Planning B): occlusivity \u2014 summed length of occluding radial isovist edges \u2014 as the formal measure of hidden adjacent space",
+    "Franz & Wiener 2008 (Environment and Planning B): isovist measures incl. occlusivity correlate with reported spatial experience indoors",
+    "Stamps 2004 (meta-analytic): mystery-preference relation positive but heterogeneous \u2014 attribute ships with an uncertainty flag, not a strong valence claim",
+    "Herzog & Miller 1998 (hedged): mystery raises perceived danger in low-legibility settings \u2014 motivates the intelligibility gate"
+   ],
+   "computation": "Tier B on the inferred plan grid. Cast 360 rays from the camera cell (optionally seat cells) -> isovist polygon; classify boundary segments SOLID vs OCCLUDING (radial jump discontinuity with walkable cells beyond). occlusivity = occluding length / isovist perimeter; flood-fill hidden-adjacent walkable area through occluding edges for mystery = occlusivity * log(1+hidden_area), room-normalized. Emit uncertainty flag when C3 intelligibility is low (mystery-danger decoupling); optional Tier-A depth-map corroborator (half-occluded deep floor regions, from the materials-seat variant). ABSTAIN below plan-inference confidence threshold.",
+   "tier": "B",
+   "ceiling": "AMBER",
+   "rank_score": 8.7,
+   "rationale": "Three-seat convergence; canonical formalization of the top Kaplan predictor; honest Stamps-heterogeneity flag and intelligibility gating preserved. AMBER because wholly downstream of the heuristic photo-to-plan chain.",
+   "collision_with_existing": "Prospect measures how FAR you see; C11 measures seat-level protection. Neither measures promised-but-hidden space \u2014 occlusivity is the complement of prospect at the isovist boundary."
+  },
+  {
+   "id": "V5",
+   "name": "window_view_layer_content",
+   "construct": "Window view quality via view CONTENT \u2014 number of visible environmental layers (sky / landscape / ground) and vegetation presence in the view \u2014 a validated driver of emotion, restoration, and cognitive performance, distinct from daylight quantity or plan-level view access; codified in EN 17037.",
+   "code": "SHARED",
+   "merged_from": [
+    "lighting-chamilothori:window_view_layer_content",
+    "kaplan-restoration:view_content_layers",
+    "ulrich-stress:view_layer_composition",
+    "poe-workplace:window_view_content_quality"
+   ],
+   "literature": [
+    "Ko, Kent, Schiavon, Levitt & Betti 2022 (LEUKOS): view-quality framework \u2014 content (layer count), access, clarity",
+    "Markus 1967 (Building Science): views containing all three layers preferred over truncated views",
+    "Ko, Schiavon et al. 2020 (Building and Environment): window view improved emotion and working-memory performance vs no-view at matched conditions",
+    "Ulrich 1984 (Science) and Kaplan 2001 (Environment and Behavior): view CONTENT (nature) carried the outcome effects",
+    "EN 17037:2018: normative anchor scoring views by layers visible"
+   ],
+   "computation": "Tier A. (1) Detect glazing: high-luminance quadrilateral regions on segmented wall planes (depth-discontinuity / sky-chroma cross-checks); rectify by homography. (2) If aperture interior is near-uniformly clipped (LDR blowout), window presence stays SCORED but content = UNKNOWN \u2014 designed-in abstention, never guessed. (3) Else deterministic layer rules: sky (upper, high Y, low texture, blue/neutral), vegetation (excess-green + mid texture, reusing V3's detector), ground/built (remainder). Outputs: layers_present in {0..3} mapped per Ko/EN 17037, greenery fraction, aperture solid-angle fraction. ABSTAIN if no window detected on any wall plane.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 8.6,
+   "rationale": "Four-seat convergence; standards-grade (EN 17037) operationalization of the variable that actually carried Ulrich's and Kaplan's effects; exemplary abstention design for the common blown-out-window case. AMBER: rides plane segmentation and heuristic window detection.",
+   "collision_with_existing": "C9 view equity and C10 daylight proximity are plan ACCESS metrics; vertical illuminance and glare treat windows as light sources. Nothing existing scores WHAT the glazing shows."
+  },
+  {
+   "id": "V6",
+   "name": "subband_entropy_clutter",
+   "construct": "Visual clutter as encoding inefficiency: Shannon entropy of steerable-pyramid subband coefficients over luminance and chrominance \u2014 how incompressible the scene is per glance; the efficient-coding substrate of processing load and (dis)fluency.",
+   "code": "SHARED",
+   "merged_from": [
+    "rosenholtz-clutter:subband_entropy_clutter",
+    "oliva-scene-statistics:subband_entropy_clutter"
+   ],
+   "literature": [
+    "Rosenholtz, Li & Nakano 2007 (Journal of Vision): Subband Entropy predicts clutter judgments and search performance; explicit efficient-coding account",
+    "Portilla & Simoncelli 2000 (IJCV): joint wavelet statistics as the currency of early visual texture encoding",
+    "Henderson, Chanceaux & Smith 2009 (Journal of Vision): clutter measures of this family predict search in real-world scenes",
+    "Reber, Schwarz & Winkielman 2004: fluency->affect bridge (proxy-grade, flagged; inherited from the existing hedonics layer)"
+   ],
+   "computation": "Tier A, deterministic. CIELab; steerable pyramid (3 scales x 4 orientations) on L plus coarse chroma decompositions; per-subband fixed-bin coefficient histograms -> Shannon entropy; luminance-dominant weighted sum with weights taken from the published code, not invented. Output: bits + corpus-percentile 0-1, plus per-tile map for comparability with the legacy tiled proxy. Affect mapping inherits the existing inverted-U fluency machinery.",
+   "tier": "A",
+   "ceiling": "GREEN",
+   "rank_score": 8.5,
+   "rationale": "Two-seat convergence on the field-standard, behaviorally validated clutter measure; deterministic published algorithm; stress-tests the ad hoc legacy proxy by reporting agreement with it.",
+   "collision_with_existing": "Sharper, citable companion to the existing ad hoc tiled clutter proxy and orthogonal to palette entropy (spatially blind color histogram); declared as validation-grade replacement, which is why it survives the no-duplication rule."
+  },
+  {
+   "id": "V7",
+   "name": "feature_congestion_clutter",
+   "construct": "Visual clutter as local feature-space congestion: how 'full' the local distribution of color, contrast, and orientation already is \u2014 sets the salience threshold any sign, exit, or waving colleague must exceed to be noticed; directly predicts visual search cost.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Rosenholtz, Li, Mansfield & Jin 2005 (CHI): Feature Congestion as covariance-ellipsoid clutter, validated on subjective judgments",
+    "Rosenholtz, Li & Nakano 2007 (Journal of Vision): predicts search RT better than object counts; clutter as effective set-size surrogate",
+    "Henderson, Chanceaux & Smith 2009 (Journal of Vision): transfers to real-world scene photographs",
+    "Beck, Lohrenz & Trafton 2010 (JEP: Applied): local clutter around targets matters \u2014 motivates the spatial map output"
+   ],
+   "computation": "Tier A, deterministic. CIELab; 3-level Gaussian pyramid; per level: color clutter = sqrt(det local covariance of (a*,b*)), contrast clutter = local std of band-passed L contrast, orientation clutter = ellipse volume of local oriented-energy covariance (4-orientation DoG bank). Minkowski pooling with published luminance-dominant weights, max over levels. Outputs: per-pixel clutter map + scalar, raw and corpus-percentile 0-1.",
+   "tier": "A",
+   "ceiling": "GREEN",
+   "rank_score": 8.5,
+   "rationale": "THE lab-validated search-cost predictor with interpretable units and a spatial map usable to audit C4 decision points for local congestion; deterministic; complements V6 (same units family, different aspect).",
+   "collision_with_existing": "Existing tiled clutter proxy is ad hoc and palette entropy is global; feature congestion is covariance-based, locally normalized, and behaviorally anchored \u2014 declared sharper variant, not duplicate."
+  },
+  {
+   "id": "V8",
+   "name": "spectral_naturalness",
+   "construct": "Spatial-envelope naturalness via orientation isotropy: man-made scenes concentrate spectral energy at cardinal (0/90 deg) orientations, natural content is isotropic \u2014 the best-validated bottom-up statistic of perceived naturalness, upstream of restoration/preference effects.",
+   "code": "WB",
+   "merged_from": [],
+   "literature": [
+    "Oliva & Torralba 2001 (IJCV): naturalness as the primary spatial-envelope axis, separable by orientation/spectral signatures",
+    "Torralba & Oliva 2003 (Network): natural vs man-made categories separable spectrally",
+    "Kardan et al. 2015 (Frontiers in Psychology): perceived naturalness and preference substantially predicted by low-level edge/orientation/color statistics",
+    "Berman et al. 2008 (Psych. Science); Ulrich 1984 (Science): downstream naturalness->restoration link, flagged as correlational support only"
+   ],
+   "computation": "Tier A, deterministic filtering. (a) Shannon entropy of the Gabor-energy orientation histogram (isotropy); (b) cardinal dominance ratio = energy(0/90 +/-15 deg)/total; (c) mid-band spectral shape; (d) optional weak green-hue co-signal with capped weight. Fixed weighted combination along the published discriminant direction, 0-1; also computable per-block yielding a naturalness map locating where natural content sits (window vs plants vs materials).",
+   "tier": "A",
+   "ceiling": "GREEN",
+   "rank_score": 8.4,
+   "rationale": "Pure classical filtering with a directly measured statistics->perceived-naturalness link; fills the gap that fractal D (rectilinear tile walls can be fractal) and warm/cool ratio (color proxy) leave open; complements V3 (pixel vegetation) with a structural naturalness signal.",
+   "collision_with_existing": "C19 is plan-level; fractal D and warm/cool are different statistics. Orientation isotropy is the missing bottom-up naturalness axis."
+  },
+  {
+   "id": "V9",
+   "name": "fractal_mid_d_band_score",
+   "construct": "Fractal fluency: proximity of the scene's fractal dimension to the empirically preferred and stress-reducing mid-D band (~1.3-1.5), plus coverage of the visual field in that band \u2014 the response-curve scoring the existing D outputs currently lack.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Spehar, Clifford, Newell & Taylor 2003 (Computers & Graphics): preference peaks at D ~1.3-1.5 across fractal types",
+    "Hagerhall, Purcell & Taylor 2004 (J. Environmental Psychology): landscape-silhouette D predicts preference, peak ~1.3",
+    "Taylor 2006 (Leonardo) and Hagerhall et al. 2008 (Perception): mid-D viewing reduces physiological stress; frontal alpha maximal at mid-D",
+    "Abboushi, Elzeyadi, Taylor & Sereno 2019 (J. Environmental Psychology): mid-D fractal light patterns preferred in real interiors",
+    "Bies et al. 2016: systematic individual differences \u2014 the peak is a population mode, carried as a caveat"
+   ],
+   "computation": "Tier A, deterministic numpy on EXISTING intermediates (global box-count D and local-D tile field). (1) Fixed asymmetric trapezoid response kernel peaked on [1.3,1.5] with declared falloff constants; (2) band coverage = fraction of local-D tiles in [1.25,1.55]; (3) low-confidence flag when box-count fit R^2 < 0.98 (broken scaling; see V30). Output (band_score, coverage) with individual-differences caveat in metadata.",
+   "tier": "A",
+   "ceiling": "GREEN",
+   "rank_score": 8.3,
+   "rationale": "Near-zero implementation cost (rides existing outputs), direct multi-method literature (preference + skin conductance + qEEG + real-interior replication), and it converts an existing descriptive attribute into a scored one.",
+   "collision_with_existing": "Uses existing fractal D but adds the literature-anchored response curve and coverage statistic the hedonics layer currently lacks for fractals specifically."
+  },
+  {
+   "id": "V10",
+   "name": "landmark_differentiation",
+   "construct": "Lynch's 'singularity': a salient element functions as a landmark only if unique among co-visible candidates \u2014 high salience with low uniqueness (four identical red columns) gives conspicuity without reference value.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Lynch 1960 (The Image of the City): landmark quality = singularity, contrast-with-context plus uniqueness",
+    "Sorrows & Hirtle 1999 (COSIT): visual salience of landmarks requires contrast AND distinctiveness",
+    "Raubal & Winter 2002 (GIScience): landmark suitability operationalized as measurable deviation of a candidate from its neighbors \u2014 the formal template followed here"
+   ],
+   "computation": "Tier A, fully classical. Take the existing landmark-salience module's top-k (<=6) candidate regions; per candidate build deterministic descriptors (Lab histogram, LBP texture histogram, Hu moments, area); differentiation of candidate i = min over j!=i descriptor distance (chi-square + z-normalized moment distance); attribute = differentiation of the most salient candidate, 0-1, plus repeated-element flag when >=2 candidates nearly coincide (colonnade condition). ABSTAIN with <2 candidates. Scope declared: within-frame uniqueness only, not building-wide.",
+   "tier": "A",
+   "ceiling": "GREEN",
+   "rank_score": 8,
+   "rationale": "Directly upgrades an existing attribute with the component the wayfinding literature identifies as what makes salience USABLE; classical pipeline; honest within-frame scoping.",
+   "collision_with_existing": "Existing landmark salience measures figure-ground conspicuity; this measures uniqueness among the salient candidates \u2014 the missing Lynch component, explicitly complementary."
+  },
+  {
+   "id": "V11",
+   "name": "route_angular_continuity",
+   "construct": "Dalton's 'follow your nose' principle: junctions offering near-straight continuations are cognitively cheaper and preferentially chosen; cumulative angular deviation predicts wayfinding difficulty better than topological turn counts.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Conroy Dalton 2003 (Environment and Behavior): VR wayfinders select paths minimizing angular deviation and conserving linearity",
+    "Hillier & Iida 2005 (COSIT): least-angle segment measures predict pedestrian movement better than metric or topological distance",
+    "Turner 2001 (Space Syntax Symposium): angular segment-graph analysis formalism"
+   ],
+   "computation": "Tier B. Skeletonize walkable space to a centerline segment graph (medial-axis thinning); at each degree>=3 node compute minimum angular deviation from each incoming to any outgoing segment. Outputs: (1) fraction of decision nodes offering a continuation within 15 deg ('nose-followable junctions'); (2) mean cumulative angular deviation along entrance-to-deepest-cell shortest paths, length-normalized, inverted to [0,1]. ABSTAIN with <2 decision nodes.",
+   "tier": "B",
+   "ceiling": "AMBER",
+   "rank_score": 8,
+   "rationale": "Strong behavioral evidence (Dalton; Hillier-Iida movement prediction) for a variable C1-C4 genuinely lack: angular geometry of continuations. AMBER only because the plan grid is inferred; on a real plan this is GREEN-grade.",
+   "collision_with_existing": "C1-C3 are visibility/topological; C4 counts decision points. None encodes angular deviation, the variable shown to drive route choice."
+  },
+  {
+   "id": "V12",
+   "name": "natural_material_fraction",
+   "construct": "Material Connection with Nature (biophilic Pattern 9): visible-surface fraction of natural materials (wood, stone), with wood coverage following a dose-response (inverted-U, ~45% optimum) relation to comfort and autonomic relaxation.",
+   "code": "WB",
+   "merged_from": [
+    "materials-naturalness:natural_material_fraction",
+    "ulrich-stress:visible_wood_fraction"
+   ],
+   "literature": [
+    "Tsunetsugu, Miyazaki & Sato 2007: 0/45/90% wood-coverage rooms \u2014 ~45% most comfortable; non-monotone autonomic responses",
+    "Nyrud & Bringslimark 2010 (review): interior wood associated with positive psychological responses, moderated by coverage; evidence base limited",
+    "Fell 2010 (UBC dissertation): wood office lowered skin-conductance sympathetic activation vs matched non-wood office",
+    "Browning, Ryan & Clancy 2014 (14 Patterns): Pattern-9 framing only (theory-grade)"
+   ],
+   "computation": "Tier A over segmented planes. WOOD = wood-band hue + oriented grain (structure-tensor coherence / Gabor anisotropy with single dominant orientation); STONE = low saturation, granular mid-frequency texture, no dominant orientation; reuse existing material-table labels where present. Outputs: wood_fraction, stone_fraction, natural_material_fraction (area-weighted, 0-1); wellbeing mapping via inverted-U centered ~0.45 wood coverage, mirroring the existing fluency machinery. Declared limit: cannot distinguish real wood from wood-print laminate \u2014 bounded stated proxy error since the cited responses were visually elicited.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 7.8,
+   "rationale": "Two-seat convergence; rare literature-anchored dose-response SHAPE, not just a direction; small-N physiological base honestly carried. AMBER: heuristic material classification.",
+   "collision_with_existing": "Material table currently feeds only acoustic absorption; warm/cool is chromatic only. Re-aggregates material evidence toward a distinct biophilic-wellbeing construct."
+  },
+  {
+   "id": "V13",
+   "name": "edge_orientation_entropy",
+   "construct": "First- and second-order entropy of edge orientations \u2014 diversity and spatial independence of oriented structure; a directly published positive predictor of aesthetic liking for man-made images, and the diversity axis opposing symmetry/coherence.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Grebenkina et al. 2018 (Frontiers, Redies lab): first/second-order edge-orientation entropy predicted liking across man-made image categories",
+    "Redies, Brachmann & Wagemans 2017: traditional artworks show near-maximal edge-orientation entropy",
+    "Berlyne 1971: arousal-potential framing motivating raw-statistic output with response shape left to the hedonics layer"
+   ],
+   "computation": "Tier A, deterministic. Sobel gradients above fixed relative magnitude threshold; (a) first-order: Shannon entropy of magnitude-weighted 16-bin orientation histogram, normalized; (b) second-order: entropy of the joint orientation-pair distribution over fixed pixel-distance bins (Redies-lab method) capturing spatial independence. Both 0-1, fed raw to the existing hedonics layer (monotone vs inverted-U left to that layer).",
+   "tier": "A",
+   "ceiling": "GREEN",
+   "rank_score": 7.8,
+   "rationale": "The one fluency statistic proposed with a direct published preference result on man-made images; deterministic; complements horizontal symmetry and V32 coherence by capturing the opposing diversity axis.",
+   "collision_with_existing": "Edge clarity measures gradient STRENGTH, palette entropy measures color; orientation distributional structure is unmeasured."
+  },
+  {
+   "id": "V14",
+   "name": "luminance_histogram_shape",
+   "construct": "Visual comfort/preference predicted by the SHAPE of the luminance distribution (skew, kurtosis, percentile ratios, bright-tail structure), not just dispersion \u2014 the Wymelenberg/Inanici finding that luminance-distribution metrics beat illuminance metrics.",
+   "code": "WB",
+   "merged_from": [],
+   "literature": [
+    "Van Den Wymelenberg & Inanici 2014 (LEUKOS): luminance percentiles/ratios over the field of view predicted comfort and preference better than illuminance metrics; bounded non-uniformity often preferred",
+    "Van Den Wymelenberg & Inanici 2016 (LEUKOS, hedged): percentile/ratio metrics among strongest single preference predictors in larger pool",
+    "Amundadottir, Rockcastle, Sarey Khanie & Andersen 2017 (Building and Environment): distribution structure, not mean/variance, is the perceptually operative variable"
+   ],
+   "computation": "Tier A, photo only. Linearize to pseudo-luminance, work in log-Y: skewness, excess kurtosis, P95/P5, P75/P25, clipped-pixel fraction. Comfort-band score 0-1 (moderate spread + mild positive skew high; gloom and heavy bright-tail low, per tolerance-bound directions). Uncertainty flag at >2% clipped; ABSTAIN on comfort score above ~10% clipped (LDR censors the operative tail), raw stats still reported.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 7.6,
+   "rationale": "Directly extends existing brightness variance (2nd moment only) with the 3rd/4th moments and ratios the comfort literature validated; AMBER honestly retained because validation used HDR imagery and an 8-bit photo is an ordinal proxy.",
+   "collision_with_existing": "Brightness variance: equal-variance scenes can have opposite skew/tail structure and opposite comfort predictions \u2014 declared complement."
+  },
+  {
+   "id": "V15",
+   "name": "spatial_contrast_composition",
+   "construct": "Visual interest from the spatial ARRANGEMENT of light and dark \u2014 neighbor-difference spatial contrast plus the structure of shadowed regions (coherent deep shadow vs scattered darkness), distinct from any histogram statistic.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Rockcastle & Andersen 2014 (Building and Environment): 'spatial contrast' metrics built precisely to separate daylight compositions identical global statistics cannot",
+    "Rockcastle et al. ~2015-2017 (with Andersen, years hedged): spatial contrast correlated with rated visual interest/excitement of daylit scenes",
+    "Amundadottir et al. 2017: gaze drawn to high-contrast daylight structure"
+   ],
+   "computation": "Tier A, photo only, no segmentation. Pseudo-luminance downsampled to fixed 64x64 grid; spatial_contrast = mean summed absolute 8-neighbor luminance difference / scene mean (single-frame adaptation of Rockcastle-Andersen). Dark mask (Y < 0.2 median): dark fraction, connected-component count/size distribution -> shadow_coherence. Outputs: spatial_contrast, dark_fraction, shadow_coherence, all deterministic pixel arithmetic.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 7.6,
+   "rationale": "Fixes the exact blindness of brightness variance (shuffle-invariance) and adds the stack's first darkness/shadow-structure attribute; AMBER because validation used HDR renderings under controlled viewing.",
+   "collision_with_existing": "Brightness variance is spatially blind; glare risk sees only bright patches. First composition-of-contrast and shadow-structure measure."
+  },
+  {
+   "id": "V16",
+   "name": "sun_patch_geometry",
+   "construct": "Interest/excitement elicited by the geometry of direct-sunlight patches (fragmentation, shape irregularity, coverage) on interior surfaces \u2014 the Chamilothori facade-perforation finding; same pixels as glare, opposite valence, different statistics.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Chamilothori, Wienold & Andersen 2019 (Building and Environment): irregular/fragmented sunlight patterns rated more exciting and interesting in validated VR daylit scenes; physiological arousal differed by geometry",
+    "Chamilothori, Wienold & Andersen 2019 (LEUKOS): VR-vs-real-space perceptual validation",
+    "Chamilothori et al. early 2020s (LEUKOS, hedged): cross-regional replication of the interest response"
+   ],
+   "computation": "Tier A + plane segmentation. Linearize to pseudo-luminance; candidate sun pixels = above max(95th percentile, 0.85 Ymax) on floor/wall planes; keep components with hard shadow edges (high boundary gradient) to exclude diffusely bright surfaces. Outputs: patch area fraction, count, mean shape complexity P^2/(4\u03c0A), fragmentation index; composite interest 0-1. No hard-edged patch -> geometry sub-scores ABSTAIN (area scores 0); >2% clipped pixels -> LDR-censoring flag.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 7.5,
+   "rationale": "Well-replicated, ecologically validated construct filling a genuine gap (positive valence of light pattern); careful abstention design. AMBER: plane segmentation + LDR proxy photometry.",
+   "collision_with_existing": "Glare risk flags bright patches as discomfort hazard; this computes perimeter-complexity/fragmentation of the same regions as an interest driver \u2014 orthogonal statistics, opposite valence."
+  },
+  {
+   "id": "V17",
+   "name": "popout_margin",
+   "construct": "Preattentive conspicuity as signal-to-clutter: whether any element is a Mahalanobis outlier from its local feature distribution by enough SDs to pop out without serial search \u2014 predicts parallel vs serial finding of exits, signs, hazards.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Rosenholtz 1999 (Vision Research): statistical saliency \u2014 popout when target is many SDs from the local distractor distribution",
+    "Duncan & Humphreys 1989 (Psychological Review): search efficiency governed by target-distractor similarity relative to distractor heterogeneity \u2014 the covariance-normalized distance computed here",
+    "Rosenholtz, Li & Nakano 2007: Feature Congestion is explicitly this ratio's denominator"
+   ],
+   "computation": "Tier A, deterministic, commensurate with V7 (same filter bank). Per-pixel feature f = (L*,a*,b*, 4-orientation DoG energies); Gaussian-weighted local mean/covariance over ~1.5-deg windows (declared FOV constant); Mahalanobis D(x) with Tikhonov-regularized covariance. popout_margin = mean(top 0.5% of D) \u2212 median(D), in SD units, plus location of maximum; reported at 2 window sizes if the FOV constant is disputed.",
+   "tier": "A",
+   "ceiling": "GREEN",
+   "rank_score": 7.5,
+   "rationale": "Detection-free, covariance-normalized complement to landmark salience; paired with V7 gives an honest signal-to-noise account (cluttered-but-signed vs calm-but-featureless). Deterministic.",
+   "collision_with_existing": "Landmark salience scores detected candidates' distinctiveness; this measures the margin over local clutter in feature-congestion units, object-free."
+  },
+  {
+   "id": "V18",
+   "name": "vantage_prospect_refuge_balance",
+   "construct": "Directional prospect-refuge at the camera vantage: deep sightlines ahead combined with close backing behind (seeing without being seen) \u2014 Appleton's construct operationalized front-vs-rear, needing no seat map.",
+   "code": "WB",
+   "merged_from": [],
+   "literature": [
+    "Appleton 1975 (The Experience of Landscape): prospect + back-protection preferred and read as safer",
+    "Dawes & Ostwald 2014 (and later book, hedged ~2018): prospect-refuge computed for real interiors from exactly these isovist max/min radial and view-behind measures",
+    "Stamps 2005 (Environment and Behavior): perceived safety varies systematically with boundary enclosure/permeability"
+   ],
+   "computation": "Tier B. Split 360 isovist radials by the recovered camera view axis into FRONT/REAR hemifields; prospect_f = median front radial; refuge_r = 1/(1+median rear radial); balance = (front\u2212rear)/(front+rear) in [\u22121,1] (+1 = deep view with backed rear). ABSTAIN if vanishing-point view-axis recovery fails.",
+   "tier": "B",
+   "ceiling": "AMBER",
+   "rank_score": 7.5,
+   "rationale": "Adds the defining DIRECTIONAL structure of Appleton's construct at zero extra input, where C11 requires a seat map; clean deterministic geometry. AMBER: inferred plan + VP chain.",
+   "collision_with_existing": "C11 is seat-level and needs a seat map; prospect is depth-only; enclosure is omnidirectional. Front/behind asymmetry is new."
+  },
+  {
+   "id": "V19",
+   "name": "boundary_permeability_split",
+   "construct": "Visual vs locomotive permeability of the room boundary (see-through vs walk-through), which Stamps showed drive DIFFERENT judgments: enclosure/spaciousness tracks visual permeability, perceived safety tracks locomotive permeability.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Stamps 2005 (Environment and Planning B, 'Isovists, enclosure, and permeability theory'): formal enclosure model from boundary permeability and view depth",
+    "Stamps 2005 (Environment and Behavior): experimental dissociation \u2014 spaciousness follows visual permeability, safety follows locomotive permeability"
+   ],
+   "computation": "Tier A+B, each channel abstaining independently. Tier A: visual_permeability = (glazed+open wall area)/(total wall area) over segmented wall planes, using the stack's existing brightness/depth-discontinuity machinery. Tier B: locomotive_permeability = fraction of isovist perimeter whose occluding edges open onto walkable floor-level cells (threshold width per unit boundary). Both 0-1.",
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "rank_score": 7.5,
+   "rationale": "Experimentally dissociated two-channel structure that the existing enclosure index provably conflates (glass box vs doorway-riddled masonry); enables a WB safety predicate plus a COG spaciousness predicate.",
+   "collision_with_existing": "Existing enclosure index collapses both channels into one solid-angle number \u2014 declared refinement with cited dissociation evidence."
+  },
+  {
+   "id": "V20",
+   "name": "decision_point_preview_depth",
+   "construct": "Pre-commitment visual information at junctions: how far down each branch a walker can see before committing (Weisman's visual access localized to choice points); blind junctions produce wrong turns even in high-integration plans.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Weisman 1981 (Environment and Behavior): visual access one of four legibility factors predicting disorientation",
+    "Wiener, Hoelscher, Buechner & Konieczny 2012 (Psychological Research): gaze and choice biased toward options with longest sightlines at choice points",
+    "Braaksma & Cook 1980: origin-destination mutual visibility index \u2014 precedent for deterministic visibility scoring",
+    "Peponis, Zimring & Choi 1990 (Environment and Behavior): visually connected layouts channel search"
+   ],
+   "computation": "Tier B. Decision nodes (degree>=3) on the skeletonized centerline graph; from each node cast a +/-10-deg ray bundle down each branch; preview depth = free-space depth to first obstruction; per node take the MINIMUM option preview (worst-informed choice); attribute = mean of per-node minima normalized by plan diameter, plus per-node table. ABSTAIN with no decision nodes.",
+   "tier": "B",
+   "ceiling": "AMBER",
+   "rank_score": 7.4,
+   "rationale": "Per-branch per-junction minimum is genuinely absent from C1 (global average) and prospect (camera-only); direct behavioral gaze/choice evidence. AMBER: inferred grid.",
+   "collision_with_existing": "C1 integration is a global mean; prospect is the camera vantage. A plan can have high mean integration yet blind junctions."
+  },
+  {
+   "id": "V21",
+   "name": "ceiling_height_percept",
+   "construct": "Apparent vertical ceiling extent \u2014 independently drives openness, awe/approach, and abstract-vs-concrete processing style, dissociable from lateral enclosure (Vartanian factorial; Meyers-Levy priming).",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Vartanian et al. 2013 (PNAS): ceiling height crossed factorially with contour and openness as an independent driver of interior experience",
+    "Meyers-Levy & Zhu 2007 (J. Consumer Research): high ceilings prime relational/abstract processing, low ceilings item-specific/concrete",
+    "Vartanian et al. ~2015 (venue hedged): verticality/openness associated with approach and appeal"
+   ],
+   "computation": "Tier A. Line-segment detection + RANSAC vanishing points (Manhattan assumption) recover camera pitch; segment ceiling plane; estimate vertical visual angle of the floor-to-ceiling wall near image center and normalize by recovered room width -> apparent height-to-width ratio (~0.2 oppressive to ~1.5 lofty). ABSTAIN when no ceiling plane or VP recoverable.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 7.4,
+   "rationale": "Factorial experimental evidence plus a cognitive-style effect; isolates the vertical dimension that enclosure (lateral) and prospect (depth) both miss. AMBER: rides VP/Manhattan geometry.",
+   "collision_with_existing": "Enclosure index = lateral boundedness; prospect = view depth; neither isolates verticality."
+  },
+  {
+   "id": "V22",
+   "name": "light_directionality_modelling",
+   "construct": "Flow of light (Cuttle vector/scalar concept): strongly directional (hard, dramatic) vs fully diffuse (flat, dull) vs the moderate range that models faces and objects pleasantly \u2014 the first WHERE-does-light-come-from attribute.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Cuttle 1971 (Lighting Research and Technology): vector/scalar illuminance ratio as the correlate of perceived flow of light and modelling",
+    "Cuttle 2008 (Lighting by Design): moderate vector/scalar ratios (~1.2-1.8, hedged) judged pleasant/natural for faces",
+    "Flynn, Spencer, Martyniuk & Hendrick 1973 (J. IES): lighting mode (diffuse vs directional) reliably shifts pleasantness, relaxation, clarity impressions"
+   ],
+   "computation": "Tier A + plane segmentation. Fit Y ~ a + b\u00b7u + c\u00b7v on large matte wall/floor regions in in-plane coordinates (existing VP homography); directionality = ||(b,c)||/mean Y, coherence = R^2. Penumbra proxy: gradient transition width along dark-mask boundaries (narrow = hard source). Area-weighted directionality 0-1 mapped through an inverted-U modelling-quality score (peak at moderate, per Cuttle), consistent with the existing fluency machinery. ABSTAIN without a sufficiently large matte plane.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 7.2,
+   "rationale": "Fills a real gap (all existing light attributes are magnitude statistics) with classic anchors; openly states that true vector illuminance is unmeasurable from a photo \u2014 proxy declared. AMBER accordingly.",
+   "collision_with_existing": "Brightness variance, glare, vertical illuminance are all magnitude statistics; direction/diffuseness is unmeasured."
+  },
+  {
+   "id": "V23",
+   "name": "wall_luminance_dominance",
+   "construct": "Flynn's lighting-mode impressions: peripheral (wall) light emphasis drives judged spaciousness and pleasantness; overhead-only light with dark walls reads smaller and less pleasant \u2014 WHERE light lands, not how much.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Flynn, Spencer, Martyniuk & Hendrick 1973 (J. IES): wall lighting increased rated spaciousness; luminance placement reliably shifted impressions of the same room",
+    "Flynn 1977 (LD+A, hedged): consolidation of spaciousness-with-bright-walls modes",
+    "Loe, Mansfield & Rowlands 1994 (Lighting Research and Technology): the horizontal 40-deg band (wall-dominated) drives visual lightness and interest judgments"
+   ],
+   "computation": "Tier A + plane labels. wall_dominance = mean pseudo-luminance over wall-plane pixels / mean over all classified plane pixels; ceiling and floor ratios likewise; optional Loe horizontal mid-band variant. Output normalized [0,~2], >1 = wall-washed peripheral emphasis. ABSTAIN when wall planes <10% of classified pixels.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 7.2,
+   "rationale": "Classic, well-anchored construct; trivial deterministic computation over existing segmentation; orthogonal to vertical illuminance magnitude (dim wall-washed vs bright downlit can match at the eye).",
+   "collision_with_existing": "Vertical illuminance proxy = magnitude at the eye; this = distribution across room surfaces."
+  },
+  {
+   "id": "V24",
+   "name": "visible_window_wall_ratio",
+   "construct": "Window presence and relative size in the visual field \u2014 windowlessness is among the strongest negative findings in hospital-environment research (delirium, anxiety), independent of view content or illuminance.",
+   "code": "WB",
+   "merged_from": [],
+   "literature": [
+    "Keep, James & Inman 1980 (Anaesthesia): ~2x delirium/hallucination incidence in a windowless vs windowed ICU",
+    "Verderber 1986 (Environment and Behavior): window size/proximity/sill height systematically related to patient and staff wellbeing",
+    "Ulrich, Zimring et al. 2008 (HERD review): window access repeatedly associated with reduced stress"
+   ],
+   "computation": "Tier A + plane segmentation. Rectify each wall plane via homography; window candidates = quadrilateral subregions with median luminance above wall median by threshold, or containing sky/vegetation content (from V5/V3 detectors). WWR_visible = window area / total rectified wall-plane area, plus binary any_window flag. ABSTAIN when no wall plane segmented or glare blowout destroys the boundary.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 7.1,
+   "rationale": "Simple, outcome-anchored presence/size variable no existing attribute encodes (windows currently exist only as light sources or plan distances); complements V5 content scoring.",
+   "collision_with_existing": "Glare/vertical illuminance treat windows as light sources; C10 is plan distance. Presence/relative size is new."
+  },
+  {
+   "id": "V25",
+   "name": "threshold_doorway_density",
+   "construct": "Permeability and event-boundary rhythm: doorway/threshold density along main circulation \u2014 carries Gehl-grade frontage permeability (vitality) AND the Radvansky doorway effect (event-segmentation memory purge); the two links are deliberately reported separately, never averaged.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Gehl 2010 (Cities for People): doors/units per 100 m as the operational active-frontage criterion",
+    "Ellard 2015 (Places of the Heart): the lively NYC frontage condition was specifically permeable (many openings)",
+    "Radvansky & Copeland 2006 (Memory & Cognition); Radvansky, Krawietz & Tamplin 2011 (QJEP): walking through doorways causes forgetting \u2014 the boundary itself drives the purge",
+    "Zacks & Swallow 2007 (Current Directions): event segmentation theory; thresholds as canonical boundaries"
+   ],
+   "computation": "Tier B primary: wall runs from the plan grid; doorway gaps = traversable interruptions ~0.7-1.5 m wide; medial-axis circulation spine; density = thresholds per 10 m of spine + spacing histogram. Tier A corroborator: door-shaped vertical rectangles (aspect ~1:2.0-2.4, floor-connected) via plane segmentation + Hough grouping; disagreement beyond tolerance flags and downweights. Inverted-U on the vitality reading; raw density and event-boundary count emitted separately.",
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "rank_score": 7,
+   "rationale": "Counts a thing (thresholds) genuinely invisible to C4 (a straight-corridor doorway is not a decision point); two literatures honestly kept apart. AMBER: plan inference + heuristic door detection.",
+   "collision_with_existing": "C4 counts route-choice junctions only; no existing metric counts thresholds."
+  },
+  {
+   "id": "V26",
+   "name": "choice_point_option_differentiation",
+   "construct": "Weisman's architectural differentiation at decision points: when co-visible route options look alike, walkers cannot encode which branch they took; discriminable options support route learning and retrace.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Weisman 1981 (Environment and Behavior): architectural differentiation among four legibility factors predicting disorientation",
+    "Lynch 1960: look-alike corridors as a canonical cause of lostness",
+    "O'Neill 1991 (Environment and Behavior): perceptual differentiation variables affect wayfinding performance and cognitive-map accuracy"
+   ],
+   "computation": "Tier A + plane segmentation. Detect visible route openings (floor-plane continuation through wall gaps, door-height apertures); require >=2 openings else ABSTAIN (predicate fires only at junction views). Per opening: Lab means, color histograms, LBP texture of visible interior, aperture aspect, luminance. Score = mean pairwise dissimilarity (chi-square + normalized Euclidean) mapped to [0,1], plus n_options; low score at multi-option views = look-alike-corridor flag.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 7,
+   "rationale": "Orthogonal to C4 (quantity of choices vs discriminability of choices) with solid legibility-literature anchoring; disciplined abstention when not at a junction. AMBER: opening detection rides segmentation.",
+   "collision_with_existing": "C4 measures decision LOAD; this measures whether the co-visible choices are perceptually discriminable."
+  },
+  {
+   "id": "V27",
+   "name": "signage_salience",
+   "construct": "Visibility and conspicuity of signage/pictograms at decision-relevant placement \u2014 Weisman's third legibility factor and the one intervention experimentally shown to raise wayfinding accuracy, largest in low-legibility plans; the visible MITIGATION for high C4.",
+   "code": "COG",
+   "merged_from": [
+    "lynch-legibility:signage_salience",
+    "poe-workplace:wayfinding_signage_salience"
+   ],
+   "literature": [
+    "O'Neill 1991 (Environment and Behavior): signage improved wayfinding accuracy, largest gains in least-legible plans",
+    "Weisman 1981: signage among the legibility cue classes predicting performance",
+    "Arthur & Passini 1992 (Wayfinding: People, Signs, and Architecture): conspicuity = contrast x size at distance x placement in the line of travel"
+   ],
+   "computation": "Tier A, classical only. Text-like regions via MSER + stroke-width-transform consistency (no learned model); pictogram/plaque candidates via compact high-contrast quadrilaterals on wall/ceiling planes. Conspicuity = Weber contrast x angular-size proxy (depth-corrected if available) x placement weight (movement axis / eye-height band from VP horizon). Outputs: count, max and summed conspicuity 0-1; zero candidates scores 0 with an explicit single-frame coverage caveat. Reported jointly with C4: high decision load + zero visible signage is the actionable finding.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 7,
+   "rationale": "Two-seat convergence; experimentally anchored intervention variable absent from the stack; AMBER honestly kept \u2014 SWT cannot distinguish directional signage from posters, and one frame samples the signage system.",
+   "collision_with_existing": "Nothing existing touches signage or text; C4 gets its designable mitigation variable."
+  },
+  {
+   "id": "V28",
+   "name": "eye_level_information_richness",
+   "construct": "Information density of vertical surfaces in the pedestrian fixation band (~1.0-1.8 m): low richness where the walking gaze rests predicts boredom, reduced dwelling, faster transit (Ellard/Gehl), with an autonomic under-stimulation cost.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Ellard 2015 (Places of the Heart): blank vs rich frontage \u2014 lower arousal/affect (self-report + skin conductance) and faster moving-on at the blank facade",
+    "Gehl, Kaefer & Reigstad 2006 (Urban Design International): ground-floor articulation drives pedestrian pace and pausing",
+    "Cavalcante et al. 2014 (PLoS ONE): streetscape complexity quantifiable from local contrast and spatial-frequency statistics that track judgments",
+    "Merrifield & Danckert 2014 (Exp. Brain Research): induced boredom elevates cortisol \u2014 the wellbeing side"
+   ],
+   "computation": "Tier A. Eye-level band from the VP horizon (fallback central 0.40-0.60 height band with uncertainty flag); mask to wall/facade planes; ~32px column tiles scoring Canny edge density, gradient-orientation entropy, local RMS contrast; band-mean richness corpus-normalized 0-1. ABSTAIN with no visible vertical surfaces.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 7,
+   "rationale": "Spatially targeted and valenced oppositely at the low end relative to the global clutter proxy (under-stimulation risk); field-physiology anchoring is small-N but direct. AMBER: rides VP/segmentation.",
+   "collision_with_existing": "Global clutter proxy treats information as cost everywhere; this is band-restricted and detects the dead-wall condition a calm ceiling/floor would mask."
+  },
+  {
+   "id": "V29",
+   "name": "edge_following_affordance",
+   "construct": "Thigmotaxis support: whether the plan permits movement and pausing along wall edges rather than forcing exposed center crossings \u2014 edge-following is a robust anxiety-regulating locomotion strategy, and edges are where people linger (Gehl edge effect).",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Kallai et al. 2005, 2007 (Behavioural Brain Research): human wall-hugging in arena navigation is a robust early strategy; persistence correlates with trait anxiety",
+    "Gehl 2011 (Life Between Buildings): people overwhelmingly stand/linger at edges of open spaces; centers fill last",
+    "Appleton 1975: refuge-with-prospect frame (theory anchor; seat-level twin already implemented as C11)"
+   ],
+   "computation": "Tier B. Edge cells = traversable cells 8-adjacent to walls/fixed obstacles. Outputs: edge coverage (fraction of open-space perimeter that is traversable), edge continuity (longest connected edge component / perimeter), center-forcing index (fraction of sampled entry-entry/entry-seat shortest paths forced off the edge band for >~2 m). Composite = mean(coverage, continuity, 1\u2212center-forcing), 0-1. ABSTAIN on low plan confidence or corridor-only scenes.",
+   "tier": "B",
+   "ceiling": "AMBER",
+   "rank_score": 7,
+   "rationale": "Evaluates LOCOMOTION protection, which seated C11 and C16 cannot see (a room can score well on seated refuge yet force exposed crossings); solid behavioral anchoring. AMBER: fully downstream of plan inference.",
+   "collision_with_existing": "C11 is stationary seat-level; C16 is ownership. Moving-along-edges affordance is new."
+  },
+  {
+   "id": "V30",
+   "name": "scaling_coherence_octaves",
+   "construct": "Whether self-similar structure is actually continuous across scales (Salingaros/Alexander scale hierarchy) \u2014 doubling as a validity guard: a fitted fractal D is spurious when octave slopes are inconsistent.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Salingaros & West 1999 (Environment and Planning B): inverse-power distribution of structural scales in coherent architecture; scale-hierarchy gaps predicted incoherent (theory-grade)",
+    "Taylor, Micolich & Jonas 1999 (Nature): genuine fractal scaling requires consistent box-count slope across scales \u2014 the methodological basis",
+    "Alexander 2001 (The Nature of Order): levels of scale (theoretical anchor only)"
+   ],
+   "computation": "Tier A, deterministic arithmetic on the EXISTING box-count table; sandbox-verified by the proposing seat (Sierpinski scores 1.0; single-scale grid scores 0.77 despite a fittable 'D'). Per-octave local slopes d logN/d log eps; coherence = 1 \u2212 std/|mean| of octave slopes, clipped [0,1]; also global-fit R^2 and worst-deviating octave (which scale band is missing).",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 7,
+   "rationale": "Zero new image processing, directly upgrades the honesty of the existing fractal D and of V9; construct link is theory-grade (hence AMBER despite trivially clean computation \u2014 ceiling preserved as proposed).",
+   "collision_with_existing": "Existing fractal D silently assumes log-log linearity; this tests it and flags spurious values."
+  },
+  {
+   "id": "V31",
+   "name": "curved_sightline_promise",
+   "construct": "Photographic mystery cues: deflected vistas (sightline bending out of view), partial occlusion at the deepest visible region, and lit apertures into partially visible adjacent space \u2014 the Tier-A twin of V4 for when plan inference fails.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Kaplan & Kaplan 1989: curved paths and screened views were the prototypical mystery stimuli",
+    "Herzog & Bryce 2007 (Environment and Behavior, hedged): curved vs straight pathway views reliably raised preference",
+    "Gimblett, Itami & Fitzgibbon 1985 (hedged): screening and sightline curvature predicted landscape preference"
+   ],
+   "computation": "Tier A over existing plane segmentation + frozen depth. (1) Floor-wall boundary polylines toward the VP: mean absolute curvature and total heading change (bending corridor scores high). (2) Occlusion test at the deepest floor region: vertical occluding edge with floor continuing behind (depth discontinuity) vs frontal wall plateau. (3) Lit-aperture cue: portrait-aspect wall quadrilaterals with large depth discontinuity and interior luminance above threshold. Weighted sum of three 0-1 cues; ABSTAIN when no floor path or aperture confidently detected.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6.9,
+   "rationale": "Complementary fallback to V4 with its own cue-level literature; measures the SHAPE of the sightline's termination, which scalar prospect cannot distinguish. AMBER: rides depth model + segmentation.",
+   "collision_with_existing": "Prospect scores maximum depth; two photos of equal depth can differ maximally on bend/occlusion/aperture cues."
+  },
+  {
+   "id": "V32",
+   "name": "scene_coherence_grouping",
+   "construct": "Coherence (Kaplan preference matrix; Coburn/Vartanian coherence factor): how readily the scene organizes into a few repeated, contiguous groups \u2014 organization/redundancy, distinct from feature quantity \u2014 with a geometric orientation-concentration sub-score.",
+   "code": "SHARED",
+   "merged_from": [
+    "kaplan-restoration:scene_coherence_grouping",
+    "chatterjee-neuroaesthetics:rectilinear_frame_coherence"
+   ],
+   "literature": [
+    "Kaplan & Kaplan 1989: coherence ('hangs together') as a preference-matrix predictor and precondition for extent",
+    "Kotabe, Kardan & Berman 2016 (JEP: General, hedged title): perceived disorder driven by low-level spatial features independent of semantics \u2014 supports low-level operationalization",
+    "Stamps 2004 (hedged): coherence reliably positive for preference, distinct from complexity",
+    "Coburn et al. 2020: coherence as one of three principal dimensions of architectural experience"
+   ],
+   "computation": "Tier A, deterministic, fixed-seed. SLIC superpixels -> per-superpixel Lab color, edge-orientation histogram, texture energy -> agglomerative clustering at fixed threshold. coherence = w1(1\u2212normalized cluster count) + w2(mean spatial contiguity of clusters) + w3(repetition score: clusters with >=3 separated instances). Sub-score (from the merged Chatterjee variant): fraction of edge length aligned to dominant vanishing directions + orientation-histogram negentropy, for Manhattan-structured scenes. Output 0-1.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6.9,
+   "rationale": "Two seats converged on the coherence construct with complementary operationalizations, folded into one candidate (grouping primary \u2014 generalizes to non-rectilinear interiors; orientation concentration as sub-score). AMBER: grouping pipeline is a proxy for a rating-defined construct.",
+   "collision_with_existing": "Clutter proxy = congestion (amount), palette entropy = color variety; coherence = ORGANIZATION. Dense-but-patterned vs sparse-but-mismatched rooms dissociate them."
+  },
+  {
+   "id": "V33",
+   "name": "isovist_jaggedness",
+   "construct": "Perceived spatial complexity of the visible VOLUME (convolutedness of the spatial envelope), as opposed to surface/texture clutter \u2014 perimeter\u00b2/area of the vantage isovist.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Franz & Wiener 2008 (Environment and Planning B): isovist jaggedness correlated with rated spatial complexity and negatively with clarity/pleasingness in controlled VR interiors",
+    "Wiener & Franz 2005 (Spatial Cognition IV): isovist scalars predicted experiential ratings and navigation behavior",
+    "Psarra & Grajewski 2001 (Space Syntax Symposium): boundary shape-complexity along paths"
+   ],
+   "computation": "Tier B, from the V4 ray-cast isovist polygon: J = P\u00b2/(4\u03c0A), report log(J); secondary output = count of reflex vertices after Douglas-Peucker simplification (epsilon = 1 grid cell). Deterministic; abstains with the plan grid.",
+   "tier": "B",
+   "ceiling": "AMBER",
+   "rank_score": 6.8,
+   "rationale": "Direct VR-experimental construct link; free once V4's isovist exists; dissociates alcoved-minimalist from poster-covered-box conditions the 2D clutter proxy conflates.",
+   "collision_with_existing": "Clutter proxy = image texture density; C2 = graph degree. Envelope shape complexity is new."
+  },
+  {
+   "id": "V34",
+   "name": "maintenance_dilapidation_index",
+   "construct": "Visible building care: stains, discolored/missing ceiling tiles, cracked/peeling finishes. In POE, maintenance is a penalty-dominant 'basic factor' \u2014 poor states drive dissatisfaction strongly; perceived care underlies the Leaman/Bordass forgiveness effect.",
+   "code": "WB",
+   "merged_from": [],
+   "literature": [
+    "Kim & de Dear 2013 (Building and Environment): cleanliness/maintenance a nonlinear dissatisfier across a large POE database",
+    "Leaman & Bordass 1999 (Building Research & Information): perceived management care predicts forgiveness and reported productivity",
+    "Vilnai-Yavetz, Rafaeli & Schneider Yaacov 2005 (Environment and Behavior): upkeep shapes employee affect",
+    "Wilson & Kelling 1982: disorder-signaling mechanism only (urban, adjacent)"
+   ],
+   "computation": "Tier A + plane segmentation. Per wall/ceiling plane: fit low-order illumination model to luminance; residual map -> low-frequency blobs beyond k\u00b7sigma = stain candidates; high-frequency edge clusters on nominally smooth planes = crack/peel candidates; suspended-ceiling grid (regular Hough spacing) enables per-tile deviation scoring. Output anomaly-area fraction, penalty-shaped nonlinearly per Kim & de Dear. ABSTAIN when wall+ceiling planes <15% of image.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6.6,
+   "rationale": "Strong POE anchoring with the right (penalty-dominant) response shape; first surface-condition attribute in the stack. AMBER: shadows and intentional texture (exposed brick, art) are acknowledged confounds.",
+   "collision_with_existing": "Nothing existing inspects surface condition; the acoustic material table assumes intact materials."
+  },
+  {
+   "id": "V35",
+   "name": "visible_workstation_density",
+   "construct": "Photographic occupancy-density cue: workstations per visible floor area and nearest-neighbor desk spacing \u2014 density/close seating among the most robust negative predictors of workspace satisfaction and privacy.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Oldham & Rotchford 1983 (ASQ): higher density and lower interpersonal distance -> lower satisfaction, more withdrawal",
+    "Oldham & Fried 1987 (J. Applied Psychology): dark, unenclosed, close-seated, many-occupant workspaces produced the most negative reactions",
+    "Brennan, Chugh & Kline 2002 (Environment and Behavior): satisfaction dropped after a denser open-plan move, no 6-month recovery",
+    "Kim & de Dear 2013: privacy/noise (density-mediated) dominant open-plan dissatisfiers"
+   ],
+   "computation": "Tier A+B. Count chair/desk/monitor instances (frozen instance segmentation, already in stack); back-project chair centroids onto the recovered floor plane via heuristic depth/scale; workstations per ~100 m\u00b2 (proxy-scaled) + median nearest-neighbor spacing. Classical fallback: edge-map autocorrelation along vanishing directions (lower confidence, flagged). ABSTAIN without floor plane or <2 candidates.",
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "rank_score": 6.6,
+   "rationale": "Strong POE literature; its second value is as an independent cross-check on C12 \u2014 photo-vs-plan disagreement is itself an inference-quality flag for the Tier-B pipeline. AMBER twice: pretrained segmentation + heuristic metric scale.",
+   "collision_with_existing": "C12 crowding is computed on the INFERRED plan; this is independent photographic furniture evidence \u2014 agreement is diagnostic, declared."
+  },
+  {
+   "id": "V36",
+   "name": "peripheral_crowding_load",
+   "construct": "At-a-glance legibility under crowding: how much content falls in eccentricity-scaled pooling regions whose heterogeneity exceeds what summary-statistic peripheral vision preserves \u2014 the bottleneck for noticing signage/landmarks you are not fixating.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Bouma 1970 (Nature): critical spacing ~0.5x eccentricity \u2014 the pooling geometry used",
+    "Balas, Nakano & Rosenholtz 2009 (Journal of Vision): summary-statistic ('mongrel') account of crowding",
+    "Rosenholtz et al. 2012 (Journal of Vision): same representation explains search difficulty",
+    "Freeman & Simoncelli 2011 (Nature Neuroscience): physiologically grounded eccentricity-scaled pooling",
+    "Whitney & Levi 2011 (TiCS): crowding as the fundamental peripheral limit"
+   ],
+   "computation": "Tier A + declared viewing geometry (FOV constant; fixation default = image center or existing VP). Radial-annular pooling regions with radius ~0.4-0.5x eccentricity; per region: circular variance of gradient-orientation histogram + Lab covariance volume. Load = area-weighted heterogeneity summed beyond ~2 deg, corpus-normalized 0-1, plus inspectable region map. ABSTAIN when no defensible fixation exists.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6.5,
+   "rationale": "The only proposal modeling eccentricity-dependent vision \u2014 a real mechanism all fixation-agnostic attributes miss; AMBER honestly for the uncertified FOV/fixation assumptions and simplified summary statistics.",
+   "collision_with_existing": "All existing Tier-A attributes weight image locations equally; none models peripheral pooling."
+  },
+  {
+   "id": "V37",
+   "name": "isovist_radial_asymmetry",
+   "construct": "Shape of spaciousness: whether visible openness is balanced around the observer or concentrated directionally (elongation/eccentricity), and whether the depth distribution is short- or long-tailed (skewness) \u2014 rotunda vs shaft at equal area.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Benedikt 1979: variance and skewness of radial lengths as core isovist descriptors because area under-describes felt character",
+    "Stamps ~2009-2011 (Environment and Behavior, hedged): perceived spaciousness responds to elongation/aspect, not floor area alone",
+    "Franz & Wiener 2008: radial statistics tracked spaciousness ratings in VR interiors"
+   ],
+   "computation": "Tier B, from V4 radials: skewness = m3/m2^1.5 (clipped [\u22123,3]); elongation = r_max/median(r) or PCA-ellipse eccentricity of the isovist polygon. Deterministic; abstains with the plan grid.",
+   "tier": "B",
+   "ceiling": "AMBER",
+   "rank_score": 6.5,
+   "rationale": "Cheap add-on to the V4 isovist machinery capturing distributional SHAPE of openness that C24 (magnitude contrast) and prospect (axial depth) miss.",
+   "collision_with_existing": "C24 uses openness-contrast magnitude; prospect is axial. Balanced-vs-directional and tail shape are new."
+  },
+  {
+   "id": "V38",
+   "name": "isovist_drift",
+   "construct": "Directional pull of space at the vantage: vector from observer to isovist centroid \u2014 the local egocentric movement cue (does the volume's center of gravity sit where you stand or pull you elsewhere), including alignment with the photographed view axis.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Conroy Dalton 2001 (UCL PhD) and Dalton & Dalton 2001 (Space Syntax Symposium, OmniVista): drift defined; VE participants re-orient where drift changes and move toward the visual center of gravity",
+    "Wiener, Franz et al. 2007 (Perception): isovist properties at decision points capture movement-relevant spatial properties"
+   ],
+   "computation": "Tier B. d = centroid(isovist) \u2212 camera cell. Outputs: |d|/mean(r) (0 balanced to >1 strong pull) and alignment = cos(angle between d and the recovered view axis) (+1 = space pulls where the photo looks; near \u22121 = main volume behind/beside = latent disorientation cue). Deterministic.",
+   "tier": "B",
+   "ceiling": "AMBER",
+   "rank_score": 6.4,
+   "rationale": "Genuine local egocentric cue absent from global C4; evidence base is thinner (thesis + symposium) than sibling isovist scalars, hence mid rank.",
+   "collision_with_existing": "C4 is a global plan graph measure; local pull at the photographed vantage is new."
+  },
+  {
+   "id": "V39",
+   "name": "blank_frontage_run_length",
+   "construct": "Boredom dose from sustained featureless wall: the longest contiguous low-information run at eye level \u2014 the worst-case statistic Ellard's walkers responded to and Gehl's per-100m codes regulate, which any mean dilutes.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Ellard 2015: the blank condition was a long unbroken wall; the deficit tied to sustained absence of visual events while moving along it",
+    "Gehl 2010: frontage graded by units/doors per 100 m; long unbroken frontage = inactive",
+    "Gehl, Kaefer & Reigstad 2006: faster walking, less stopping along unarticulated ground floors"
+   ],
+   "computation": "Tier A, on V28's band tiles. Tile 'blank' if edge density AND orientation entropy below corpus 25th percentiles; close single-tile gaps; longest contiguous blank run as fraction of visible band width (0-1, higher worse). With Tier-B depth available, convert to approximate metres against Gehl thresholds; else metric length flagged UNKNOWN. ABSTAIN with V28.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6.4,
+   "rationale": "Cheap child of V28 adding the max-run statistic means cannot express; ranked below its parent since it shares all its assumptions.",
+   "collision_with_existing": "All existing and proposed mean-based measures dilute the dead-wall run; none carries a worst-case run length."
+  },
+  {
+   "id": "V40",
+   "name": "vista_termination_salience",
+   "construct": "Lynch's directional differentiation: whether the visual axis of a path terminates in a distinct, articulated element (anchoring and memorable) versus a blank wall or ambiguous continuation.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Lynch 1960: path imageability depends on clear termination; termini anchor paths",
+    "Conroy Dalton 2003 (Environment and Behavior): walkers track the visual axis ahead (least-angle choice), so its terminus carries orientation information",
+    "Cullen 1961 (Townscape): vista closure as a device of legible sequence (design theory, proxy-grade)"
+   ],
+   "computation": "Tier A over VP + depth. Terminal patch = region around the VP within the top depth decile; salience vs surrounding annulus = luminance contrast + color chi-square + edge-density ratio; classify LANDMARK-TERMINATED / BLANK / OPEN-CONTINUATION (depth saturates at frame edge or VP falls in an aperture). Output class + 0-1 salience. ABSTAIN without a stable VP.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6.4,
+   "rationale": "Positional/directional property the existing landmark salience cannot express; anchors mix experimental (Dalton) and design-theory (Cullen) evidence. AMBER: VP/depth chain.",
+   "collision_with_existing": "Landmark salience scores elements anywhere in frame; termination of the movement axis specifically is new."
+  },
+  {
+   "id": "V41",
+   "name": "view_depth_layering",
+   "construct": "Depth stratification of the visible scene: count of distinct foreground/midground/background depth layers (multimodality of the depth distribution) \u2014 Ulrich's 'preferenda' include depth/spatial definition; a deep but layerless view differs from a layered one at equal prospect.",
+   "code": "WB",
+   "merged_from": [],
+   "literature": [
+    "Ulrich 1983 (in Altman & Wohlwill): depth/spatial definition among gross structural properties driving immediate affective response",
+    "Kaplan & Kaplan 1989: inferred depth and layered occlusion as preference predictors",
+    "Ko, Schiavon et al. ~2020 (Building and Environment): window view improved working memory and emotion \u2014 view structure, not just light"
+   ],
+   "computation": "Tier A on the frozen depth map (optionally restricted to a detected glazing region). KDE of log-depth; count prominence-thresholded modes (clip 1-4) + depth-range ratio p95/p5. ABSTAIN on low depth-model confidence or sub-minimum glazing area.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6.4,
+   "rationale": "Clean geometric complement to V5 (semantic layers) and to scalar prospect; preference-grade construct link and full dependence on the frozen depth model keep it mid-ranked.",
+   "collision_with_existing": "Prospect is scalar depth magnitude; multimodality of the distribution is new (blank wall far away = high prospect, 1 layer)."
+  },
+  {
+   "id": "V42",
+   "name": "egress_aperture_salience",
+   "construct": "Visible escape/egress affordance: navigable floor-connected openings \u2014 the behavioral pole of Vartanian's enclosure findings (avoidance tracks perceived possibility of leaving) and Fisher-Nasar's 'escape' factor in fear reduction.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Vartanian et al. 2013 (PNAS): enclosed interiors elicited more exit/avoidance decisions",
+    "Fisher & Nasar 1992 (Environment and Behavior): escape independently lowers fear in the prospect-refuge-escape triad",
+    "Appleton 1975: refuge without escape reads as trap (proxy-grade support)"
+   ],
+   "computation": "Tier A + plane segmentation. Aperture candidates at wall boundaries: door-shaped floor-connected openings (taller than wide, low interior luminance = navigable) and bright floor-connected far openings; EXCLUDE high windows (view without egress). Salience = normalized sum of subtended angular sizes, weighted by lateral position. 0-1. ABSTAIN when wall planes unrecoverable.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6.3,
+   "rationale": "Distinct behavioral predictor (egress, not view depth) with experimental anchoring; overlaps V19's locomotive channel conceptually but is the photographic vantage-level variant \u2014 kept for Tier-A coverage. AMBER: aperture detection.",
+   "collision_with_existing": "Prospect measures how far the eye travels; navigable exits are what carried the avoidance and fear effects."
+  },
+  {
+   "id": "V43",
+   "name": "material_perceived_warmth",
+   "construct": "Perceived warmth of surface materials as a joint function of color, roughness, and gloss \u2014 Wastiels showed texture contributes to material warmth independently of hue; a semantic material property beyond the chromatic warm/cool ratio.",
+   "code": "WB",
+   "merged_from": [],
+   "literature": [
+    "Wastiels, Schifferstein, Heylighen & Martens 2012 (Materials & Design): warmth of building materials predicted jointly by color AND roughness/gloss",
+    "Fujisaki et al. ~2015 (Vision Research, hedged): wood material perception strongly driven by visual surface statistics",
+    "Nyrud & Bringslimark 2010: warmth among the most consistent semantic attributions to visible wood"
+   ],
+   "computation": "Tier A per segmented region: (1) chromatic warmth (signed hue distance from warm axis, lightness-weighted); (2) roughness proxy (mid-band RMS luminance energy); (3) gloss proxy (specular blob density, luminance kurtosis). Warmth = w1\u00b7chroma + w2\u00b7rough \u2212 w3\u00b7gloss, area-weighted, 0-1; weight SIGNS from Wastiels' regression, magnitudes declared defaults (stated as such).",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6.3,
+   "rationale": "Directly cited multi-dimensional regression basis; honest about declared (not fitted) weight magnitudes; image roughness is a proxy for physical roughness.",
+   "collision_with_existing": "Warm/cool ratio ignores the two non-chromatic warmth dimensions Wastiels established \u2014 declared extension."
+  },
+  {
+   "id": "V44",
+   "name": "spectral_expansion",
+   "construct": "Spatial-envelope expansion: strength of linear perspective / depth gradient \u2014 how strongly the scene funnels attention and implied movement in one direction (corridor vs frontal hall at equal view depth); a Tier-A photo-level feed for the wayfinding story.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Oliva & Torralba 2001 (IJCV): expansion as a spatial-envelope dimension of man-made scenes, recoverable from oriented spectral energy layout",
+    "Ross & Oliva 2010 (Journal of Vision): human perspective/depth-gradient estimates predicted from global features",
+    "Gibson 1979: optic structure specifies locomotion affordance \u2014 expansion->movement-pull link is theoretical, stated as proxy"
+   ],
+   "computation": "Tier A, deterministic. Per-block dominant Gabor orientations over a 4x4/8x8 grid; least-squares fit of a radial convergence field; expansion = convergence goodness-of-fit x vertical texture-gradient magnitude; cross-checked against the existing VP detector (consistency/strength of convergence). 0-1.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6.3,
+   "rationale": "Deterministic and complementary to prospect (funneling vs distance), but the construct link to wayfinding pull is theoretically motivated rather than behaviorally measured \u2014 honestly proxy-grade.",
+   "collision_with_existing": "Prospect = how far; expansion = how strongly geometry directs. Equal-depth corridor vs hall dissociate them."
+  },
+  {
+   "id": "V45",
+   "name": "proto_object_set_size",
+   "construct": "Effective set size at the object level: count of segmentable proto-object chunks \u2014 the object-count face of clutter driving classic set-size search effects and the felt 'too many things'.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Yu, Samaras & Zelinsky 2014 (Journal of Vision): proto-object count from superpixel merging predicts clutter ratings, outperforming pixel measures on their dataset",
+    "Wolfe 1998 (Psychological Science): search RT scales with set size",
+    "Rosenholtz, Li & Nakano 2007: motivates object-level complement where true object counts are ill-defined"
+   ],
+   "computation": "Tier A, deterministic. SLIC (~600 segments, compactness 10) -> agglomerative merge of adjacent superpixels with deltaE < T (T fixed, sensitivity at \u00b120% emitted) -> count of components above minimum area; also per-steradian density under declared FOV. Cross-check with V7 \u2014 divergence is itself diagnostic (many discrete objects vs few chaotic surfaces).",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6,
+   "rationale": "The only count over discrete chunks (what set-size predictions and C4 reasoning consume); AMBER for the heuristic merge threshold and single-lab validation.",
+   "collision_with_existing": "All clutter-adjacent attributes are pixel statistics; a discrete-chunk count is new."
+  },
+  {
+   "id": "V46",
+   "name": "nested_symmetry_index",
+   "construct": "Symmetry nesting (Alexander's local symmetries / Salingaros sub-symmetries): symmetry at multiple scales with hierarchically aligned axes, as distinct from one global mirror axis.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Alexander & Carey 1968 (Perception & Psychophysics): subsymmetry count predicts perceived pattern goodness \u2014 the one direct psychophysical anchor for nesting",
+    "Jacobsen & Hoefel 2003: symmetry dominates beauty judgments of novel patterns (single-scale)",
+    "Makin, Pecchinenda & Bertamini 2012 (+ SPN work): symmetry elicits implicit positive affect and reliable neural response",
+    "Alexander 2001: theoretical anchor for the architectural claim"
+   ],
+   "computation": "Tier A, deterministic. 4-level pyramid of gradient magnitude; sliding-window NCC with horizontal mirror per level -> peak maps; nesting = child peaks whose axes fall inside a parent peak's symmetric span within tolerance; index = participating levels / available levels, strength-weighted, plus nested-chain count. ABSTAIN when the VP step marks the view strongly oblique (foreshortening attenuates true symmetry \u2014 declared bias).",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6,
+   "rationale": "Genuine multi-scale extension of the existing single-scale horizontal symmetry with one direct psychophysical anchor; interior extrapolation and oblique-view attenuation keep it AMBER and mid-rank.",
+   "collision_with_existing": "Existing horizontal symmetry is global, single-scale; axis-aligned nesting is the actual Alexander/Salingaros claim."
+  },
+  {
+   "id": "V47",
+   "name": "phog_self_similarity",
+   "construct": "Pyramid self-similarity of oriented gradient content: whether the KIND of structure (orientation distribution) repeats across scales \u2014 the Redies-lab statistic artworks and natural scenes share, distinct from box-count occupancy scaling.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Amirshahi, Koch, Denzler & Redies 2012: artworks show high PHOG self-similarity comparable to natural scenes",
+    "Braun, Amirshahi, Denzler & Redies 2013 (Frontiers in Psychology): architecture photographs characterized \u2014 norms for built-space images exist",
+    "Redies 2007: aesthetic images converge on natural-scene statistics (correlational, proxy-grade)"
+   ],
+   "computation": "Tier A, deterministic. HOG orientation histograms (16 bins, magnitude-weighted) on a spatial pyramid (whole image + 4/16/64 cells); self-similarity = mean histogram-intersection between each child cell and its parent; output mean + level profile, 0-1.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6,
+   "rationale": "Clean deterministic statistic dissociable from fractal D (striped wall vs richly self-similar scene can share D); preference link correlational and interiors characterized but not preference-tested \u2014 AMBER, mid rank.",
+   "collision_with_existing": "Fractal D = binarized-edge occupancy scaling; orientation-content self-similarity is a different scale-invariance."
+  },
+  {
+   "id": "V48",
+   "name": "hominess_composite",
+   "construct": "Hominess \u2014 perceived homelikeness/comfort/warmth-of-dwelling, the third Coburn/Vartanian factor of architectural experience, loading on warm low-key light and soft materials, dissociable from mere warm color.",
+   "code": "WB",
+   "merged_from": [],
+   "literature": [
+    "Coburn et al. 2020: hominess a robust separable factor of interior experience, dissociable from coherence and fascination",
+    "Vartanian et al. 2013 and subsequent: comfort/approach tracks soft, enclosing, warm qualities",
+    "Meyers-Levy & Zhu 2007 (adjacent): felt quality, not measured brightness, shapes response"
+   ],
+   "computation": "Tier A + material/plane segmentation. Z-scored proxies fused 0-1: (a) warm low-key luminance (warm-hued AND mid-to-low luminance pixels, excluding glare-white); (b) material softness (inverse specular-blob density + mid-frequency fabric/grain texture energy); (c) soft-material fraction from the existing material table. ABSTAIN without material segmentation.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6,
+   "rationale": "Real factor-analytic construct, but a multi-proxy composite with invented fusion weights riding material segmentation \u2014 the weakest computational grounding among the Coburn-factor proposals.",
+   "collision_with_existing": "Warm/cool ratio is purely chromatic; the material-softness and low-key-luminance loadings are new."
+  },
+  {
+   "id": "V49",
+   "name": "desk_personalization_index",
+   "construct": "Visible territorial personalization of workstations (personal objects on desks): correlates with satisfaction, wellbeing, and organizational identification; suppression (clean-desk regimes) with dissatisfaction \u2014 the visible-appropriation complement to plan-level C16.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Wells 2000 (J. Environmental Psychology): personalization associated with wellbeing/satisfaction",
+    "Knight & Haslam 2010 (JEP: Applied): enriched and self-decorated offices beat lean on comfort, wellbeing, productivity",
+    "Brunia & Hartjes-Gosselink 2009: personalization persists even in hot-desk offices \u2014 basic territorial need"
+   ],
+   "computation": "Tier A + planes + depth. Horizontal planes in the desk-height band (~0.6-1.1 m via geometry); connected components deviating from the fitted surface color, kept in a 0.2-8% area band. Outputs: small-object density per surface area + hue entropy of blobs (personal items chromatically diverse), both 0-1. ABSTAIN with no desk-height plane. Declared: measures object richness on work surfaces \u2014 a proxy that cannot separate personal items from equipment or mess.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6,
+   "rationale": "Decent experimental base (Knight & Haslam), honest proxy declaration; detector fragility (equipment/mess confound) keeps it mid-rank.",
+   "collision_with_existing": "Existing clutter proxy treats objects as global cost; C16 knows nothing of visible appropriation \u2014 surface-localized, positively valenced complement."
+  },
+  {
+   "id": "V50",
+   "name": "spectral_openness",
+   "construct": "Spatial-envelope openness from global spectral statistics \u2014 a segmentation-free estimator of felt spaciousness whose principal value is TRIANGULATION: agreement with the plane-seg enclosure index raises joint confidence, disagreement raises an honest uncertainty flag.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Oliva & Torralba 2001 (IJCV): openness recoverable from windowed Fourier/Gabor energy templates",
+    "Greene & Oliva 2009: openness perceived from <100 ms glances",
+    "Ross & Oliva 2010 (Journal of Vision): layout-property ratings predicted from global features",
+    "Stamps 2000s (hedged): enclosure/spaciousness driven by boundary proportion/permeability \u2014 interior transfer support"
+   ],
+   "computation": "Tier A, deterministic. Windowed FFT + 4x4 Gabor grid (GIST-like); fixed logistic over two hand-set Oliva-Torralba discriminants (low-SF horizontal-orientation energy fraction; vertical gradient of texture energy). 0-1, plus a DISAGREEMENT flag when rank order conflicts strongly with the enclosure index.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 6,
+   "rationale": "Its output is mostly epistemic (an independent cross-check on an AMBER pipeline) rather than new construct signal; validated mainly on outdoor scene sets \u2014 interior transfer proxy-grade, honestly flagged.",
+   "collision_with_existing": "Same construct family as the enclosure index by design; declared value is statistically independent triangulation."
+  },
+  {
+   "id": "V51",
+   "name": "spectral_mean_depth",
+   "construct": "Ordinal scene size class (near / room-scale / hall-scale) from global spectral signature \u2014 a training-free, statistically independent cross-check whose main product is an honesty flag on the frozen-depth-model prospect pipeline.",
+   "code": "SHARED",
+   "merged_from": [],
+   "literature": [
+    "Torralba & Oliva 2002 (IEEE TPAMI): mean depth predicted from global spectral signatures",
+    "Ross & Oliva 2010: human mean-depth judgments predicted from the same features",
+    "Greene & Oliva 2009: mean depth extracted at a glance"
+   ],
+   "computation": "Tier A, deterministic. Radial FFT energy distribution + block-wise dominant Gabor scale; map to ordinal bins (<2 m / 2-8 m / >8 m) via hand-set thresholds declared as calibration constants on a small labeled interior set (declared calibration, NOT reproduction of the paper's learned regression). If spectral bin and depth-net mean depth disagree by >1 bin, attach an uncertainty flag to prospect rather than reporting either confidently.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 5.9,
+   "rationale": "Like V50, chiefly an honesty instrument (single-point-of-failure guard on the depth net); ordinal only without the learned regression.",
+   "collision_with_existing": "Prospect rests on the frozen depth model; this is its independent disagreement detector, declared as such."
+  },
+  {
+   "id": "V52",
+   "name": "size_hierarchy_exponent",
+   "construct": "Salingaros-West universal size distribution: whether discrete visual elements follow an inverse-power size distribution (graded many-small/few-large hierarchy) versus mono-scale repetition or scale gaps \u2014 the ornament-hierarchy claim proper.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Salingaros & West 1999 (Environment and Planning B): inverse-power component-size distribution (exponent ~2) in coherent built form \u2014 theoretical with illustrative measurements, stated as such",
+    "Clauset, Shalizi & Newman 2009 (SIAM Review): MLE + KS power-law fitting methodology (methods anchor)",
+    "Forsythe et al. 2011 (British J. Psychology): complexity and fractality jointly predict beauty \u2014 indirect support"
+   ],
+   "computation": "Tier A. Canny -> morphological closing -> connected components above a declared area floor -> Clauset MLE power-law fit with KS gate; outputs exponent m, fit quality, hierarchy score = closeness of m to 2 gated on fit, plus scale-cluster count and spacing vs the ~2.7 ratio. Abstains (UNKNOWN) below ~30 elements.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 5.5,
+   "rationale": "Rigorous fitting methodology but theory-grade construct evidence and heuristic element extraction; distinguishes mono-scale minimalism from graded hierarchy, which continuous D cannot.",
+   "collision_with_existing": "Clutter proxy = density; fractal D = continuous edge scaling; discrete size distribution of countable elements is new."
+  },
+  {
+   "id": "V53",
+   "name": "water_feature_presence",
+   "construct": "Blue-space content: presence/extent of visible water, carrying a preference/restorativeness premium beyond green nature.",
+   "code": "WB",
+   "merged_from": [],
+   "literature": [
+    "White et al. 2010 (J. Environmental Psychology): scenes with water rated higher for preference, affect, perceived restorativeness",
+    "Volker & Kistemann 2011 (Int. J. Hygiene & Env. Health): blue-space review \u2014 consistent but mostly proxy/self-report-grade associations",
+    "Ulrich 1983: water among the 'preferenda' driving rapid positive affect"
+   ],
+   "computation": "Tier A + horizon estimate. Candidates: blue-cyan or specular regions, texturally smooth, wide, below horizon; mandatory reflection test (mirror correlation with the vertically flipped band above the top edge) to reject glass/screens/glossy floors. Tri-state present/absent/ABSTAIN + area fraction.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 5.4,
+   "rationale": "Real literature premium but rare in interiors and false-positive-prone despite the reflection test; abstention path well designed. Low expected yield keeps rank down.",
+   "collision_with_existing": "Nothing existing detects water; distinct increment over generic nature content."
+  },
+  {
+   "id": "V54",
+   "name": "facade_pareidolia_salience",
+   "construct": "Face-like configural pattern content of walls/facades (pareidolia): obligatory face-detection generalizes to bilaterally symmetric window/door configurations, capturing and holding gaze pre-attentively. Scored as ATTENTION SALIENCE only \u2014 the wellbeing extension is Sussman's hypothesis, explicitly not claimed.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Taubert et al. 2017 (Current Biology): pareidolia in monkeys \u2014 deep, evolutionarily old mechanism",
+    "Liu et al. 2014 (Cortex): illusory faces engage the fusiform face area",
+    "Palmer & Clifford 2020 (Psychological Science): pareidolic faces engage genuine social-attention mechanisms (gaze adaptation transfer)",
+    "Sussman & Hollander 2015 (Cognitive Architecture): the architectural thesis \u2014 largely non-peer-reviewed demonstrations, hence proxy-grade"
+   ],
+   "computation": "Tier A. Max-pooled: (1) Haar frontal-face cascade multi-scale with person regions masked via frozen segmentation (score architecture, not occupants); (2) geometric configuration test on facade planes \u2014 co-elevated mirror-symmetric dark-component pairs with a third component below/between inside canonical face proportions. Salience = accepted configurations weighted by angular size and centrality, 0-1. ABSTAIN without a wall/facade plane.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 5,
+   "rationale": "Mechanism (pareidolia attention capture) is solidly evidenced, but the architecture-specific literature is largely non-peer-reviewed and the downstream affect link is hypothesis-grade; honest scoping to salience saves it from rejection.",
+   "collision_with_existing": "Landmark salience has no notion of configural arrangement; a categorically different (obligatory, gaze-holding) attention channel."
+  },
+  {
+   "id": "V55",
+   "name": "floor_guidance_continuity",
+   "construct": "Floor-plane directional cues (material bands, contrast strips, articulated pathways) marking the line of travel \u2014 Lynch's continuity in the ground surface, which is where navigating gaze disproportionately rests. Shipped as a hedged proxy: direct experimental evidence is thin.",
+   "code": "COG",
+   "merged_from": [],
+   "literature": [
+    "Lynch 1960: continuity of surface/edge along a path supports imageability",
+    "Emo ~2014 (eye-tracking, hedged): wayfinding gaze disproportionately on the floor plane and longest sightlines",
+    "Arthur & Passini 1992: circulation should be expressed architecturally incl. floor treatment \u2014 design doctrine, explicitly proxy-grade"
+   ],
+   "computation": "Tier A. Isolate floor region; rectify to top-down via VP homography; Hough lines + color-boundary tracing in rectified floor; keep elongated features within \u00b115 deg of the movement axis; score = (axis-aligned feature length / rectified floor depth) x mean contrast, clipped 0-1, plus 'articulated path present' boolean. ABSTAIN if floor <10% of frame or homography degenerate.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 5,
+   "rationale": "Nothing else inspects the floor as an information carrier, but the construct's direct experimental base is admittedly thin (construct + gaze allocation + doctrine) and it rides the VP homography \u2014 low rank with the hedge preserved.",
+   "collision_with_existing": "Edge clarity and clutter are frame-global; floor-borne directional information is new but weakly evidenced."
+  },
+  {
+   "id": "V56",
+   "name": "patina_wear_index",
+   "construct": "Material temporal depth: visible patina/weathering vs pristine newness of natural-material surfaces \u2014 a DESCRIPTIVE attribute with deliberate valence abstention (preference literature on aged surfaces is mixed), mirroring the accepted hue-abstention design.",
+   "code": "WB",
+   "merged_from": [],
+   "literature": [
+    "Kellert 2008; Kellert & Calabrese 2015: patina of time as a biophilic attribute \u2014 explicitly theory-grade",
+    "Nyrud & Bringslimark 2010: wood preference varies with processing/surface character, non-monotone",
+    "Broman ~2001 (hedged): appreciation of visible wood features heterogeneous across observers \u2014 supports abstention"
+   ],
+   "computation": "Tier A, restricted to regions V12 classifies as natural. Sub-scores: low-frequency chroma variance (weathering gradients), dark low-saturation blob detection (stains), matte-ness (inverse gloss proxy). Combined patina score 0-1 emitted as a descriptive tag with uncertainty flag; the wellbeing layer ABSTAINS on valence.",
+   "tier": "A",
+   "ceiling": "AMBER",
+   "rank_score": 4.5,
+   "rationale": "Honest design (explicit valence abstention) but theory-grade construct and purely descriptive output \u2014 lowest genuine-new-signal contribution among survivors; kept because abstention-pattern coverage of the Kellert pattern has study value.",
+   "collision_with_existing": "No existing attribute captures surface age/wear."
+  }
+ ],
+ "dropped_as_existing": [
+  "rosenholtz-clutter:edge_density_congestion \u2014 duplicates the EXISTING tiled processing-load/clutter proxy in both construct (clutter/processing load as a search-cost correlate) and computation class (multi-scale tiled edge-density statistics); the proposal itself concedes it is the 'weaker but real' member of the family whose value is as a sanity check. Its only novel terms (90th-percentile tile density, Gini concentration) are subsumed by the retained feature_congestion_clutter (V7), which outputs a full per-pixel spatial map, and by subband_entropy_clutter (V6), which the same seat positions as the validated measures. Retaining it would add a third clutter number with no independent construct claim."
+ ],
+ "verdicts": {
+  "V1": {
+   "id": "V1",
+   "verdict": "VIABLE",
+   "reasons": "Computability holds: turning-angle/circle-fit decomposition of linked Canny contours is deterministic classical CV and genuinely measures contour shape, which nothing in the existing stack (edge sharpness = definition, fractal D = scaling complexity) carries. Real confounds the implementers must handle but which do not kill it: (a) barrel/lens distortion curves genuinely straight architectural lines \u2014 undistort or flag; (b) Canny fragmentation in cluttered photos biases toward short chains, so the minimum-length filter and corner-density denominator need care; (c) the measure conflates architectural contours with object contours (plants, fabric, people) \u2014 the person-mask variant honestly drops to AMBER. Evidence base is the real, multi-lab curvature-preference literature; GREEN for the base variant is defensible since it rides no pretrained model. One literature overclaim must be corrected before shipping (see citation concern), but it weakens one anchor, not the construct: Bar & Neta 2006/2007, Dazkir & Read 2012, and the Chuquichambi meta-analysis stand on their own.",
+   "citation_concern": "Vartanian et al. 2013 (PNAS) is real and did find curvilinear interiors more likely judged beautiful with ACC engagement, but as I recall the paper contour did NOT significantly affect approach-avoidance (enter/exit) decisions, and the predicted amygdala response to rectilinear spaces was not observed. Selling it as 'predict approach decisions' is a misremembered overclaim \u2014 strip that clause. Note also Bar & Neta 2007's amygdala finding is for everyday objects, not interiors; fine as mechanism evidence if labeled as such.",
+   "fixed_computation": ""
+  },
+  "V2": {
+   "id": "V2",
+   "verdict": "VIABLE",
+   "reasons": "The strongest candidate in the set. Computation is trivially deterministic (windowed FFT, radial average, log-log OLS) and was sandbox-verified on synthetic 1/f^2 noise; the Penacchio & Wilkins 2015 CSF-weighted deviation is an actual published computational model being implemented, not an invented mapping. All five anchors are real and correctly characterized: Field 1987 (JOSA A) 1/f spectra; Fernandez & Wilkins 2008 and Juricevic et al. 2010 (both Perception) linking discomfort to departure from natural spectra with excess mid-SF energy; Graham & Field / Redies et al. on art sharing natural statistics. The declared FOV assumption for cycles/degree is exactly the right honesty move. Residual confound to document, not a kill: the spectrum measures the photograph, not only the room \u2014 defocus blur steepens the slope, JPEG compression and downsampling inject/remove high-SF energy, and noise flattens the tail; the implementation should restrict the fitted band away from the Nyquist end and emit an image-quality caveat. GREEN is fair: pure numpy, no pretrained models.",
+   "citation_concern": "",
+   "fixed_computation": ""
+  },
+  "V3": {
+   "id": "V3",
+   "verdict": "VIABLE",
+   "reasons": "Construct link is the best-evidenced in environmental psychology (Ulrich 1984 Science and Ulrich et al. 1991 JEP are real and correctly described; Nieuwenhuis et al. 2014 JEP:Applied green-office field experiments and the Bringslimark et al. 2009 review are real, and the heterogeneity is honestly converted into an uncertainty band). Computation is honest about being a proxy: HSV green-band intersected with local-texture floor, white-balance gate, ABSTAIN paths, and the explicit declaration 'plausibly-living green material, not botanically verified.' Known false positives \u2014 artificial plants (arguably still partially restorative per the biophilia literature, but unproven), botanical-print wallpaper/fabric (green + textured passes both tests), dark-green upholstery with weave texture \u2014 and false negatives (non-green foliage, flowers, autumn tones) are exactly why the claimed AMBER ceiling is correct; do not let anyone promote this to GREEN. Complementarity claim vs C19 is genuine: plan adjacency cannot see the desk-facing-blank-wall inversion.",
+   "citation_concern": "",
+   "fixed_computation": ""
+  },
+  "V4": {
+   "id": "V4",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "reasons": "The literature is solid (Benedikt 1979 occlusivity, Kaplan & Kaplan 1989, Franz & Wiener 2008, Stamps 2004 meta-analytic heterogeneity, Herzog & Miller 1998 mystery-danger \u2014 all real, all correctly hedged) and the intelligibility gate is good design. But the computation as written contains a fabrication by the project's own standard: mystery = occlusivity * log(1+hidden_area) requires flood-filling 'hidden-adjacent walkable area' on a plan grid inferred from ONE photograph. Cells beyond an occluding edge are, by construction, unobserved by the photo-to-plan chain \u2014 the inference cannot honestly label them walkable, so hidden_area is either zero or invented. The magnitude term therefore measures the inference engine's willingness to hallucinate rooms, not the building. The occlusivity FRACTION alone survives: classifying isovist boundary segments as occluding vs solid via radial depth-jump discontinuities (with floor visibly continuing past the occluder along nearby rays) is computable from visible evidence at AMBER. Full Benedikt mystery needs a declared floor plan as an extra input.",
+   "citation_concern": "",
+   "fixed_computation": "Ship two variants. (a) Photo-only, AMBER: raw occlusivity = occluding boundary length / isovist perimeter, where 'occluding' is certified only by visible evidence (radial depth discontinuity with walkable floor visible beyond the occluder on adjacent rays); drop the hidden-area multiplier entirely; keep the C3 intelligibility gate and Stamps uncertainty flag. (b) Declared-input variant: full occlusivity * log(1+hidden_area) computed only when an actual floor plan / occupancy grid is supplied; ABSTAIN otherwise. Never flood-fill cells the single-photo inference has not observed."
+  },
+  "V5": {
+   "id": "V5",
+   "verdict": "VIABLE",
+   "reasons": "Anchors check out: Ko, Kent, Schiavon, Levitt & Betti 2022 (LEUKOS) view-quality framework with content/access/clarity is real; Markus 1967 (Building Science) on layered-view preference is the standard historical anchor; Ko, Schiavon et al. 2020 (Building and Environment) chamber study did find emotion and working-memory benefits from a window view; Kaplan 2001 (E&B) and EN 17037's layer-based view scoring are correctly cited. The blown-out-aperture case handled as SCORED-window/UNKNOWN-content is the best abstention design in the set \u2014 that is the single most common failure of interior photography and it is never guessed. Correct AMBER: rides plane segmentation, homography rectification, and a heuristic window detector. Remaining failure modes to log, not fatal: mirrors, TVs, backlit artwork, and large luminaires can pass the bright-quad-on-wall test (the sky-chroma and depth-discontinuity cross-checks catch some but not all); curtains/blinds and night shots should route to ABSTAIN; a window onto an adjacent lightwell will honestly score low layers, which is arguably correct. Non-duplication claim is accurate \u2014 nothing existing scores view content.",
+   "citation_concern": "",
+   "fixed_computation": ""
+  },
+  "V6": {
+   "id": "V6",
+   "verdict": "VIABLE",
+   "reasons": "This is the field-standard clutter measure implemented as published, not an invention: Rosenholtz, Li & Nakano 2007 (Journal of Vision) really did validate Subband Entropy against clutter judgments and search performance; Portilla & Simoncelli 2000 and Henderson, Chanceaux & Smith 2009 are real and correctly used; the Reber et al. 2004 fluency bridge is honestly labeled proxy-grade and inherited from machinery already accepted. Steerable pyramid + fixed-bin coefficient entropy with the published luminance-dominant weights is deterministic; GREEN is defensible (no pretrained model). It survives the no-duplication rule only because it is explicitly declared a validation-grade replacement that reports agreement with the legacy tiled proxy \u2014 hold it to that: if the two disagree wildly on the corpus, the legacy proxy should be retired, not both shipped as independent signals (double-counting clutter in the hedonics layer would be a silent construct error). Minor confounds shared with all image statistics: resolution, JPEG compression, and depth-of-field blur shift entropy; the corpus-percentile normalization mitigates this only if the corpus is homogeneous in capture quality \u2014 state that assumption with the score.",
+   "citation_concern": "",
+   "fixed_computation": ""
+  },
+  "V7": {
+   "id": "V7",
+   "verdict": "VIABLE",
+   "reasons": "COMPUTABILITY: the sketch is essentially the actual Rosenholtz Feature Congestion algorithm (Lab covariance ellipsoids for color, band-passed L contrast std, oriented-energy covariance, multiscale Minkowski pooling) \u2014 deterministic, well-specified, implementable in numpy/OpenCV without semantics. EVIDENCE: all four anchors are real and correctly characterized: Rosenholtz, Li, Mansfield & Jin 2005 (CHI) is the covariance/ellipsoid clutter paper; Rosenholtz, Li & Nakano 2007 (JoV, 'Measuring visual clutter') did show FC predicting search RT as an effective set-size surrogate; Henderson, Chanceaux & Smith 2009 (JoV) did test clutter measures on real-world scene photographs; Beck, Lohrenz & Trafton 2010 (JEP:Applied) is the local-clutter-around-targets finding that legitimately motivates the map output. This is the best-anchored candidate in the batch. TIER: GREEN is honest \u2014 no pretrained models, no depth. COLLISION: the declared 'sharper variant of the ad-hoc tiled clutter proxy' claim is credible because FC is behaviorally validated and locally normalized where the existing proxy is not; recommend retiring or cross-calibrating the old proxy to avoid two clutter numbers disagreeing. RESIDUAL CONFOUNDS to log in metadata, not fatal: sensor noise/high ISO inflates contrast clutter, and exposure/white balance shift the color covariance \u2014 mitigate with mild denoising and the stated corpus-percentile normalization. Also verify the exact pooling weights against the 2007 paper's published values (the candidate says 'luminance-dominant'; the published combination is contrast/color-heavy \u2014 check before hard-coding)."
+  },
+  "V8": {
+   "id": "V8",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "EVIDENCE anchors are all real and honestly staged (Oliva & Torralba 2001 IJCV spatial envelope; Torralba & Oliva 2003 Network spectral separability; Kardan et al. 2015 Frontiers showing low-level edge/orientation/color statistics predict perceived naturalness; Berman 2008/Ulrich 1984 correctly demoted to correlational downstream support). But two problems keep this off GREEN. (1) CONSTRUCT TRANSFER: the spectral naturalness axis was derived and validated on whole-scene databases spanning outdoor-natural to urban; using it as a WITHIN-interior gradient is an extrapolation the cited papers do not test. Isotropy is not nature: a cluttered pile of fabric, ornate wallpaper, or wicker furniture is orientation-isotropic; a minimalist plant-free room photographed head-on is maximally cardinal. The measure detects rectilinearity, and only proxies naturalness through it. (2) CAMERA-GEOMETRY CONFOUND: cardinal dominance is measured in image coordinates, so a rectilinear room shot in two-point perspective or with camera roll loses 0/90-degree energy without becoming one iota more natural \u2014 the number then measures photographic viewpoint, not the room. TIER: because the fix requires roll/vanishing-point rectification from the existing heuristic geometry stack, and because the interior-transfer of the validation is unproven, the honest ceiling is AMBER, not GREEN.",
+   "fixed_computation": "Before computing cardinal dominance, estimate camera roll from the vertical vanishing point (already in the stack) and rotate the orientation histogram so 'cardinal' means gravity-aligned, not pixel-aligned; report the isotropy-entropy term (roll-invariant) and cardinal term separately rather than in one fused score; gate per-block scores on a minimum oriented-energy threshold so blank walls do not emit noise-driven entropy; keep the green-hue co-signal capped as stated and validate the fused score against human naturalness ratings on interior photos before promoting past AMBER.",
+   "citation_concern": ""
+  },
+  "V9": {
+   "id": "V9",
+   "verdict": "VIABLE",
+   "reasons": "COMPUTABILITY: trivially yes \u2014 a fixed response kernel and a band-coverage fraction over already-computed global and local box-count D, pure numpy, with an honest R^2<0.98 broken-scaling abstention flag. EVIDENCE: Spehar, Clifford, Newell & Taylor 2003 (Computers & Graphics, 'Universal aesthetic of fractals') and Hagerhall, Purcell & Taylor 2004 (JEP, landscape silhouettes, peak ~1.3) are real and correctly cited; Hagerhall et al. 2008 (Perception, EEG alpha response to fractal patterns) is real; Abboushi et al. 2019 (fractal daylight patterns in real interiors) is real and is the key transfer citation; Bies et al. 2016 individual-differences caveat is real and to their credit. TWO CAVEATS that must ride in metadata: (a) the trapezoid falloff constants outside [1.3,1.5] are invented engineering, not literature \u2014 fine only because declared; (b) construct stretch: the preference/physiology studies used isolated fractal patterns and silhouettes, whereas box-count D of a whole interior photo's edge map mixes pattern D with scene composition \u2014 Abboushi 2019 narrows but does not close this gap. CITATION CONCERN (minor, flag not kill): the 'mid-D reduces physiological stress' claim traces to Taylor-group skin-conductance work that is reported in Taylor 2006 (Leonardo, a perspective piece) rather than a full primary paper \u2014 the physiological leg is thinner than the preference leg and the metadata should say 'preference: strong; stress-reduction: preliminary'. TIER: GREEN is fair since it rides existing GREEN image statistics.",
+   "citation_concern": "Taylor 2006 (Leonardo) is a perspective/review; the skin-conductance stress-reduction result it reports was never published as a full primary study \u2014 do not sell the stress leg at the same grade as the Spehar/Hagerhall preference findings."
+  },
+  "V10": {
+   "id": "V10",
+   "verdict": "VIABLE",
+   "reasons": "COMPUTABILITY: yes \u2014 descriptor construction (Lab histogram, LBP, Hu moments, area) and min pairwise chi-square/z-distance over <=6 candidate regions is deterministic classical CV, and the ABSTAIN-below-2-candidates rule plus the repeated-element (colonnade) flag are exactly the right honesty moves. The construct logic is sound: appearance uniqueness among co-visible salient candidates is a defensible within-frame operationalization of Lynch's singularity. EVIDENCE: all three anchors are real and accurately used \u2014 Lynch 1960 defines landmark quality as singularity/contrast-with-context; Sorrows & Hirtle 1999 (COSIT) explicitly separate salience from distinctiveness; Raubal & Winter 2002 (GIScience) operationalize landmark suitability as measurable deviation of a candidate's attributes from its neighbors, which is precisely the template followed. The 'within-frame only, not building-wide' scoping is correct and prevents the classic overreach (a frame-unique red door may recur on every floor). TIER: GREEN holds ONLY IF the upstream landmark-salience module is itself classical; if that module rides plane segmentation or any frozen model, this inherits AMBER \u2014 state the dependency explicitly in metadata. Minor implementation notes: Hu-moment z-normalization needs a declared reference corpus, and differentiation should be reported alongside candidate count since min-distance over 2 candidates is noisier than over 6."
+  },
+  "V11": {
+   "id": "V11",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "EVIDENCE is the strongest part: Conroy Dalton 2003 (Environment and Behavior \u2014 the 'follow your nose' VR study showing wayfinders minimize angular deviation) is real; Hillier & Iida 2005 (least-angle segment analysis outpredicting metric/topological distance for movement) is real; Turner 2001 angular segment analysis is the correct formalism. COMPUTABILITY is where the adversarial pressure lands, on two counts. (1) SINGLE-PHOTO PLAN POVERTY: a Tier-B grid inferred from one interior photograph covers roughly one room within the camera frustum; a plan fragment with >=2 genuine degree->=3 decision nodes will be rare, so in practice this abstains on most inputs \u2014 acceptable (abstention is honest) but the proposal should say the expected abstention rate is high, and note the cited evidence is building/urban scale while the measurable fragment is room scale. (2) SKELETON FRAGILITY: medial-axis skeletons are notoriously sensitive to boundary noise, and a heuristically inferred occupancy grid has noisy boundaries by construction \u2014 spurious spurs manufacture fake degree-3 junctions whose angles are garbage, which would silently corrupt both outputs. This is fixable (see fix), so not a KILL. TIER: AMBER as claimed is exactly right, and the note that it is GREEN-grade on a real supplied plan is correct \u2014 recommend also registering it as a declared-input metric for real floor plans, where it will do most of its real work.",
+   "fixed_computation": "Prune skeleton spurs shorter than k times the local corridor width (distance-transform value at the branch point) before counting decision nodes; require each surviving junction's branches to persist for a minimum metric length before measuring the continuation angle; additionally abstain when the walkable region touches the frustum/occlusion boundary near a junction (the 'junction' may be an artifact of the visibility clip, not the architecture); report node count with the score so downstream consumers can weight by support."
+  },
+  "V12": {
+   "id": "V12",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "EVIDENCE: the anchors are real and \u2014 unusually for this literature \u2014 honestly graded: Tsunetsugu, Miyazaki & Sato 2007 is the genuine 0/45/90% wood-coverage room study (45% most comfortable, non-monotone autonomic response; note it is small-N, ~15 subjects, one culture \u2014 the caveat is carried); Nyrud & Bringslimark 2010 is a real review that itself flags the thin evidence base; Fell 2010 is a real UBC dissertation with the skin-conductance office result (dissertation-grade, never fully journal-published \u2014 keep that grade visible); Browning et al. 2014 correctly demoted to theory-grade. The dose-response SHAPE claim is legitimately anchored, which is rare. The move of defining the construct as VISUAL wood (so laminate false-positives are bounded proxy error, since the cited responses were visually elicited) is clever and honest. COMPUTABILITY is the weak leg and is why AMBER is the correct ceiling on two independent grounds: it rides plane segmentation (automatic AMBER per house rules), and the wood/stone classifier is genuinely fragile \u2014 brown painted walls, brick, cork, leather, and striped wallpaper share the wood hue band; striped or grained non-wood textiles pass the single-dominant-orientation grain test; stone-vs-concrete-vs-plaster are near-indistinguishable to saturation+granularity features. Without a precision check this becomes a fabrication vector for exactly the sin the panel exists to catch.",
+   "fixed_computation": "Before shipping, run the classifier on a small labeled interior set (e.g., 100 hand-labeled planes) and publish per-class precision/recall in the metric metadata; emit a per-plane confidence and ABSTAIN on planes below threshold rather than force-labeling; require agreement between the hue/texture classifier and the existing acoustic material-table label where both exist, and flag disagreements instead of averaging; apply the 0.45-centered inverted-U only to wood_fraction (as cited), not to the combined natural_material_fraction, since the dose-response evidence is wood-specific."
+  },
+  "V13": {
+   "id": "V13",
+   "verdict": "VIABLE",
+   "reasons": "Computable exactly as written: Sobel orientation histogram entropy and the Redies-lab pairwise (second-order) orientation entropy are pure deterministic pixel arithmetic, no segmentation, no pretrained models \u2014 GREEN is honest. The anchors are real and are the right ones: Grebenkina et al. 2018 (Frontiers) genuinely reports first/second-order edge-orientation entropy predicting liking of man-made images, and the Redies/Brachmann line on near-maximal edge-orientation entropy in artworks is real. It measures a genuinely unmeasured axis (orientation distributional structure vs gradient strength). One defensible caveat to record, not a kill: orientation entropy of an interior photo is sensitive to camera viewpoint (one-point vs two-point perspective concentrates orientations differently) and lens distortion, so it is a photo statistic that only proxies the room; the validating literature was itself photo-based, so this is a shared limitation, but the writeup should state the viewpoint sensitivity explicitly. Feeding the raw statistic to the hedonics layer rather than baking in a response shape is the correct honest design.",
+   "citation_concern": "",
+   "fixed_computation": ""
+  },
+  "V14": {
+   "id": "V14",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "The anchors are real: Van Den Wymelenberg & Inanici 2014 and 2016 (LEUKOS) did find luminance percentile/ratio metrics outperforming illuminance metrics for comfort/preference, and the proposal correctly hedges the 2016 paper. The dominant failure mode is honestly confronted: an auto-exposed, tone-mapped 8-bit JPEG partially manufactures the very skew/kurtosis/tail structure being measured \u2014 camera processing, not the room, can set the histogram shape. The clipping flags and >10% ABSTAIN handle the censoring case but NOT the exposure-normalization case (a well-exposed photo of a gloomy room and of a comfortable room can have similar log-Y shapes); the AMBER ceiling and 'ordinal proxy' framing are exactly right and must not drift upward. The comfort-band scoring direction (bounded non-uniformity preferred, gloom and heavy bright tail penalized) is consistent with the cited findings. Minor overclaim: the Amundadottir et al. 2017 paper is about non-visual health potential, visual interest and gaze \u2014 it supports 'distribution structure matters' only loosely, and is being stretched slightly as the third leg.",
+   "citation_concern": "Amundadottir, Rockcastle, Sarey Khanie & Andersen 2017 is real but its finding is about non-visual health potential / visual interest / gaze, not a direct 'distribution structure beats mean/variance for comfort' result \u2014 mildly overclaimed as support here.",
+   "fixed_computation": ""
+  },
+  "V15": {
+   "id": "V15",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Computation is genuinely deterministic (64x64 neighbor differences, dark-mask connected components) and fixes a named, real blindness: brightness variance is shuffle-invariant, and nothing in the stack measures shadow structure. Rockcastle & Andersen 2014 (Building and Environment) really did construct spatial-contrast metrics to separate daylight compositions with identical global statistics, and the later Rockcastle/Amundadottir/Andersen work (e.g., the 2017 Lighting Research & Technology contrast-measures paper) really correlated such measures with rated interest/excitement \u2014 the '~2015-2017, years hedged' honesty is appropriate. AMBER is the correct ceiling and must stay: validation used HDR renderings under controlled adaptation; on an LDR photo both the neighbor-difference statistic and the dark mask (Y < 0.2 median) are exposure- and tone-curve-dependent, so shadow_coherence partly measures the camera. The single-frame adaptation of a metric originally designed for temporal/spatial daylight dynamics should be stated as an adaptation, not the validated instrument itself.",
+   "citation_concern": "",
+   "fixed_computation": ""
+  },
+  "V16": {
+   "id": "V16",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "The evidence base is the strongest in the batch and correctly cited: Chamilothori, Chinazzo, Rodrigues, Dan-Glauser, Wienold & Andersen 2019 (Building and Environment 150) is a real study with subjective AND physiological responses to sunlight-pattern geometry in validated VR; the LEUKOS VR-adequacy validation (Chamilothori, Wienold & Andersen 2019) and the later cross-regional replication are real, and the hedging on the latter's year is honest. Computation is mostly sound and the abstention design (no hard-edged patch -> geometry sub-scores abstain; clipping flag) is careful. Note in its favor: LDR clipping is less fatal here than for V14 because patch BOUNDARY geometry (P^2/4\u03c0A, fragmentation) survives clipping. Residual failure modes to log: specular reflections, white objects on dark grounds, and hard-edged electric-light pools can pass the threshold+hard-edge test and masquerade as sun patches \u2014 a false-positive rate the composite should carry as an uncertainty flag; and the floor/wall restriction rides plane segmentation, which alone forces AMBER. Claimed ceiling matches reality.",
+   "citation_concern": "",
+   "fixed_computation": ""
+  },
+  "V17": {
+   "id": "V17",
+   "verdict": "VIABLE",
+   "reasons": "The computation is fully deterministic classical CV (Lab + DoG orientation energies, Gaussian-windowed local mean/covariance, Tikhonov-regularized Mahalanobis) with no pretrained models, so GREEN is defensible, and reporting at two window sizes honestly handles the unknown-FOV problem (the '1.5-deg window' constant is otherwise unknowable from a bare photo \u2014 keep the dual-scale reporting mandatory, not optional). Anchors are real: Duncan & Humphreys 1989 is exactly the covariance-normalized-similarity account, and Rosenholtz, Li & Nakano 2007 Feature Congestion is literally this denominator. One construct-level overclaim to trim: the statistic measures whether SOMETHING pops out, not whether a wayfinding-relevant thing (exit, sign, hazard) does \u2014 the max-D element may be a plant or a poster. Sold as 'signal-to-clutter margin of the most conspicuous element,' object-free, it is honest and genuinely complementary to landmark salience; sold as 'predicts finding of exits,' it fabricates task relevance the pixels cannot certify.",
+   "citation_concern": "Rosenholtz 1999 (Vision Research) is primarily the MOTION-popout statistical saliency paper; the extension of the SD-from-local-distribution model to static color/orientation search is Rosenholtz 2001 (Perception & Psychophysics). Minor slippage \u2014 the model is hers, but the year/venue attached to the static claim is off by one paper.",
+   "fixed_computation": ""
+  },
+  "V18": {
+   "id": "V18",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "reasons": "The geometry is clean and the anchors are real (Appleton 1975; Dawes & Ostwald's isovist-based prospect-refuge analyses of Wright interiors; Stamps 2005 on enclosure and perceived safety), but the computation as sketched fails the fabrication test at Tier B: the REAR hemifield is the one region a single forward-facing photograph cannot observe. The inferred occupancy grid is built from planes/depth visible in the ~60-90 degree forward FOV; every cell behind the camera is unobserved, so 'median rear radial' \u2014 the entire refuge term, the half of the construct that is new \u2014 would be computed over hallucinated space. This is the same class of error as the glass-house inversion: the metric's defining input is structurally outside the sensor. The proposed ABSTAIN condition (VP recovery fails) guards the wrong failure. Front-hemifield prospect alone survives, but that duplicates the existing prospect/view-depth attribute, which the proposal's own collision note concedes.",
+   "citation_concern": "",
+   "fixed_computation": "Recompute only when camera position + view axis can be located within a DECLARED plan (real floor plan or seat/vantage map \u2014 an already-recognized extra-input class), where rear radials are grounded in observed geometry; then the front/rear balance formula is fine as written. At pure Tier B, the honest behavior is: rear/refuge and balance ABSTAIN whenever any rear-hemifield radial crosses unobserved grid cells (which from one photo is always), reporting front prospect only \u2014 i.e., no new attribute."
+  },
+  "V19": {
+   "id": "V19",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "The evidence base is exactly right: Stamps (2005, Environment and Behavior, 'Visual permeability, locomotive permeability, safety, and enclosure') really did dissociate the two channels experimentally \u2014 spaciousness tracked visual permeability, judged safety tracked locomotive permeability \u2014 and the E&PB 2005 isovist/enclosure formalization is real. The collision claim is also honest: a single solid-angle enclosure index provably cannot distinguish a glass box (visually permeable, locomotively sealed) from a doorway-riddled masonry room. Tier B locomotive permeability is cleanly computable on the plan grid (occluding-edge classification against walkable cells is standard isovist bookkeeping). The weak link is Tier A glazing detection: glass is the canonical classical-CV failure surface \u2014 monocular depth nets are unstable on glass/mirrors, night windows read as dark solids, curtains and mirrors false-negative/false-positive, and 'bright wall region' is confounded by wall-washed painted walls. The two channels abstaining independently is the right honest design, but the Tier A channel will have a high error rate on real photos and should abstain aggressively (e.g., when the glazing evidence is luminance-only with no depth-discontinuity corroboration). AMBER is correct since both channels ride plane segmentation/depth.",
+   "fixed_computation": "Tier A visual_permeability should require two independent cues per candidate region (luminance anomaly AND depth-beyond-plane discontinuity, or sky/vegetation content) before counting area as glazed; luminance-only candidates go to UNKNOWN rather than into the ratio.",
+   "citation_concern": ""
+  },
+  "V20": {
+   "id": "V20",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "All four anchors are real and correctly characterized: Weisman 1981 (E&B, architectural legibility \u2014 visual access as a predictor of disorientation), Wiener/H\u00f6lscher/B\u00fcchner/Konieczny 2012 (Psychological Research \u2014 gaze and route choice biased toward the option with the longest line of sight at decision points), Braaksma & Cook 1980 (visibility index in transportation terminals \u2014 a genuine deterministic-visibility precedent), Peponis/Zimring/Choi 1990 (E&B, 'Finding the building in wayfinding'). The per-node MINIMUM-branch preview is genuinely not in C1 (global mean integration) or camera prospect, and the computation (skeleton graph, degree>=3 nodes, ray bundles per branch) is straightforward deterministic geometry on a grid. The one honest caveat the proposal underplays: a plan grid inferred from ONE interior photograph almost never contains degree>=3 junctions \u2014 the inferred grid is basically one room plus fragments \u2014 so in pure Tier-B-from-photo mode this metric will ABSTAIN nearly always and only earns its keep when a declared floor plan is supplied. That is acceptable under the abstention discipline (same situation as several C-metrics) but should be stated. AMBER for the inferred grid is correct; on a declared measured plan the geometry itself would be GREEN-grade, so the ceiling should be documented as input-dependent.",
+   "fixed_computation": "Document expected abstention behavior: on single-photo inferred grids, emit ABSTAINED (no decision nodes) rather than a degenerate score from spurious skeleton branches; add a minimum-branch-length filter so skeletonization artifacts on noisy inferred grids don't manufacture fake junctions.",
+   "citation_concern": ""
+  },
+  "V21": {
+   "id": "V21",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "The construct is sound and genuinely missing (enclosure is lateral, prospect is depth; neither isolates verticality), and the computation is feasible: with three orthogonal Manhattan VPs you can recover focal length and pitch from the image itself, and a height-to-width RATIO is dimensionless, so the notorious monocular metric-scale ambiguity does not apply. Real failure modes remain \u2014 wide-angle real-estate lenses and shots where full floor-to-ceiling extent or opposing walls are not visible \u2014 but the declared ABSTAIN covers them, and AMBER for VP/Manhattan reliance is correct. The problem is the evidence column. First anchor is misattributed: Vartanian et al. 2013 (PNAS) is the CONTOUR study (curvilinear vs rectilinear); the ceiling-height x enclosure factorial is Vartanian et al. 2015, Journal of Environmental Psychology ('Architectural design and the brain: effects of ceiling height and perceived enclosure...'). The proposal effectively cites the same 2015 paper twice (once mislabeled as 2013 PNAS, once hedged as '~2015'). Second, Meyers-Levy & Zhu 2007 is real (JCR) but it is a consumer-behavior priming study from a literature with poor replication credibility; it should be carried as a suggestive secondary anchor with an explicit uncertainty flag, not as load-bearing construct validity. With the citation fixed, the Vartanian 2015 factorial plus the openness/approach findings are sufficient.",
+   "fixed_computation": "",
+   "citation_concern": "'Vartanian et al. 2013 (PNAS)' as a ceiling-height factorial is wrong \u2014 2013 PNAS is contour, not ceiling height; the correct anchor is Vartanian et al. 2015, J. Environmental Psychology. Meyers-Levy & Zhu 2007 is real but is priming-literature evidence and should be flagged as low-replication-confidence, not sold as established."
+  },
+  "V22": {
+   "id": "V22",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Anchors check out: Cuttle 1971 ('Lighting patterns and the flow of light', Lighting Research & Technology) introduced the vector/scalar illuminance ratio as the correlate of perceived flow of light; the ~1.2-1.8 pleasant-modelling range matches Cuttle's Lighting by Design guidance and is properly hedged; Flynn et al. 1973 (J.IES) is the classic diffuse-vs-directional impressions study. The proposal is also honest that true vector illuminance is unmeasurable from a photo and that this is a gradient-based proxy \u2014 that candor plus the inverted-U mapping consistent with the existing fluency machinery is the right shape. Computability concerns are real but survivable: (a) lens vignetting produces radial luminance gradients that will masquerade as directional light on large planes \u2014 this is a photography confound, not a room property; (b) HDR/tone-mapped real-estate photography flattens gradients, so heavily processed photos will systematically read 'diffuse'; (c) auto white balance and albedo texture add noise, though normalizing the gradient by mean Y and requiring high R^2 coherence mitigates. Because the confounds are exposure-pipeline artifacts rather than semantics gaps, they can be partially controlled. AMBER (rides plane segmentation + VP homography, plus photography confounds) is the correct ceiling.",
+   "fixed_computation": "Add a vignetting guard: fit and reject a purely radial (image-centered) gradient component before attributing directionality to the scene; and abstain or flag UNCERTAIN when multiple planes disagree on inferred light direction (incoherent fits = processed photo, not diffuse light).",
+   "citation_concern": ""
+  },
+  "V23": {
+   "id": "V23",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Strongest of the six on the computability axis. Flynn et al. 1973 genuinely showed that luminance PLACEMENT (peripheral/wall emphasis vs overhead) shifts spaciousness and pleasantness impressions of the same room; Flynn 1977 (LD+A) is real and appropriately hedged; Loe, Mansfield & Rowlands 1994 (LR&T, 'Appearance of lit environment...') really did find that luminance in the horizontal 40-degree band drives lightness/interest judgments. The computation is a trivial deterministic ratio over already-existing plane labels; exposure cancels in the ratio; and the usual albedo objection does not bite here because Flynn's construct is about perceived luminance distribution regardless of whether it comes from lamps or reflectance \u2014 a dark-painted wall genuinely IS low wall luminance for the percept. Orthogonality to the vertical-illuminance magnitude proxy is correctly argued. Residual risks: misclassified planes (tall furniture counted as wall) and windows on walls inflating wall luminance with source rather than surface light \u2014 the latter is worth masking. AMBER solely because it rides plane segmentation; the arithmetic itself is GREEN-grade.",
+   "fixed_computation": "Exclude detected window/glare regions (from the existing glare mask, or V24 if adopted) from wall-plane pixels before computing wall dominance, so a bright window doesn't read as a wall-washed wall.",
+   "citation_concern": ""
+  },
+  "V24": {
+   "id": "V24",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Evidence is real and correctly pitched: Keep, James & Inman 1980 (Anaesthesia) did report roughly doubled delirium/hallucination incidence in a windowless vs windowed ICU (correlational unit comparison, properly not sold as an RCT); Verderber 1986 (E&B, person-window transactions in hospital environments) is real; Ulrich et al. 2008 (HERD evidence-based design review) is real and 'repeatedly associated' is honest wording. The gap claim is correct \u2014 windows currently exist in the stack only as light sources or plan distances, never as presence/size in the visual field. The danger is the detection heuristic, and it matters more here than elsewhere because the WB payload rides on a BINARY any_window flag: 'bright quadrilateral on a wall' matches TVs, backlit art, whiteboards, doorways into bright rooms; and a windowed room photographed at night reads windowless. A false any_window=true on a whiteboard is exactly the fabrication class the panel exists to kill. The proposal already gestures at the fix (sky/vegetation content from V5/V3) \u2014 it must be made mandatory, not optional. With that gating and abstention on suspected night/artificial-only scenes, this is a defensible, outcome-anchored WB attribute. AMBER (plane segmentation + content detectors) is correct.",
+   "fixed_computation": "Make the binary any_window flag require corroboration: luminance-anomaly candidates count only if they also show sky/vegetation content OR a depth-beyond-wall-plane discontinuity; luminance-only candidates contribute to a hedged WWR_candidate with an uncertainty flag, and the whole predicate ABSTAINS when scene cues indicate night/artificial-only lighting (otherwise windowed-at-night rooms are scored falsely windowless).",
+   "citation_concern": ""
+  },
+  "V25": {
+   "id": "V25",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Survives, with caveats. The two literatures are real and honestly kept apart (vitality vs. event-boundary memory purge), and thresholds genuinely are invisible to C4. Computability concerns that must stay on the label: (a) a single-photo inferred plan grid covers one visible room, so 'thresholds per 10 m of spine' is a density estimate from a severely truncated spine \u2014 high-variance, small-sample; (b) the Tier-A corroborator (floor-connected rectangles, aspect ~1:2.2) will fire on tall windows, wardrobes, and framed panels, so it must stay a downweighting corroborator, never a scorer; (c) Gehl's doors-per-100m criterion is an EXTERIOR street-frontage standard for retail units \u2014 porting it to interior circulation is an analogical proxy and should be flagged as such in the output, not presented as a validated interior finding. AMBER is correct (plan inference + heuristic door detection).",
+   "citation_concern": "Gehl 2010 and Radvansky 2006/2011 and Zacks & Swallow 2007 are all real. Mild overclaim on Ellard 2015: the lively NYC condition (BMW Guggenheim Lab blank-facade study) confounded permeability with visual complexity, activity, and food smells \u2014 'specifically permeable' is stronger than the study supports.",
+   "fixed_computation": "Emit a field-of-view coverage fraction alongside the density and widen the reported CI when the visible spine is <~8-10 m; demote Tier-A detection to corroborator-only (already proposed) and require floor-plane contact plus traversable gap in the grid before counting."
+  },
+  "V26": {
+   "id": "V26",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Construct is real and genuinely orthogonal to C4 (discriminability of options vs. count of options), and the junction-only abstention is exactly the right discipline. Two failure modes need explicit handling before I'd defend it: (a) pixel starvation \u2014 the 'visible interior' through a distant opening is often <100x50 px, where LBP and chi-square histograms are noise-dominated; (b) illumination confound \u2014 one backlit corridor vs. one front-lit identical corridor scores as 'differentiated' when the architecture is identical; exposure gradients across a wide-angle frame will systematically inflate dissimilarity. Note this metric therefore measures MOMENTARY visual discriminability, not persistent architectural differentiation \u2014 that is still encoding-relevant (Weisman's construct is perceptual), but the docstring must say it. Expect the predicate to fire on a small minority of photos, which is honest but means low coverage.",
+   "citation_concern": "Weisman 1981 (E&B legibility factors) and Lynch 1960 are solid. O'Neill 1991 is slightly mis-sold: his E&B work manipulated floor-plan complexity (ICD) and signage, not perceptual differentiation of route options per se \u2014 the differentiation-performance link belongs to Weisman (and Evans' legibility reviews), not O'Neill. Fix the attribution rather than the design.",
+   "fixed_computation": "Gate each opening on minimum aperture area (e.g. >=2000 px and >=40 px width) else drop it from the pairwise set; compute dissimilarity on exposure-normalized Lab (subtract per-opening luminance mean before histogramming, keep a separate raw-luminance term with a lighting-confound flag); ABSTAIN if fewer than 2 openings survive the gate."
+  },
+  "V27": {
+   "id": "V27",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "The strongest evidence base in the batch \u2014 signage is the one experimentally validated wayfinding intervention, and pairing it with C4 (high decision load + no visible signage) is the actionable output. MSER+SWT is genuine classical CV (Epshtein et al. 2010) and computable as sketched. Two problems, one of which is a design flaw as written: (a) FALSE POSITIVES \u2014 in interiors, SWT fires on posters, whiteboards, monitors, book spines, and wall art; the proposal admits it cannot distinguish these, so 'summed conspicuity' will be inflated in text-rich offices and the metric partly measures text clutter, not wayfinding support; (b) the zero-candidate case scoring 0 is wrong \u2014 a photo not aimed at a decision point punishes the building for camera direction. A single frame samples the signage SYSTEM so poorly that 0-with-caveat still reads as a finding. AMBER is correct.",
+   "citation_concern": "O'Neill 1991, Weisman 1981, Arthur & Passini 1992 are all real and correctly characterized; the 'largest gains in least-legible plans' interaction is a fair reading of O'Neill.",
+   "fixed_computation": "Change the zero-candidate branch to ABSTAIN (UNKNOWN) unless the frame is classified as a junction/decision view (reuse V26's junction gate or C4's plan-side decision points); report max conspicuity rather than summed as the headline (sum rewards text clutter); mask candidates on screen/monitor planes and require wall/ceiling plane attachment plus eye-height-band placement before a candidate counts toward the score."
+  },
+  "V28": {
+   "id": "V28",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Computable exactly as sketched (band extraction from VP horizon, tiled edge density / orientation entropy / RMS contrast \u2014 all deterministic), and the low-end valence genuinely complements the global clutter proxy. But two honesty repairs are required: (a) the ENTIRE behavioral evidence base is exterior streetscape/facade work (Ellard's blank-facade field study, Gehl's ground-floor articulation, Cavalcante's streetscape statistics) \u2014 porting it to interior corridor walls is a proxy transfer the proposal does not flag; interiors lack the pedestrian-transit framing that drives those effects; (b) the wellbeing chain is two-hop: blank band -> boredom (Ellard, small-N, self-report + EDA) and separately boredom -> cortisol (Merrifield & Danckert, lab induction with films, nothing architectural) \u2014 chaining them into 'autonomic under-stimulation cost' of a wall is overclaimed and should be reported as a speculative link, not an anchored one. Also note edge density and RMS contrast are confounded by focus, exposure, and shooting distance \u2014 corpus normalization helps but a defocused background wall will read as 'dead'. AMBER correct.",
+   "citation_concern": "All four citations are real (Ellard 2015; Gehl, Kaefer & Reigstad 2006 'Close Encounters with Buildings'; Cavalcante et al. 2014 PLoS ONE; Merrifield & Danckert 2014). The problem is not invention but transfer: exterior-facade findings sold for interior walls, and a lab boredom-cortisol result chained onto it without saying the chain is inferential.",
+   "fixed_computation": "Label the construct 'streetscape-derived proxy, interior generalization untested' in the metric metadata; report the boredom-cortisol link as SPECULATIVE tier regardless of overall AMBER; add a depth/defocus sanity gate (skip tiles whose local sharpness is below a frame-relative floor) so out-of-focus walls abstain rather than score dead."
+  },
+  "V29": {
+   "id": "V29",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Edge coverage and edge continuity are cleanly computable from the plan grid and measure something C11/C16 cannot (locomotion-time protection vs. stationary refuge). But as written the third component breaks: the center-forcing index requires sampled entry-entry / entry-seat shortest paths, and a single-photo inferred plan grid mostly CANNOT see the entries (they are behind the camera or outside the frustum) and has no seat map unless one is declared. Implemented literally, the entry set would be guessed, making that component fabrication-adjacent \u2014 the cardinal sin. Also flag the construct transfer honestly: Kallai's thigmotaxis findings come from Morris-type arena navigation in novel/anxiogenic virtual environments; extrapolating to everyday rooms is a plausibility argument reinforced by Gehl's observational edge effect, not a demonstrated interior mechanism. AMBER correct (fully downstream of plan inference).",
+   "citation_concern": "Kallai et al. 2005/2007, Gehl 2011, Appleton 1975 are all real and correctly characterized (the anxiety link is correlational, which the proposal states). No invented anchors; the arena-to-room generalization should be flagged as a proxy.",
+   "fixed_computation": "Split the composite: emit coverage and continuity from the grid alone (SCORED); compute center-forcing ONLY when entries/seats are available \u2014 from declared seat/entry maps or a grid whose doorway detections are high-confidence \u2014 otherwise that component ABSTAINS and the composite is the mean of available components with an explicit components-used field. Never synthesize entry points."
+  },
+  "V30": {
+   "id": "V30",
+   "verdict": "VIABLE",
+   "reasons": "The best proposal in the batch and the easiest to defend: zero new image processing, deterministic arithmetic on the existing box-count table, sandbox-verified with a correct positive control (Sierpinski -> 1.0) and a correct negative control (single-scale grid gets a fittable but incoherent 'D'). Its primary value is as a VALIDITY GUARD on the existing fractal D \u2014 Taylor, Micolich & Jonas's methodological point (a slope is only a fractal dimension if it holds across the scaling range) is exactly right and the current metric silently violates it. One caveat to encode: photographs give a short scaling range (~1.5 decades) and octave-slope variance is nonzero even for genuine fractal scenes due to finite-size and binarization-threshold effects, so calibrate the coherence floor on the corpus rather than treating 1.0 as attainable; the coherence number itself partly reflects resolution and thresholding, not only architecture. The proposal's self-imposed AMBER (construct link to Salingaros/Alexander is theory-grade, not empirical) is the honest call and should be kept \u2014 as a guard it is GREEN-grade, as a coherence construct it is AMBER.",
+   "citation_concern": "None. Salingaros & West 1999 (Environment and Planning B), Taylor, Micolich & Jonas 1999 (Nature, Pollock drip-painting fractal analysis), and Alexander 2001 are all real and correctly labeled theory-grade where they are theory-grade."
+  },
+  "V31": {
+   "id": "V31",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Computable as sketched and honestly AMBER (rides depth + plane segmentation). Two real weaknesses must be declared. (a) Construct validity: every anchor is a LANDSCAPE/forest study; no interior mystery study is cited because the interior literature is thin, and Herzog's own later work (Herzog & Smith 1988; Herzog & Flynn-Smith 2001) shows mystery and DANGER load together in enclosed/urban settings \u2014 a dim bending corridor can be a threat cue, not a preference cue. The output should be reported as a mystery-CUE score with valence explicitly unresolved for interiors, not as a preference predictor. (b) Computability confound: wide-angle/phone lenses barrel-distort straight floor-wall boundaries into curves, so cue (1) can score the LENS rather than the corridor; the occlusion and lit-aperture cues are sound in principle but mirrors, TVs, and bright framed art will fire the aperture detector unless the depth-discontinuity threshold is strict. Abstention rules are appropriately conservative. Defensible to Kirsh only with the valence hedge stated in the construct text.",
+   "fixed_computation": "Before measuring boundary curvature, undistort using EXIF lens metadata or run a straight-line consistency check on known-straight structures (door frames, ceiling grid); if neither is available, drop cue (1) and score from cues (2)+(3) only, flagging the reduction. Require the lit-aperture cue to show BOTH a depth discontinuity beyond the wall plane and luminance consistent with an illuminated volume (not a specular/emissive flat patch) to exclude mirrors and screens.",
+   "citation_concern": "Anchors are real (Kaplan & Kaplan 1989; Herzog & Bryce 2007 is a within-forest-settings study; Gimblett, Itami & Fitzgibbon 1985, Landscape Journal) but all are landscape studies \u2014 selling them as validation for interior corridors overreaches; and the cited corpus omits Herzog's mystery-danger findings, which cut against a positive-valence reading indoors."
+  },
+  "V32": {
+   "id": "V32",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Strongest of the six. All four anchors are real and on-construct: Kaplan & Kaplan 1989 coherence; Kotabe, Kardan & Berman 2016 (JEP: General) genuinely shows low-level spatial features drive perceived disorder independent of semantics, which is precisely the license needed for a semantics-free operationalization; Stamps 2004 is the meta-analysis separating coherence from complexity; Coburn et al. 2020 (Cortex) does recover coherence as a principal dimension of architectural experience. Computation is classical CV (SLIC + fixed-threshold agglomerative clustering), deterministic with fixed seed, and the three components (few clusters, contiguity, repetition) map onto 'hangs together / organization / redundancy' rather than mere quantity, so the collision defense against the clutter proxy and palette entropy is genuine. Honest self-cap at AMBER for proxy status is correct even though no frozen model is involved \u2014 the construct is rating-defined and the pipeline is untested against ratings. Residual confounds worth logging, not killing: shallow depth-of-field and exposure choices homogenize texture (photography style leaks into the score), and the fixed clustering threshold will need corpus calibration; the rectilinear sub-score should abstain rather than score near-zero for legitimately non-Manhattan interiors.",
+   "fixed_computation": "",
+   "citation_concern": ""
+  },
+  "V33": {
+   "id": "V33",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "The construct-to-measure link is the most direct in the batch: Franz & Wiener 2008 and Wiener & Franz 2005 really did correlate isovist jaggedness with rated spatial complexity in controlled (VR) interiors, and P\u00b2/4\u03c0A is exactly their scalar. The danger is entirely in the substrate: on a photo-INFERRED rasterized plan grid, perimeter is inflated by segmentation noise and rasterization stair-stepping, so raw J measures pipeline noise before it measures room shape \u2014 P\u00b2/A is quadratically sensitive to boundary jitter. The sketch anticipates this (Douglas-Peucker before the reflex-vertex count) but computes J itself on what is implied to be the raw polygon. Second honesty point: an isovist recovered from one photograph covers only the visible cone; occluded pockets \u2014 the very alcoves that make real isovists jagged \u2014 are unobservable, so Tier-B-from-photo J is a lower bound and must be labeled as such (this is fine when the plan grid comes from a real declared floor plan). AMBER cap is correct; dependency on V4's isovist is declared.",
+   "fixed_computation": "Compute J on the Douglas-Peucker-simplified polygon (same epsilon = 1 grid cell), not the raw rasterized boundary, and report sensitivity across epsilon in {0.5, 1, 2} cells; if log(J) is not stable across that range, ABSTAIN. Label photo-inferred results 'visible-cone lower bound' distinct from declared-plan results.",
+   "citation_concern": ""
+  },
+  "V34": {
+   "id": "V34",
+   "verdict": "KILL",
+   "reasons": "The literature is real and the response shape is right, but the computation as sketched does not measure dilapidation \u2014 it measures 'things on walls.' The wall-plane module (illumination-model residual blobs = stains; high-frequency edge clusters on 'nominally smooth' planes = cracks) will fire on posters, whiteboards, art, signage, outlets, switches, vents, wall-washing light gradients, and hard shadows, all of which are low-frequency luminance deviations or edge clusters on wall planes. Distinguishing a water stain from a shadow or a framed print requires exactly the semantic judgment classical CV cannot deliver, and 'nominally smooth' presupposes material knowledge the pipeline does not have. In an ordinary occupied office photo, false positives would dominate the anomaly-area fraction, so the output would be a confident-looking dilapidation number that is fabricated with respect to its construct \u2014 the cardinal sin, and acknowledging the confound in the rationale does not remove it from the number. The one genuinely computable fragment is the suspended-ceiling module, where the regular grid supplies a strong structural prior and per-tile deviation (discolored/missing tiles) is a real, checkable signal.",
+   "fixed_computation": "Salvage as a narrow 'ceiling-condition index': detect suspended-ceiling grids via regular Hough spacing; score per-tile luminance/chroma outliers against the tile population within the same plane (sagging/missing/stained tiles), masking luminaires and diffusers by their regular positions and specular/emissive signature; ABSTAIN on all other surfaces and whenever no tile grid is confidently detected. Wall stain/crack scoring should be dropped entirely, or gated behind instance-segmentation object masks AND a very high anomaly threshold with the score renamed 'unmasked wall anomaly fraction (uninterpreted)'.",
+   "citation_concern": "Anchors are real (Kim & de Dear 2013 B&E nonlinear dissatisfier finding; Leaman & Bordass 1999 forgiveness; Vilnai-Yavetz, Rafaeli & Schneider Yaacov 2005; Wilson & Kelling 1982 correctly quarantined as mechanism-only). The problem is not the citations \u2014 it is that none of them validate an image-residual operationalization; they are all survey/POE, so even the salvaged version is proxy-level."
+  },
+  "V35": {
+   "id": "V35",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Evidence base is the best-established environmental-psych literature in the batch \u2014 Oldham & Rotchford 1983, Oldham & Fried 1987, Brennan, Chugh & Kline 2002, Kim & de Dear 2013 are all real, on-construct, and correctly characterized as satisfaction/withdrawal findings rather than oversold as stress causation. The design's second use (independent photographic cross-check on plan-derived C12, with disagreement itself surfaced as a Tier-B inference-quality flag) is genuinely good epistemic engineering, not duplication. Three computability caveats keep it AMBER and need to be explicit in the payload: (a) monocular metric scale \u2014 'per 100 m\u00b2' is proxy-scaled and should be reported ordinally or with a declared scale anchor (standard desk height 720-750mm is a defensible anchor, but say which); (b) the visible cone is a biased sample of the floor \u2014 one photographed corner does not estimate workplace density, only local visible density; (c) chairs alone conflate meeting rooms with workstation zones \u2014 a room of 12 chairs around one table is not 12 workstations. The classical edge-autocorrelation fallback is nearly worthless and is honestly flagged as such; fine as long as its confidence tier is machine-readable, not just prose.",
+   "fixed_computation": "Define a workstation as a desk instance with a co-located chair OR monitor (spatial association on the back-projected floor plane), not raw chair count; report nearest-neighbor spacing in desk-height-normalized units unless a metric anchor is declared; label the output 'visible-cone local density' to block silent generalization to the whole floor.",
+   "citation_concern": ""
+  },
+  "V36": {
+   "id": "V36",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "The vision-science anchors are all real and correctly deployed: Bouma 1970 (critical spacing \u2248 0.5\u00d7 eccentricity), Balas/Nakano/Rosenholtz 2009 and Rosenholtz et al. 2012 (summary-statistic account of crowding and search), Freeman & Simoncelli 2011 (eccentricity-scaled pooling metamers), Whitney & Levi 2011. The computation (annular pooling regions, orientation circular variance + Lab covariance volume, area-weighted sum beyond ~2 deg) is deterministic and implementable. Two honesty conditions: (a) the eccentricity geometry is only meaningful given the photo's angular subtense \u2014 a constant-FOV assumption makes the score a function of the photographer's lens and crop, not the room; a phone ultrawide vs a 50mm shot of the same vantage would score differently. EXIF focal length exists for most photos and should gate the computation. (b) The construct claim ('predicts noticing signage/landmarks you are not fixating') is a mechanistic extrapolation from psychophysics with letter/synthetic stimuli to real interiors \u2014 no cited study validates it in architectural scenes, so the payload should call it a mechanism-grounded load index, not a validated wayfinding predictor. With those stated, it is defensible as the stack's only eccentricity-aware attribute, and the fixation default (VP) is a reasonable, declared convention for corridor/wayfinding vantages.",
+   "fixed_computation": "Use EXIF focal length + sensor size to compute degrees-per-pixel when available; when EXIF is absent, either ABSTAIN or emit the score with an explicit 'FOV-assumed' uncertainty flag at reduced confidence rather than silently applying the constant.",
+   "citation_concern": ""
+  },
+  "V37": {
+   "id": "V37",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Skewness and PCA-eccentricity of radials are deterministic, cheap, and genuinely distinct from C24 (magnitude) and prospect (axial). The one real computability hole: a plan grid inferred from ONE photograph only covers the camera frustum, so the 'isovist' is a partial sector, not Benedikt's 360-degree polygon. Elongation computed on a frustum-clipped polygon is dominated by the lens FOV and camera heading, not the room \u2014 a square room shot with a wide lens down its diagonal will score elongated. Survives only if the metric is explicitly declared a VISIBLE-SECTOR statistic (normalized within the reconstructed sector) or is computed on a supplied full plan; with that relabeling the anchors carry it. Benedikt 1979 does define radial variance/skewness as core descriptors; Franz & Wiener 2008 (Env & Planning B) did relate isovist statistics to experiential ratings in VR; Stamps's spaciousness/elongation work exists and is properly hedged. AMBER is the correct ceiling (rides plane-seg/depth plan inference).",
+   "fixed_computation": "Compute skewness/elongation only over the reconstructed visible sector, normalize elongation by sector aspect (or report per-degree radial profile), and emit SECTOR-ONLY flag; full-polygon variant requires a declared floor plan. Never report as a 360-degree isovist property from Tier B.",
+   "citation_concern": "Minor: the VR spaciousness-rating result is closer to Franz, von der Heyde & Bulthoff 2005 than Franz & Wiener 2008 (which is about behavioral relevance of isovist measures); same lab, right construct, slightly misremembered paper."
+  },
+  "V38": {
+   "id": "V38",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "reasons": "The construct is real and the anchors check out (drift is Conroy Dalton's measure; the OmniVista symposium paper and the 2001 UCL thesis exist; Wiener/Franz et al. 2007 in Perception is real). But the headline output is uncomputable from a photo-inferred plan: the grid inferred from a single photograph contains NOTHING behind or beside the camera outside the frustum, so the isovist centroid is guaranteed to sit in front of the camera and 'alignment' is biased toward +1 by construction. The diagnostic case the proposal advertises (alignment near -1, main volume behind you = disorientation cue) can literally never fire. Reporting that number from Tier B would be exactly the kind of fabrication-by-artifact the panel exists to kill. With a SUPPLIED floor plan (declared extra input) drift is fully computable and defensible.",
+   "fixed_computation": "Two honest modes: (a) declared-plan mode \u2014 full drift vector and alignment, as sketched; (b) Tier-B photo mode \u2014 output ONLY the lateral (within-FOV, perpendicular-to-view-axis) component of drift, abstain on the longitudinal/behind-camera component and on alignment. Do not emit |d| or cos(angle) from a frustum-clipped isovist."
+  },
+  "V39": {
+   "id": "V39",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "The max-run statistic is a real, mean-proof addition and the tile computation is deterministic. All three anchors are real: Ellard's BMW Guggenheim Lab blank-facade walks (Places of the Heart, 2015), Gehl 2010's per-100m frontage grading, Gehl/Kaefer/Reigstad 2006 (Urban Design International) on walking speed past unarticulated ground floors. Two honesty conditions must be stated in the metric card: (1) EVERY anchor is about exterior street frontage experienced while walking; applying it to interior walls is a construct transfer the literature does not itself test \u2014 this must ship as proxy-grade, not as an Ellard-validated interior finding. (2) Confounds: global under-exposure or defocus makes ALL tiles low-edge-density (false full-width blank run) \u2014 needs a per-image exposure/sharpness gate before the corpus-percentile test; and without depth, run-as-fraction-of-band conflates wall length with framing distance (they already flag metric length UNKNOWN, good). Inherits V28's assumptions and dies if V28 dies. AMBER matches.",
+   "fixed_computation": "Add a global-image gate: abstain if whole-frame median edge density or Laplacian variance is below a floor (photo quality, not room, is then the signal). Report image-fraction and metric length as separate fields with separate abstention."
+  },
+  "V40": {
+   "id": "V40",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Positionally distinct from existing landmark salience and the class taxonomy (LANDMARK/BLANK/OPEN) is honest about what contrast statistics can deliver. Anchors: Lynch 1960 genuinely ties path imageability to clear termini; Cullen 1961 is correctly downgraded to design-theory proxy. Conroy Dalton 2003 (Env & Behavior, least-angle route choice) is real but the gloss 'so its terminus carries orientation information' is an inference layered on her finding, not her finding \u2014 keep it hedged as stated. Main computability trap: luminance-contrast salience at the VP cannot distinguish a memorable articulated element from a bright window, specular highlight, or blown exposure \u2014 the single most common interior VP terminus IS a window, which would score maximal 'landmark' salience for reasons that are glare, not memorability. Needs the existing glare-risk bright-patch mask applied before scoring, and the aperture case routed to OPEN-CONTINUATION, which the sketch partially anticipates. VP+depth chain makes AMBER correct.",
+   "fixed_computation": "Intersect the terminal patch with the existing glare/bright-patch mask: if masked area exceeds a threshold, classify OPEN-CONTINUATION or ABSTAIN rather than scoring luminance contrast as landmark salience."
+  },
+  "V41": {
+   "id": "V41",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Construct and anchors are sound: Ulrich 1983 (Altman & Wohlwill volume) does list depth/spatial definition among gross structural properties driving affective response; Kaplan & Kaplan 1989 preference work includes inferred depth/occlusion; Ko, Schiavon et al. 2020 (Building and Environment) is a real experimental window-view result on working memory and emotion \u2014 correctly cited as view STRUCTURE evidence, though note it compared view vs no-view, not layered vs unlayered view, so it supports the construct family, not this specific metric. Two computability caveats to encode: (1) monocular depth models produce smooth gradients and fail worst exactly where this metric wants to look \u2014 THROUGH glazing, where they often flatten the exterior to the glass plane or hallucinate; the 'restrict to glazing region' option is therefore the least reliable mode and should carry its own flag. (2) 'Abstain on low depth-model confidence' is currently vaporware \u2014 frozen depth models emit no calibrated confidence; it must be operationalized (e.g., left-right flip inconsistency or multi-scale disagreement) or dropped. KDE mode count can echo model artifacts, so run the one-example-before-scaling rule on a known 3-layer scene first. AMBER is right (fully rides the frozen depth model).",
+   "fixed_computation": "Operationalize the abstention gate as horizontal-flip depth inconsistency (or multi-crop disagreement) above a corpus-calibrated threshold; flag glazing-restricted mode as lower-evidence than whole-scene mode, not higher."
+  },
+  "V42": {
+   "id": "V42",
+   "verdict": "KILL",
+   "reasons": "Fails on both computability and citation hygiene. Computability: 'door-shaped, taller-than-wide, low-interior-luminance, floor-connected opening' is a semantic category classical CV cannot reliably deliver \u2014 dark wardrobes, full-height curtains, mirrors, and black door panels all satisfy the rule, while the most important modern egress case, a floor-to-ceiling glass door to a terrace, is BRIGHT and gets excluded by the 'exclude high windows / low luminance = navigable' logic. That is the glass-house inversion by construction: the metric would systematically score the most escapable interiors as trap-like. Distinguishing a fixed floor-connected window from an operable glass door is not recoverable from one photo by any luminance/geometry rule. Evidence: the enclosure-to-exit-decision finding is Vartanian et al. 2015, Journal of Environmental Psychology (ceiling height and perceived enclosure); Vartanian et al. 2013 PNAS is the curvilinear-vs-rectilinear CONTOUR paper \u2014 right finding, wrong paper and venue, exactly the misattribution class the panel flags. Fisher & Nasar 1992 and Appleton 1975 are real and correctly graded. The honest home for this construct is the plan's declared door/opening layer \u2014 which the proposal itself admits collapses into V19's locomotive channel, leaving no residual value for the Tier-A variant.",
+   "citation_concern": "Vartanian et al. 2013 (PNAS) is the contour/curvature study; the enclosure-exit-decision result is Vartanian et al. 2015, Journal of Environmental Psychology. As written the anchor misattributes finding to venue/year.",
+   "fixed_computation": "Only salvageable as a declared-input predicate: egress-weighted aperture salience computed from a supplied plan's door layer (openable vs fixed glazing tagged by the human), visible-from-vantage via the Tier-B sector \u2014 but that is V19's channel, so propose it there or not at all."
+  },
+  "V43": {
+   "id": "V43",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Survives, but only at AMBER and only as a declared proxy. Computability: the three sub-measures are all genuinely deterministic, but two have named failure modes the implementation must surface. (a) The roughness proxy (mid-band RMS luminance energy) measures VISUAL texture, which confounds physical roughness with printed pattern, camera distance (spatial frequency shifts with distance \u2014 a brick wall at 6m reads smoother than fabric at 1m), and depth-of-field blur (out-of-focus regions read as smooth/glossy). (b) The gloss proxy requires specular highlights to actually be present \u2014 a glossy floor with no luminaire in the reflection geometry scores matte, and flash photography inverts this. These are photography-level confounds, not room-level facts, and should be listed as such in the attribute's uncertainty notes. What saves it: Wastiels et al. gives a real multi-predictor regression over exactly these dimensions, weight SIGNS are literature-anchored, and magnitude defaults are declared as defaults \u2014 this is the honest version of a composite (contrast V48). Riding material/plane segmentation mandates AMBER; the claimed ceiling matches. Not a duplicate: the existing warm/cool ratio is purely chromatic.",
+   "citation_concern": "",
+   "fixed_computation": ""
+  },
+  "V44": {
+   "id": "V44",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Computability: sound. Per-block Gabor orientation + least-squares radial convergence fit is essentially the GIST-style expansion computation from the cited papers, is deterministic, and the cross-check against the existing VP detector is a real internal consistency test. Two failure modes must be flagged: (1) lens/framing confound \u2014 measured expansion is a function of focal length and photographer position, not just room geometry; a wide-angle shot down a corridor inflates it (same class of confound as the existing prospect metric, so acceptable if declared; normalizing by EXIF focal length when available would strengthen it); (2) radial texture patterns (sunburst flooring, radial ceiling fixtures) can produce spurious convergence fits \u2014 the VP cross-check partially guards this. Evidence: Oliva & Torralba 2001 and Ross & Oliva 2010 genuinely establish that humans' perspective/depth-gradient percepts are recoverable from these global features; the wayfinding-pull link is Gibson-theoretical and the proposal says so explicitly. That honesty is why it lives \u2014 but it also caps it: construct evidence is proxy-grade, so AMBER is the correct ceiling despite the computation being classical CV with no pretrained dependency. Dissociation from prospect (how far vs how strongly funneled) is real and well-argued.",
+   "citation_concern": "",
+   "fixed_computation": ""
+  },
+  "V45": {
+   "id": "V45",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Computability: yes \u2014 SLIC + deltaE agglomerative merge + component count is deterministic and is essentially Yu, Samaras & Zelinsky's own validated pipeline, which predicted human clutter ratings better than pixel measures. Failure modes to declare: shadows and lighting gradients split single surfaces into multiple proto-objects (count inflates in raking light \u2014 a lighting confound, not an object-count fact); the count is resolution- and framing-dependent (the per-steradian normalization under declared FOV partially addresses this and must not be optional); the fixed deltaE threshold is heuristic \u2014 the promised \u00b120% sensitivity emission is the right honest move and should gate the confidence flag. Evidence: all three anchors are real and correctly characterized, including the honest use of Rosenholtz 2007 to justify why proto-objects rather than true objects. One mild framing stretch: Wolfe's set-size effects come from discrete search displays, and Wolfe's own scene-search work shows set size is ill-defined in real scenes \u2014 which is exactly why this is a clutter-family proxy, not a search-RT predictor; the attribute description should not promise RT prediction. Genuinely non-duplicative: it is the only discrete-chunk count in the stack, and the V7-divergence diagnostic is a nice touch. Single-lab validation + heuristic threshold = AMBER, as claimed.",
+   "citation_concern": "",
+   "fixed_computation": ""
+  },
+  "V46": {
+   "id": "V46",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Computability: the pyramid mirror-NCC machinery is deterministic and implementable, and the abstention rule for oblique views is the single design decision that saves it \u2014 perspective projection destroys frontoparallel mirror symmetry, so without that rule the metric would mostly measure camera angle. Two costs to state plainly: (1) the abstention rule means this attribute will ABSTAIN on a large fraction of real interior photos (most are oblique) \u2014 acceptable but should be reported as expected coverage, not discovered later; (2) periodic patterned surfaces (wallpaper, tile) generate dense spurious symmetry peaks at fine scales that can fabricate 'nesting' \u2014 a minimum-peak-separation or periodicity suppression step is needed. Evidence: Alexander & Carey 1968, Jacobsen & H\u00f6fel 2003, and Makin/Bertamini's implicit-affect and SPN work are all real. But note the anchor's actual scope: Alexander & Carey counted subsymmetries in 1D binary strips of 7 elements; it validates 'more sub-symmetries -> better perceived goodness,' NOT the hierarchical axis-alignment structure this index specifically rewards. The nesting-specific claim rests on Alexander 2001, which is theory. The proposal flags interior extrapolation, so it survives \u2014 at AMBER, mid-rank, exactly where it put itself.",
+   "citation_concern": "Alexander & Carey 1968 is real but narrower than the construct: 1D binary strip patterns, subsymmetry COUNT \u2014 it does not test hierarchical axis alignment, which is anchored only by Alexander 2001 (theory). Not invented, but the index's nesting-specific component outruns its one psychophysical anchor.",
+   "fixed_computation": ""
+  },
+  "V47": {
+   "id": "V47",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "The cleanest of the six. Computability: PHOG histogram-intersection self-similarity is a fully specified, deterministic statistic taken directly from the source papers \u2014 no heuristic thresholds beyond bin/pyramid choices, no segmentation dependency, robust to moderate exposure changes (orientation histograms are magnitude-weighted but contrast-normalizable; specify normalization to close that hole). The dissociation argument from fractal D is correct and concrete (a striped wall and a richly self-similar scene can share box-count D while diverging sharply here). Evidence: Amirshahi et al. 2012 (PHOG self-similarity of artworks), Braun et al. 2013 (norms for architecture photographs \u2014 meaning the built-environment distribution of this statistic is actually characterized), and Redies 2007 are all real and correctly described, and the proposal correctly labels the preference link as correlational and interiors as characterized-but-not-preference-tested. That construct gap, not the computation, is what makes AMBER the right ceiling \u2014 and the proposal already says so. No duplication. Defensible to Kirsh as-is.",
+   "citation_concern": "",
+   "fixed_computation": ""
+  },
+  "V48": {
+   "id": "V48",
+   "verdict": "KILL",
+   "reasons": "This is the hue-affect situation wearing a factor-analytic costume, and the honest design there was abstention. The construct is real (Coburn et al. 2020's hominess factor exists), but the operationalization is invented at both levels: (1) no cited study provides a mapping from image features to hominess \u2014 unlike V43, where Wastiels supplies a regression fixing at least the weight signs across the exact predictor dimensions, here the choice of the three proxies AND their fusion weights are both fabricated, and the proposal admits it ('invented fusion weights', 'weakest computational grounding'). A number produced this way measures the author's intuition about hominess, not hominess. (2) Two of the three anchors are misused (see citation concern). (3) Computationally it stacks three noisy proxies (warm low-key luminance is exposure-confounded; 'fabric/grain texture energy' inherits every roughness-proxy failure from V43; soft-material fraction rides material segmentation) and then hides their individual error inside a weighted sum \u2014 the composite structure prevents the sensitivity honesty that saves V45. Fabrication is the cardinal sin; a composite whose loadings have no evidential source is a fabricated mapping with citations decorating it.",
+   "citation_concern": "Vartanian et al. 2013 is the CONTOUR study (curvilinear vs rectilinear -> beauty/approach); it does not show comfort/approach tracking 'soft, enclosing, warm' qualities \u2014 and the related Vartanian et al. 2015 enclosure work found enclosed spaces increased EXIT/avoidance decisions, the opposite valence of the enclosure loading implied here. Meyers-Levy & Zhu 2007 is ceiling-height priming of processing style (abstraction vs item-specific), sold here as a generic 'felt quality shapes response' gloss \u2014 tangential at best. Coburn et al. 2020 is real and correctly described.",
+   "fixed_computation": "Do not emit a hominess score. Emit the three sub-proxies separately as raw, individually-caveated indicators (warm low-key luminance fraction; specular-inverse softness proxy; soft-material fraction from the existing material table), and have the hominess attribute itself ABSTAIN with an explicit note: 'construct established (Coburn et al. 2020) but no literature-derived feature loadings exist; fusion withheld.' If David later obtains rated-interior data, weights can be fitted and the attribute promoted \u2014 that is the only evidence path to a fused score."
+  },
+  "V55": {
+   "id": "V55",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Computability mostly holds: the score is a scale-invariant ratio, so monocular scale ambiguity is harmless, and VP-homography floor rectification is standard. Two failure modes must be handled explicitly: (a) specular reflection streaks \u2014 ceiling luminaires reflected in glossy corridor floors produce long, high-contrast, axis-aligned lines that Hough will read as guidance cues (glare masquerading as wayfinding information); (b) the 'movement axis' is silently assumed to be the camera axis, which is a photograph-framing assumption (photographers shoot down corridors) not a room property \u2014 in oblique or room-corner shots the metric measures composition, not circulation. Evidence side is honestly hedged and real: Lynch 1960 continuity is genuine imageability theory, Emo's eye-tracking work (c. 2014) genuinely reports wayfinding gaze concentrating on the floor plane and longest sightlines, and Arthur & Passini 1992 is correctly labeled design doctrine. The proposal claims AMBER (rides plane segmentation + VP), which matches reality, and the rank hedge (thin direct experimental base) is honest. Defensible as a hedged proxy with the fixes below.",
+   "fixed_computation": "Before Hough: mask specular/bright pixels (reuse the glare bright-patch detector) so reflected light streaks cannot count as floor cues. Gate on VP confidence and abstain when the dominant VP is far off-center (camera axis not plausibly the movement axis) \u2014 state the camera-axis\u2248movement-axis assumption in the attribute's uncertainty flag. Also abstain on heavily glossy floors where masked area exceeds a threshold of the rectified floor.",
+   "citation_concern": "Emo '~2014' should be pinned to the exact paper (Emo 2014, eye-tracking in wayfinding decision points; gaze toward floor plane and longest line of sight) \u2014 the finding is real but the tilde citation must be resolved before shipping."
+  },
+  "V56": {
+   "id": "V56",
+   "verdict": "KILL",
+   "reasons": "Fails computability at the construct level: none of the three sub-scores discriminates temporal depth from ordinary photographic and material confounds. Low-frequency chroma variance fires on lighting gradients and colored light spill; dark low-saturation blobs are exactly what cast shadows and soiling look like; and matte-ness from a single photo is not recoverable \u2014 perceived gloss depends on light-source geometry relative to the camera, so a matte wall lit raking reads glossy and a lacquered floor with no highlight in frame reads matte. The index would score a shadowed corner of new drywall as 'patina' and a pristine varnished antique as 'new.' Distinguishing genuine weathering from factory-distressed finish or dirt is semantics classical CV cannot deliver. It also depends on 'regions V12 classifies as natural' \u2014 V12 is a sibling candidate, not a shipped attribute; if V12 dies or underperforms, this abstains everywhere. Finally, the payload is empty for the WB code: by design it abstains on valence, so the well-being layer receives a descriptive tag it can do nothing with; 'abstention-pattern study value' is a research note, not a reason to ship a metric. The hue-abstention precedent doesn't rescue it \u2014 hue is trivially and reliably measurable with only the affect mapping abstained; here the measurement itself is unreliable. Literature is real but correctly self-labeled theory-grade (Kellert's 'patina of time' is an attribute list, not an empirical effect), so there is no evidence anchor strong enough to justify the computability risk.",
+   "fixed_computation": "Not fixable within Tier A. An honest version needs a declared extra input (material provenance/finish metadata or a surveyed material map with age/finish fields), at which point it is a lookup, not a CV attribute. If the team wants the Kellert pattern represented, record it as a declared-input Tier attribute, not an image computation.",
+   "citation_concern": "None invented: Kellert 2008 / Kellert & Calabrese 2015 ('age, change, and the patina of time' as a biophilic attribute), Nyrud & Bringslimark 2010 (review of psychological responses to interior wood), and Broman ~2001 (heterogeneous appreciation of knotty wood surfaces) are all real and honestly graded \u2014 but note all are preference/theory literature; none links measured patina to any well-being outcome."
+  },
+  "V49": {
+   "id": "V49",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "Evidence is the strongest in the batch: Wells 2000 (JEP) is a real personalization\u2013wellbeing study, Knight & Haslam 2010 (JEP: Applied) is a genuine experiment where enriched/self-decorated offices beat lean ones, and Brunia & Hartjes-Gosselink 2009 (J. Corporate Real Estate) really documents persistence of personalization in non-territorial offices. The computation is honest about being 'object richness on work surfaces', which is the right declaration because classical CV genuinely cannot separate a framed family photo from a stapler \u2014 the proposal never pretends otherwise. Remaining weaknesses to keep on record: (a) the desk-height band (0.6\u20131.1 m) requires metric scale from monocular depth + camera-height assumptions, a known AMBER fragility; (b) one photo samples one or two desks, while the construct (a personalization regime, e.g. clean-desk policy) is office-level \u2014 a staged/showroom photo scores 0 for reasons unrelated to policy; (c) there is a latent tension with the existing clutter proxy: the same blobs score as cost there and as positive appropriation here, so the two must be reported jointly, not summed. None of these are fatal given the declared proxy status. Rides planes+depth, so the claimed AMBER ceiling is exactly right.",
+   "fixed_computation": "",
+   "citation_concern": ""
+  },
+  "V50": {
+   "id": "V50",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "All four anchors are real and correctly characterized (Oliva & Torralba 2001 IJCV spatial-envelope openness; Greene & Oliva 2009 glance-speed global properties; Ross & Oliva 2010 J. Vision layout-property estimation; Stamps' enclosure meta-analytic work, appropriately hedged). The role claimed \u2014 triangulation/disagreement flag against the plane-seg enclosure index, not new construct signal \u2014 is the honest way to use GIST-like features, and the pure FFT/Gabor pipeline is deterministic. Two real problems keep it from clean VIABLE: (1) 'hand-set logistic over two hand-set discriminants' is an invented mapping unless the constants are calibrated and declared \u2014 V51 does this right, V50 as written does not; worse, the Oliva-Torralba openness discriminants were learned on outdoor scenes where openness = horizon dominance, and the sign/shape of those cues may not transfer indoors (a corridor is 'deep' but enclosed; a low wide room is open but horizonless). (2) It is algorithmically independent of the enclosure index but NOT photographically independent: wide-angle lenses and framing shift both estimators the same direction, so agreement inflates joint confidence more than it should. Self-capping at AMBER despite using no frozen model is the correct honesty call given unvalidated interior transfer.",
+   "fixed_computation": "Replace the hand-set logistic with the V51 pattern: calibrate the two discriminants on a small labeled interior set, declared as calibration constants, and verify on that set that the outdoor-derived discriminant directions actually hold indoors before shipping. Additionally, condition the DISAGREEMENT flag on estimated field of view (from vanishing-point geometry already in the stack) so lens-driven joint shifts are not read as independent agreement.",
+   "citation_concern": ""
+  },
+  "V51": {
+   "id": "V51",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "reasons": "The literature lineage is real and precisely cited: Torralba & Oliva 2002 (TPAMI) did predict mean depth from global spectral signatures, Ross & Oliva 2010 did predict human mean-depth judgments from global features, and Greene & Oliva 2009 supports glance-speed extraction. The design is the most epistemically disciplined in the batch: ordinal-only output, declared interior calibration set (avoiding the trap V50 falls into), and its product is explicitly an uncertainty flag on the frozen depth net rather than a confident number \u2014 exactly the single-point-of-failure guard this stack needs, since prospect currently rests entirely on one pretrained model. Known confounds are tolerable in the flag role: spectral scale statistics conflate scene size with texture/clutter (a close-up of a textured wall vs. a smooth atrium), and lens FOV shifts the radial spectrum; but a false disagreement flag costs only a widened uncertainty band, never a fabricated score, which is the right failure asymmetry. AMBER ceiling matches reality.",
+   "fixed_computation": "",
+   "citation_concern": ""
+  },
+  "V52": {
+   "id": "V52",
+   "verdict": "KILL",
+   "reasons": "Computability failure at the core of its own stated purpose. The metric claims to distinguish graded size hierarchy from mono-scale repetition, but perspective projection alone destroys that distinction: a row of identical chairs, windows, or ceiling tiles receding in depth produces a smooth gradient of image-plane component sizes, which the Clauset MLE will happily fit as an inverse-power distribution. The detector will report 'graded hierarchy ~ Salingaros coherence' for exactly the mono-scale minimalism it exists to flag. Depth-correcting areas would ride the depth net (still AMBER) and still fails under occlusion and slanted-plane foreshortening. Second, 'Canny -> closing -> connected components' does not yield countable design elements \u2014 edge maps chain unrelated structure together and fragment textured surfaces, so what gets counted is edge-ink blobs whose census is threshold- and exposure-dependent, not architectural components. Third, with a declared area floor and pixel-resolution ceiling you get at best ~1.5\u20132 decades of size range and often <100 elements; Clauset-Shalizi-Newman fitting is famously unreliable in that regime, so the KS gate will mostly return UNKNOWN, and the metric's yield collapses. Construct evidence is honestly labeled theory-grade (Salingaros & West 1999 is real but illustrative, not empirical validation of a wellbeing/cognition outcome), so there is no evidence weight to justify carrying these computability defects.",
+   "fixed_computation": "The only defensible re-proposal: restrict to a single wall/facade plane, homography-rectify it via the existing vanishing-point machinery so element sizes are metrically comparable within the plane, and extract elements by morphological granulometry or luminance-blob analysis on the rectified plane rather than global edge connected-components. That kills the perspective confound and matches Salingaros-West's actual (facade-level) domain \u2014 but it becomes a different, narrower predicate that abstains on most interior photos, and it still caps at AMBER on theory-grade construct evidence.",
+   "citation_concern": ""
+  },
+  "V53": {
+   "id": "V53",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "reasons": "The literature is real and honestly graded (White et al. 2010 JEP is genuinely a preference/affect/perceived-restorativeness ratings study and is sold as such; V\u00f6lker & Kistemann 2011 is a real blue-space review correctly labeled proxy/self-report-grade; Ulrich 1983's preferenda framing is accurate). The failure is the Tier-A detector, and specifically its load-bearing claim: the mirror-correlation reflection test is presented as REJECTING glossy floors, but a polished marble or sealed-concrete floor exhibits exactly the vertical mirror correlation that still water does \u2014 the test admits the most common indoor false positive rather than excluding it. Since interior water features have a very low base rate, even a decent detector drowns in false positives (base-rate problem): most 'present' outputs will be glossy floors, glass tables, and screens showing blue content. Real indoor water (fountains, aquaria) is meanwhile textured or vertical and fails the smooth/below-horizon template, so recall on true positives is also poor. As a photo-only predicate this cannot be defended; as a declared-extra-input predicate (water-feature/aquarium annotation, or landscape plan for exterior views through glazing) the construct and its literature premium are perfectly sound within this framework's rules.",
+   "fixed_computation": "Reclassify as a declared-extra-input predicate (water-feature map / facility annotation), with a residual high-precision Tier-A path only when ALL of chromatic blue-cyan + textural smoothness + below-horizon + reflection pass jointly (dropping the standalone 'or specular' branch, which is the glossy-floor doorway) \u2014 reporting PRESENT only at that strict conjunction and ABSTAIN otherwise, with the precision/recall asymmetry declared.",
+   "citation_concern": ""
+  },
+  "V54": {
+   "id": "V54",
+   "verdict": "KILL",
+   "reasons": "The mechanism citations are real and the scoping (salience only, Sussman & Hollander flagged as non-peer-reviewed) is commendably honest \u2014 but honesty about the downstream link does not rescue the measurement itself, and that is where this dies. The pareidolia literature (Taubert 2017; Liu 2014; Palmer & Clifford 2020) used stimuli that HUMANS verified as face-like; nothing anywhere validates that a Haar frontal-face cascade's hits on architecture, or a hand-crafted 'two co-elevated dark components plus a third below' template, correspond to what humans experience as pareidolic. Haar cascades are tuned to photographic face statistics and on non-face imagery produce sparse, essentially random texture hits; the geometric test detects a superset (any symmetric triadic dark arrangement) most members of which trigger no face percept, and it substantially overlaps the existing horizontal-symmetry attribute at local scale. So the number produced is 'symmetric triadic configuration density', not 'pareidolia salience' \u2014 an unvalidated detector-construct gap that is precisely the class of quiet fabrication this panel exists to catch. There is also a domain mismatch: the construct is facade-centric while the pipeline scores single interior photographs, so yield would be near zero even if the detector worked. Making it defensible requires a human-rating validation study of the detector on architectural imagery, which is a research project, not a computation fix.",
+   "fixed_computation": "",
+   "citation_concern": ""
+  }
+ }
+}

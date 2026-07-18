@@ -55,6 +55,7 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -
     import cv2, numpy as np
     import cnfa_algs as ca
     from cnfa_algs import attributes as A
+    from cnfa_algs import reliable_attrs as RA
     from cnfa_algs.plan import infer_plan_from_image, FREE
     from cnfa_algs import space_syntax as ss, setting_classifier as st, affordance as af
 
@@ -100,7 +101,7 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -
         "cnfa.fluency.symmetry_score_horizontal": lambda: A.symmetry_horizontal(img),
         "cnfa.fluency.color_palette_entropy":     lambda: A.palette_entropy(img),
         "cnfa.fluency.processing_load_proxy":     lambda: A.processing_load(img),
-        "cnfa.fractal_dimension":                 lambda: A.fractal_dimension_local(img),
+        "cnfa.fractal_dimension":                 lambda: fractal(),
         "glare-risk":                             lambda: A.glare_risk(img),
         "cnfa.light.warm_vs_cool_ratio":          lambda: A.warmth_ratio(img),
         "cnfa.cognitive.landmark_salience":       lambda: A.landmark_salience(img),
@@ -108,6 +109,11 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -
         "cnfa.spatial.prospect":                  lambda: A.prospect(img, planes, Z),
         "acoustic_absorption_proxy":              lambda: A.acoustic_absorption(img, planes, Z),
         "cnfa.light.vertical_illuminance_proxy":  lambda: A.vertical_illuminance_proxy(img, planes),
+        "cnfa.fluency.spectral_discomfort_deviation": lambda: RA.spectral_discomfort_deviation(img),
+        "cnfa.fluency.edge_orientation_entropy":  lambda: RA.edge_orientation_entropy(img),
+        "cnfa.geometry.contour_angularity":       lambda: RA.contour_angularity_index(img),
+        "cnfa.fluency.subband_entropy_clutter":   lambda: RA.subband_entropy_clutter(img),
+        "cnfa.fluency.feature_congestion_clutter":lambda: RA.feature_congestion_clutter(img),
     }
     # ---- plan metrics from the inferred plan alone ----
     def _vga():
@@ -118,6 +124,12 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -
             _vga_cache["v"] = _vga()
         return _vga_cache["v"]
 
+    _frac_cache = {}
+    def fractal():
+        if "f" not in _frac_cache:
+            _frac_cache["f"] = A.fractal_dimension_local(img)
+        return _frac_cache["f"]
+
     plan_fns = {
         "C1.visual_integration":  lambda: (vga()["extras"]["integration_norm"], vga()["method"], vga()["confidence"]),
         "C2.connectivity":        lambda: (vga()["extras"]["connectivity_norm"], vga()["method"], vga()["confidence"]),
@@ -126,6 +138,18 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -
         "C13.setting_fit":        lambda: (lambda f: (f["scalar"], f["method"], f["confidence"]))(st.segment_fit(st.classify_settings(pg))),
         "C24.spatial_generosity": lambda: (lambda g: (g["scalar"], g["method"], g["confidence"]))(af.spatial_generosity(pg)),
     }
+
+    from .predicates import triangulation as TRI
+    from .predicates import stranded_amenity as STR
+    geom_conf_c = min(pconf, dconf, getattr(pg, "confidence", 0.4))
+    compound_fns = {
+        "C01.triangulation_ignition":
+            lambda: TRI.compute(img, planes, Z, pg, vga(), geom_conf_c, chain),
+        "C29.stranded_amenity_index":
+            lambda: STR.compute(img, planes, Z, pg, vga(), geom_conf_c, chain),
+    }
+    from .predicates import fractal_band as FB
+    compound_fns["cnfa.fluency.fractal_mid_d_band"] = lambda: FB.compute(img, fractal())
 
     for spec in R.PREDICATES:
         pid = spec["id"]
@@ -139,6 +163,8 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -
             elif pid in plan_fns:
                 val, signal, conf = plan_fns[pid]()
                 scores.append(D.scored(pid, val, plan_ev(signal, conf), spec["tier_hint"], (H, W)))
+            elif pid in compound_fns:
+                scores.append(compound_fns[pid]())      # full scored/zero/unknown record
             else:
                 # applicable per requirements but no binding on an image-only unit path
                 scores.append(D.unknown(pid, "no_binding_for_supplied_inputs"))
@@ -200,3 +226,24 @@ def run_worker(stage_dir: str, max_units: int = 10) -> Dict:
         except Exception as e:
             stage.emit_event(paths, uid, WORKER_ID, "failed", reason=repr(e)[:200])
     return {"processed": processed, "skipped_content_addressed": skipped}
+
+
+# --------------------------------------------------------------- Tier-A-only GREEN view (D1)
+def tier_a_view(record: Dict) -> Dict:
+    """Decision D1: a GREEN-eligible view of a full annotation record containing ONLY the
+    GREEN-ceiling image-attribute predicates (no inferred-plan metrics). Pure filter — no new
+    compute, no new failure mode; the unit can now verdict GREEN because every predicate in it
+    rides no heuristic geometry. Stamped `mode='tier_a_only'` so a consumer can never confuse it
+    with a full (plan-inclusive) record."""
+    green_img = {p["id"] for p in R.PREDICATES
+                 if p["kind"] == "image_attr" and p["tier_hint"] == "GREEN"}
+    kept = [s for s in record["scores"] if s["predicate"] in green_img]
+    n_scored = sum(1 for s in kept if s["status"] == D.SCORED)
+    n_abst = sum(1 for s in kept if s["status"] == D.ABSTAINED)
+    n_unknown = len(kept) - n_scored - n_abst
+    out = dict(record)
+    out["mode"] = "tier_a_only"
+    out["scores"] = kept
+    out["coverage"] = {"applicable": n_scored + n_unknown, "scored": n_scored,
+                       "abstained": n_abst, "unknown": n_unknown, "total_registry": len(green_img)}
+    return out

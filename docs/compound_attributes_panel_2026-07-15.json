@@ -1,0 +1,1702 @@
+{
+ "candidates": [
+  {
+   "id": "C01",
+   "name": "triangulation_ignition_field",
+   "human_effect": "Probability that co-present strangers convert silent proximity into a triggered exchange because a salient shared anchor sits ON the high-integration desire line, giving each a permissible reason to speak.",
+   "effect_sign": "Raises triggered conversation / chance encounter for mobile strangers and loose acquaintances; ~0 for solo focus; irrelevant to a formed private huddle.",
+   "social_form": "triggered conversation / chance encounter",
+   "base_measures": [
+    "landmark salience",
+    "C1 visual integration (VGA)",
+    "C6 path overlap",
+    "prospect (view depth)",
+    "social.sociopetal",
+    "dwell_propensity"
+   ],
+   "interaction_form": "Threshold-gated spatial product: anchor_salience x integration/path-overlap, gated to ~0 unless the anchor's plan location falls within a proximity band of the max-integration desire-line ridge. The signal is strictly the CO-LOCATION, not either term.",
+   "computation": "Locate anchor centroids + salience s; sample integration I along a d-metre buffer of the desire-line ridge; gate g decaying with normal-distance offset; field = s*I*g per region. ABSTAINS where plan inference UNKNOWN or no anchor detected.",
+   "literature": [
+    "Whyte 1980: triangulation requires the prop to lie where people already cross",
+    "Hillier et al. 1993: natural movement \u2014 integration predicts pedestrian flow"
+   ],
+   "tier": "B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Fountain on the diagonal cross-path between two entrances (ignites talk) vs identical fountain in a planted dead alcove off all circulation (admired, no talk).",
+   "cluster": "conversation-initiation",
+   "rank_score": 9,
+   "rationale": "Cleanest expression of David's core social lever; interaction is genuinely co-location (average fails); B-tier computable now; strongest region-A-vs-B value. AMBER preserved (rides inferred plan).",
+   "merged_from": [
+    "1:triangulation_ignition_field@whyte-triangulation",
+    "10:triangulation_conversation_catalyst@hall-sommer-proxemics",
+    "13:triangulation_activation@hillier-sailer-syntax",
+    "29:encounter_catalyst_score@whyte-desire-lines",
+    "30:triangulation_field@whyte-desire-lines",
+    "49:triangulation_conversation_ignition@fluency-dwell"
+   ]
+  },
+  {
+   "id": "C02",
+   "name": "triangulated_conversation_permission",
+   "human_effect": "Where a shared focal anchor on the desire line both draws strangers AND the spot is acoustically intelligible enough for the triggered exchange to actually proceed rather than abort.",
+   "effect_sign": "Raises probability triggered conversation matures; low = anchor becomes a look-but-don't-talk feature. For unacquainted people crossing a shared space.",
+   "social_form": "triggered conversation",
+   "base_measures": [
+    "landmark salience",
+    "C1 visual integration (VGA)",
+    "acoustic absorption proxy",
+    "enclosure index",
+    "C6 path overlap"
+   ],
+   "interaction_form": "Triangulation pull (salience x integration/path-overlap) multiplied by an acoustic-feasibility gate (local STI > ~0.5). Pull without hearability = 0; hearability without pull = 0.",
+   "computation": "pull = salience * integration at anchor cell; STI_local = f(absorption, enclosure); value = pull * gate(STI_local>0.5). ABSTAINS without Tier-B integration.",
+   "literature": [
+    "Whyte 1980: triangulation",
+    "Hongisto 2005: adequate mutual STI needed to sustain conversation",
+    "Hillier et al. 1993"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Anchor at a path crossing amid absorptive surfaces (encounters mature) vs same anchor in a hard echoing lobby (people gather, cannot converse).",
+   "cluster": "conversation-initiation",
+   "rank_score": 7.5,
+   "rationale": "Genuinely extends triangulation with an acoustic hearability interaction (a distinct compound, not double-count); needs acoustic proxy so AMBER; strong A-vs-B.",
+   "merged_from": [
+    "22:triangulated_conversation_permission@acoustic-conversation-ecology",
+    "65:collaboration_district_readiness@poe-workplace-social"
+   ]
+  },
+  {
+   "id": "C03",
+   "name": "conversation_initiation_propensity",
+   "human_effect": "Probability mere co-presence at a seat cluster converts into a triggered spoken exchange, driven by sociopetal (facing-in) orientation at conversational distance with low barriers.",
+   "effect_sign": "Raises triggered conversation / perceived friendliness for lounge/collaboration; worsens outcomes for solitary focus workers (unwanted interruption).",
+   "social_form": "triggered conversation",
+   "base_measures": [
+    "social.sociopetal",
+    "mean/variance depth (Hall band)",
+    "enclosure index (barrier)",
+    "C1 visual integration",
+    "C3 intelligibility"
+   ],
+   "interaction_form": "Sociopetal gate x Hall-distance bump (peak in social band ~1.2-3.6 m) x (1-barrier_opacity) x inverted-U on intelligibility. Sociofugal orientation vetoes the product regardless of the other terms.",
+   "computation": "Estimate seat facing vectors, pairwise facing-in fraction; bin centroid distances to Hall zones; barrier opacity along sightline; inverted-U on C3. ABSTAINS without recoverable seat orientation.",
+   "literature": [
+    "Osmond 1957: sociopetal vs sociofugal",
+    "Sommer & Ross 1958: facing-in ~doubled conversation",
+    "Hall 1966; Mehrabian & Diamond 1971"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Sociopetal chairs around a low table at social distance (high) vs parallel outward rows at the same footfall (initiation collapses).",
+   "cluster": "conversation-initiation",
+   "rank_score": 8.5,
+   "rationale": "The sociofugal veto is a real non-additive interaction and central to David's ask; ABSTAINS without seat map so AMBER; high A-vs-B value.",
+   "merged_from": [
+    "6:conversation_initiation_propensity@hall-sommer-proxemics",
+    "34:conversation_initiation_propensity@whyte-desire-lines"
+   ]
+  },
+  {
+   "id": "C04",
+   "name": "huddle_shelter_viability",
+   "human_effect": "Viability of a location for a formed pair/small group to hold a sustained or confidential exchange unseen and unheard by others; the deliberate inverse of the waiting/interaction seat.",
+   "effect_sign": "Raises support for sustained huddle / confidential exchange; the SAME features worsen see-and-be-found suitability. Sign flips with occupant intent.",
+   "social_form": "sustained huddle / confidential exchange",
+   "base_measures": [
+    "C7 speech privacy (STI to others)",
+    "C11 prospect-refuge / enclosure",
+    "C1 visual integration",
+    "acoustic absorption proxy",
+    "mean/variance depth",
+    "dwell_propensity"
+   ],
+   "interaction_form": "Product of seclusion complements: refuge x (1 - STI_to_others) x (1 - integration/exposure) x absorption. Any single high term (central location, acoustic leak) drives it toward zero; masking cross-check when visual closeness reads intimate but shelter is low.",
+   "computation": "R=refuge; Priv=1-STI_to_others; Seg=1-normalized C1; value=R*Priv*Seg*absorption. ABSTAINS on the acoustic term without a material/absorption table or declared 3D model (SCORED-partial geometry vs UNKNOWN privacy).",
+   "literature": [
+    "Sailer & McCulloh 2012: segregated locations host longer uninterrupted interaction",
+    "Osmond 1957 / Sommer 1969; Appleton 1975; ISO 3382-3",
+    "Alexander et al. 1977: alcoves / intimacy gradient"
+   ],
+   "tier": "extra_input",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Recessed backed absorptive alcove off the route (viable) vs open central node / glass-partition seat on a desire line (fails, masking flag).",
+   "cluster": "confidential-huddle",
+   "rank_score": 8.5,
+   "rationale": "The complementary optimum to triangulation; product-of-complements is a true compound; the six seats converged on it. Acoustic term abstains \u2192 AMBER. Strong A-vs-B.",
+   "merged_from": [
+    "8:confidential_exchange_viability@hall-sommer-proxemics",
+    "14:huddle_shelter_viability@hillier-sailer-syntax",
+    "17:confidential_exchange_viability@acoustic-conversation-ecology",
+    "33:huddle_shelter_field@whyte-desire-lines",
+    "50:huddle_shelter_viability@fluency-dwell",
+    "68:confidential_exchange_viability@poe-workplace-social"
+   ]
+  },
+  {
+   "id": "C05",
+   "name": "reverberant_affect_masking_flag",
+   "human_effect": "Cardinal masking trap: warm/wood/fluent materials lift rated pleasantness while a hard reflective envelope keeps RT60 high, so occupants report a lovely space yet pay a hidden listening-effort tax that cascades to fatigue and rougher interaction.",
+   "effect_sign": "Raising it WORSENS the true outcome while improving the reported one; high flag = perception masking a physiological load. Worst for long-dwell and effortful listeners.",
+   "social_form": "degrades sustained huddle / confidential exchange",
+   "base_measures": [
+    "warm/cool ratio",
+    "material coverage (wood)",
+    "acoustic absorption proxy",
+    "specularity proxy / material coverage (glass, stone)"
+   ],
+   "interaction_form": "Conjunctive masking detector: affect_good (warm/wood/fluency) x reverb_bad (hard+specular, low-absorption), fires only when BOTH exceed threshold. Product of a positive perceptual signal with a negative physical one is the masking signature.",
+   "computation": "affect=f(warm/cool, wood, fluency); reverb=(hard_coverage+specularity)*(1-absorption); flag=affect*reverb if both>0.5 else 0.",
+   "literature": [
+    "Peelle 2018: listening effort is a measurable load even at maintained comprehension",
+    "Pichora-Fuller et al. 2016 (FUEL); Reber, Winkielman & Schwarz 1998/2004"
+   ],
+   "tier": "A",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Wood-clad cafe with glass walls + hard floor (high flag) vs same palette with acoustic ceiling + textiles (flag ~0).",
+   "cluster": "masking-diagnostic",
+   "rank_score": 8,
+   "rationale": "Textbook subjective-vs-physical divergence; Tier-A computable; strong evidence; the exemplary masking compound. AMBER (proxy RT60).",
+   "merged_from": [
+    "20:reverberant_affect_masking_flag@acoustic-conversation-ecology",
+    "37:warmth_without_absorption_masking_flag@biophilia-restoration-social",
+    "52:warm_look_reverberant_room_divergence@masking-methodologist"
+   ]
+  },
+  {
+   "id": "C06",
+   "name": "transit_vs_dwell_classifier",
+   "human_effect": "Classifies a patch on the movement-vs-staying axis, deciding whether interaction there is fleeting (spine/chance encounter) or sustained (node/huddle/dwell).",
+   "effect_sign": "A discriminator, not a valence: raising the ratio shifts toward fleeting co-presence and away from sustained interaction; mis-placing dwell furniture on a high-ratio spine worsens both flow and lingering.",
+   "social_form": "chance encounter / fleeting co-presence (high) vs sustained huddle / dwell (low)",
+   "base_measures": [
+    "C1 visual integration",
+    "C2 connectivity",
+    "C6 path overlap",
+    "C11 prospect-refuge",
+    "enclosure index"
+   ],
+   "interaction_form": "Ratio of movement potential to dwell potential: R=(I*K*p)/(refuge*enclosure+eps). The same integration means 'spine' when refuge/enclosure are low and 'dwell node' when high \u2014 the meaning is relational, not a level.",
+   "computation": "move=I*K*p; stay=ref*E; R=move/(stay+0.05); tri-state label by thresholds. ABSTAINS if inferred connectivity low-confidence.",
+   "literature": [
+    "Hillier 1996: through-movement (choice) vs to-movement (integration)",
+    "Gehl 2010: movement vs staying; Turner 2001; Whyte 1980"
+   ],
+   "tier": "B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Integrated corridor crossing with no refuge (spine, brief encounters) vs enclosed alcove one step off it (dwell node, huddles).",
+   "cluster": "zone-assignment",
+   "rank_score": 7.5,
+   "rationale": "Genuine ratio compound (average would rate both alike); highly useful for optimiser placement; B-tier. AMBER.",
+   "merged_from": [
+    "11:movement_pause_differential@hillier-sailer-syntax",
+    "32:through_vs_dwell_ratio@whyte-desire-lines",
+    "66:transit_spine_vs_dwell_ratio@poe-workplace-social"
+   ]
+  },
+  {
+   "id": "C07",
+   "name": "focus_zone_viability",
+   "human_effect": "Whether a patch can host cognitively protected activity (deep solo work, confidential one-to-one) or only pass-through; focus is a conjunction that fails on its single worst breach.",
+   "effect_sign": "Raising it IMPROVES sustained concentration/restoration; a single acoustic, visual, or traffic leak destroys it regardless of the other three.",
+   "social_form": "solitary retreat / confidential exchange",
+   "base_measures": [
+    "C7 speech privacy (STI)",
+    "C8 distraction distance",
+    "C11 prospect-refuge",
+    "C6 path overlap",
+    "glare risk",
+    "acoustic absorption proxy",
+    "enclosure index"
+   ],
+   "interaction_form": "Weakest-link (min-gated) conjunction of {privacy, distraction distance, refuge, low-traffic, low compound-load}; the minimum component dominates, so one breach collapses the score.",
+   "computation": "m=min(q1..q4); g=geometric mean; score=m^0.5*g^0.5, optionally times (1-total_load). ABSTAINS on privacy without plan/STI.",
+   "literature": [
+    "Hongisto 2005: cost driven by worst intelligibility exposure",
+    "Banbury & Berry 2005; Appleton 1975; Kim & de Dear 2013"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Perimeter desk, protected back, acoustic shadow (viable) vs central cross-path desk with one nearby talk-hotspot (privacy min drags score to ~0.25).",
+   "cluster": "zone-assignment",
+   "rank_score": 7.5,
+   "rationale": "Liebig-minimum is a real non-additive interaction; merges the multisensory and POE focus proposals; AMBER (inferred plan/STI).",
+   "merged_from": [
+    "61:focus_vs_transit_viability@multisensory-nonadditive",
+    "64:focus_district_integrity@poe-workplace-social"
+   ]
+  },
+  {
+   "id": "C08",
+   "name": "approach_propensity_field",
+   "human_effect": "Felt pull to physically enter/advance into a region \u2014 the neuroaesthetic precondition to any social interaction, since none happens where no one goes.",
+   "effect_sign": "Raises entry likelihood and dwell for a newcomer at a boundary; does not help someone seeking retreat (see hominess/huddle fields).",
+   "social_form": "fleeting co-presence / chance encounter (enabling precondition)",
+   "base_measures": [
+    "curvature/rectilinearity index",
+    "enclosure index",
+    "processing-load/clutter (Rosenholtz)",
+    "warm/cool ratio",
+    "contour angularity",
+    "edge clarity"
+   ],
+   "interaction_form": "Conjunctive multiplicative gate: curvature x openness(1-enclosure) x coherence(1-clutter), warmth as bounded modulator, with a sharp-angularity veto. Near-zero on any factor collapses the field.",
+   "computation": "field=(c*openness*coherence)*(1+0.5*warm)*angular_veto, clamped [0,1]. ABSTAIN if plane/contour segmentation below threshold.",
+   "literature": [
+    "Vartanian et al. 2013 (PNAS): curved interiors drive 'enter' decisions",
+    "Vartanian et al. 2015; Bar & Neta 2006; Coburn et al. 2020"
+   ],
+   "tier": "A",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Curved, open, uncluttered reception volume (visitors advance/pause) vs rectilinear low-soffit corridor mouth with busy signage (pass through, no nucleation).",
+   "cluster": "approach-entry",
+   "rank_score": 7,
+   "rationale": "Conjunctive gate is genuinely more than parts; Tier-A computable; solid neuroaesthetics evidence. AMBER (proxy-grade approach link).",
+   "merged_from": [
+    "41:approach_propensity_field@neuroaesthetics-approach",
+    "51:soft_contour_approach_gain@fluency-dwell"
+   ]
+  },
+  {
+   "id": "C09",
+   "name": "window_prospect_glare_antagonism",
+   "human_effect": "Whether a prospect/window seat is actually dwelt in (restoration, see-and-be-found) or covertly avoided because glare is a co-located cost that vetoes the view/daylight resource.",
+   "effect_sign": "Prospect+daylight improve dwell/restoration; glare worsens and can fully veto, so identical view depth yields opposite occupancy. Also masks perceived desirability against comfort.",
+   "social_form": "solitary retreat / fleeting co-presence",
+   "base_measures": [
+    "prospect (view depth)",
+    "vertical illuminance / daylight proxy",
+    "glare risk",
+    "material coverage (glass)",
+    "shade cue"
+   ],
+   "interaction_form": "Antagonism/veto: resource=(prospect x daylight) multiplied by (1 - glare_gate); high view + high glare -> near-zero dwell, whereas an average would report 'moderate'.",
+   "computation": "resource=sqrt(prospect*daylight); glare_gate=sigmoid past discomfort threshold, scaled by glass*(1-shade_cue); value=resource*(1-glare_gate).",
+   "literature": [
+    "Appleton 1975; Jakubiec & Reinhart 2012 (DGP); Osterhaus 2005; Boubekri et al. 1991"
+   ],
+   "tier": "A",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "North-shaded window seat (dwelt-in perch) vs west-facing glary window of identical view depth (empty at peak sun).",
+   "cluster": "cross-domain-load",
+   "rank_score": 7,
+   "rationale": "Sign-flipping antagonism is a true compound; merges the dwell and masking framings of the same physics; Tier-A. AMBER (proxy glare/daylight).",
+   "merged_from": [
+    "48:window_dwell_glare_antagonism@fluency-dwell",
+    "53:prospect_seat_glare_seduction@masking-methodologist"
+   ]
+  },
+  {
+   "id": "C10",
+   "name": "organized_complexity_dwell",
+   "human_effect": "Effortless soft-fascination dwell from mid-band fractal fluency, but ONLY when richness is organized (low clutter, coherent); the same richness un-organized becomes clutter/visual discomfort that repels.",
+   "effect_sign": "Improves restoration/dwell when coherence present; raising raw complexity without coherence WORSENS (overload/discomfort) \u2014 sign flips on the coherence/discomfort gate.",
+   "social_form": "fleeting co-presence -> triggered conversation (lingering seeds contact)",
+   "base_measures": [
+    "fractal dimension (global+local)",
+    "colour palette entropy",
+    "processing-load/clutter (Rosenholtz)",
+    "horizontal symmetry",
+    "spectral discomfort deviation",
+    "brightness variance"
+   ],
+   "interaction_form": "Mid-fractal inverted-U x coherence gate (entropy/symmetry) x discomfort veto (1/f deviation). Complexity is conditioned on order; high fluency cannot rescue a high-discomfort scene (antagonism).",
+   "computation": "band=exp(-((D-1.4)^2)/2s^2); coherence=(1-clutter)*(0.5+0.5*sym); disc_gate collapses as 1/f deviation rises; value=complexity*coherence*disc_gate; emit overload_flag.",
+   "literature": [
+    "Kaplan & Kaplan 1989: complexity helps only with coherence",
+    "Taylor et al. 2011 / Hagerhall et al. 2004 (mid fractal ~1.3-1.5)",
+    "Reber et al. 2004; Fernandez & Wilkins 2008"
+   ],
+   "tier": "A",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Rhythmic symmetrically-hung gallery wall (people slow, look, remark) vs equal-richness mismatched signage/ductwork (speed up, no talk).",
+   "cluster": "dwell",
+   "rank_score": 7,
+   "rationale": "Non-monotone coherence-gated fascination with discomfort veto is a real compound; all-GREEN primitives but proxy link -> AMBER; behavioural dwell ground truth.",
+   "merged_from": [
+    "43:organized_complexity_fascination@neuroaesthetics-approach",
+    "46:dwell_propensity_field@fluency-dwell"
+   ]
+  },
+  {
+   "id": "C11",
+   "name": "sittable_prospect_ledge",
+   "human_effect": "Dwell propensity of an edge seat and its capacity to hold a stationary person long enough to become a conversation seed or be found \u2014 high only when genuinely sittable AND commanding a view of the flow AND with a protected back.",
+   "effect_sign": "Improves lingering/chance encounter/being-found for waiters and people-watchers; not for solitary retreat. Exposes code-masking where seat COUNT is met by seats that face a wall.",
+   "social_form": "fleeting co-presence -> chance encounter / triggered conversation",
+   "base_measures": [
+    "prospect (view depth)",
+    "enclosure index",
+    "acoustic absorption proxy"
+   ],
+   "interaction_form": "Threshold-gated product sittability x prospect x back-refuge, each with a hard floor; a wall-facing bench has high seat-provision but zero prospect, so the product (not the mean) zeroes it.",
+   "computation": "Normalize each; sigmoid gates at literature thresholds; value=product of gated terms per candidate seat/edge cell. ABSTAINS without a detectable seatable plane.",
+   "literature": [
+    "Whyte 1980: sittable space dominates plaza use",
+    "Gehl 1987/2011: edge effect",
+    "Appleton 1975"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Low planter ledge, back to wall, facing entry stream (occupied, seeds talk) vs identical seat count as backless open-middle stools (empty).",
+   "cluster": "felt-safety-lingering",
+   "rank_score": 7,
+   "rationale": "Product-gate correctly zeroes wall-facing seats; strong Whyte/Gehl base; needs seat-plane detection so AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C12",
+   "name": "sun_seat_amenity_colocation",
+   "human_effect": "Formation of a self-reinforcing staying cluster where a warm sun patch, a sittable surface, and a food/amenity anchor coincide within a few metres \u2014 the classic Whyte plaza-use engine.",
+   "effect_sign": "Context-dependent sign: in cool conditions sun is a RESOURCE and co-location improves lingering/talk; in heat sun becomes a COST and the same co-location repels use (antagonism/timing flip).",
+   "social_form": "triggered conversation / sustained huddle forming from a staying cluster",
+   "base_measures": [
+    "sun-patch geometry",
+    "landmark salience",
+    "C21 thermal comfort proxy"
+   ],
+   "interaction_form": "Spatial co-occurrence product within a radius, sign-modulated by a thermal gate: sittability x amenity_salience x sun_patch_overlap x sign(thermal_comfort). Two of three score low.",
+   "computation": "Overlap area {sun \u2229 sittable \u2229 within r of amenity}; multiply; apply thermal sign-gate to [-1,+1]. Sun-patch from a single photo is heuristic -> ABSTAIN; GREEN-adjacent only with declared 3D/solar model.",
+   "literature": [
+    "Whyte 1980: sun+food+seating strongest use correlates",
+    "Nikolopoulou & Lykoudis 2006; Gehl 1987/2011"
+   ],
+   "tier": "3D_model",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Cool-day sunlit ledge 2 m from a coffee cart (dense cluster) vs shaded seats 40 m from amenity (empty); flips in a July heatwave.",
+   "cluster": "dwell",
+   "rank_score": 5.5,
+   "rationale": "Real three-way co-occurrence with a genuine sign flip, but needs sun-patch geometry (single photo heuristic) and thermal input \u2014 low feasibility caps it. AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C13",
+   "name": "self_congestion_conversation_pinch",
+   "human_effect": "The counter-intuitive Whyte hotspot where the highest share of people-in-conversation occurs \u2014 the busiest crossing/entry pinch where high through-movement plus a mild narrowing plus mutual visibility make people stop and talk mid-stream.",
+   "effect_sign": "Inverted-U: raising movement-overlap and pinch improves stop-and-talk up to a crowding knee, then worsens it as perceived crowding exceeds comfort and people flee.",
+   "social_form": "chance encounter / triggered conversation embedded in the moving stream",
+   "base_measures": [
+    "C6 path overlap",
+    "threshold density",
+    "C12 crowding risk"
+   ],
+   "interaction_form": "Threshold-gated non-monotone composition: path_overlap x pinch_narrowing x visibility, multiplied by an inverted-U crowding penalty that rises then falls at the comfort knee. Neither raw flow nor raw pinch alone predicts the peak.",
+   "computation": "base=F*P*V; m=crowd*(1-crowd)/0.25 (peaks at moderate crowding); value=base*m. Rides inferred plan -> AMBER; ABSTAINS if movement grid UNKNOWN.",
+   "literature": [
+    "Whyte 1980: self-congestion \u2014 most conversation in the center of pedestrian flow",
+    "Hillier et al. 1993; Gehl 1987/2011"
+   ],
+   "tier": "B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Doorway/corridor-merge pinch (people plant and talk mid-stream) vs wide even mid-corridor of equal traffic (pure pass-through).",
+   "cluster": "conversation-initiation",
+   "rank_score": 8,
+   "rationale": "Non-monotone crowding knee is a strong, well-evidenced interaction unique in the set; B-tier computable; high A-vs-B value.",
+   "merged_from": []
+  },
+  {
+   "id": "C14",
+   "name": "triangulation_vs_decoration_ratio",
+   "human_effect": "Masking-exposer separating an anchor that actually triangulates (salient AND on the movement network) from mere decoration (salient but off all desire lines) that inflates richness/awe scores while producing zero social contact.",
+   "effect_sign": "High ratio means visual investment converts into conversation (improves contact); low ratio means the investment worsens the code's honesty by making a socially inert space read as rich. Whole-space diagnostic.",
+   "social_form": "triggered conversation / chance encounter (vs none)",
+   "base_measures": [
+    "landmark salience",
+    "C1 visual integration",
+    "C24 spatial generosity/awe"
+   ],
+   "interaction_form": "Ratio of integration-weighted salience to total salience: R=\u03a3(s_i*I_i)/\u03a3(s_i). Not an average \u2014 it asks what FRACTION of the attractor mass lands on the movement network; an off-path sculpture drives the numerator to 0.",
+   "computation": "Detect anchors; R over all anchors; flag masking when C24/richness high but R low. AMBER (needs plan inference); ABSTAINS if anchor localisation UNKNOWN.",
+   "literature": [
+    "Whyte 1980: triangulation works only on the path",
+    "Hillier & Hanson 1984: social yield depends on configurational position"
+   ],
+   "tier": "B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Modest screen/water feature on the main cross-axis (low awe, high ratio, much talk) vs spectacular atrium sculpture in a non-circulated void (high awe, ratio ~0).",
+   "cluster": "masking-diagnostic",
+   "rank_score": 8,
+   "rationale": "Ratio catches the decoration-as-social-generosity mask that no single primitive sees; directly guards the awe/richness metrics; B-tier.",
+   "merged_from": []
+  },
+  {
+   "id": "C15",
+   "name": "solitary_retreat_affordance",
+   "human_effect": "Where a lone person can settle and reasonably expect NOT to be drawn into interaction or watched \u2014 the see-without-being-engaged seat, the deliberate inverse of conversation-initiation.",
+   "effect_sign": "Improves restoration/focus for the solitary occupant (lower vigilance, defended space); worsens commons vitality if a whole region scores high.",
+   "social_form": "solitary retreat",
+   "base_measures": [
+    "social.sociopetal (inverted)",
+    "C11 prospect-refuge",
+    "C6 path overlap",
+    "C7 speech privacy"
+   ],
+   "interaction_form": "Conditional min-gate: min(sociofugal, refuge_backing) x (1-path_overlap) x (1-STI_to_others). A plush high-refuge seat on a busy desire line is not a retreat \u2014 failing any one drags the product down.",
+   "computation": "sociofugal=1-sociopetal; refuge behind seat; path_overlap at cell; STI leakage over surrounding planes. ABSTAINS without seat orientation.",
+   "literature": [
+    "Sommer 1966: solo readers chose back-to-wall/corner seats",
+    "Appleton 1975; Hall 1966"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Sociopetal cluster at social distance (low) vs sociofugal back-to-wall single seat off the main path (high) \u2014 scores oppositely to C03 by construction.",
+   "cluster": "confidential-huddle",
+   "rank_score": 7.5,
+   "rationale": "Distinct interaction (min-gate) and human effect (retreat) from the huddle field; sharpens A-vs-B; needs seat orientation -> AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C16",
+   "name": "proxemic_intrusion_stress",
+   "human_effect": "Stress/discomfort from forced personal-space intrusion \u2014 strangers pushed face-to-face inside intimate distance with no barrier and no escape \u2014 and its suppression of interaction; encodes the agency buffer.",
+   "effect_sign": "Worsens stress/arousal/avoidance for the intruded occupant and suppresses interaction (people vacate/disengage). A barrier or occupant control lowers it for identical spacing.",
+   "social_form": "fleeting co-presence (suppressed)",
+   "base_measures": [
+    "mean/variance depth (Hall intimate band)",
+    "social.sociopetal",
+    "enclosure index (barrier)",
+    "C17 local control"
+   ],
+   "interaction_form": "Threshold-gated conditional: step(distance<~0.45 m) x facing_in x (1-barrier) x (1-control). Fires only below the intimate threshold; barrier OR control attenuate multiplicatively, so identical spacing scores very differently.",
+   "computation": "Flag pairs under intimate threshold; weight by facing-in; multiply by (1-barrier)*(1-control). ABSTAINS without seat orientation; control term abstains unless declared.",
+   "literature": [
+    "Evans & Wener 2007: close proximity raised crowding and cortisol",
+    "Hall 1966; Sommer 1969; Evans & Stecker 2004 (agency buffer)"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Facing-in stranger pair crammed at intimate distance, no barrier/control (high stress) vs same spacing back-to-back with partition or adjustable seat (low).",
+   "cluster": "felt-safety-lingering",
+   "rank_score": 6.5,
+   "rationale": "Agency-buffer interaction (control changes the response to identical stimulus) is genuinely compound and well-evidenced; needs seat orientation + control input -> AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C17",
+   "name": "co_awareness_integration",
+   "human_effect": "Whether being configurationally central actually translates into mutual awareness of other occupants \u2014 the precondition for a place feeling alive and for someone joining a group. Integration without sightlines to occupied space yields central-but-blind spots.",
+   "effect_sign": "Improves co-presence-to-interaction conversion and perceived vitality/safety for weak-tie seekers; very high values worsen focus for deep solo work \u2014 sign flips with task.",
+   "social_form": "triggered conversation / sustained-huddle joining / chance encounter",
+   "base_measures": [
+    "C1 visual integration",
+    "prospect (view depth)"
+   ],
+   "interaction_form": "Product (not average): centrality (C1) x realized visibility of occupiable space (isovist from prospect). High C1 with low prospect (central but enclosed pocket) reads central on any single primitive but scores low here.",
+   "computation": "I=normalized C1; V=isovist area weighted toward directions containing occupiable planes; co_awareness=I*V, minus a small pure-ceiling/floor term.",
+   "literature": [
+    "Backhouse & Drew 1992: interaction tracks mutual visibility, not proximity",
+    "Rashid et al. 2006; Benedikt 1979 (isovist)"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Integrated open-floor desk with long sightlines to the team (high) vs equally integrated desk behind a partition on the main route (passed by many, sees no one).",
+   "cluster": "chance-encounter",
+   "rank_score": 8.5,
+   "rationale": "Clean product exposing the central-but-blind mask; only two primitives but the interaction is the whole signal; strong evidence and A-vs-B.",
+   "merged_from": []
+  },
+  {
+   "id": "C18",
+   "name": "waiting_position_desirability",
+   "human_effect": "Where a lone person will choose to wait/linger so as to both survey the space and be findable while keeping a protected back \u2014 the see-and-be-found position.",
+   "effect_sign": "Improves perceived safety/comfort of solitary waiting AND keeps the waiter available for chance encounter; pushing integration too high worsens it (over-exposure) \u2014 an inverted-U.",
+   "social_form": "solitary retreat that stays open to chance encounter",
+   "base_measures": [
+    "prospect (view depth)",
+    "C11 prospect-refuge",
+    "C1 visual integration"
+   ],
+   "interaction_form": "Product with an inverted-U (Gaussian, mu~0.6) weighting on integration: prospect x back-refuge x gauss(C1). Both very low and very high integration lower the score \u2014 findable but not exposed.",
+   "computation": "Pr=forward isovist; Bk=back-occlusion/wall-adjacency; Mi=exp(-((C1-mu)^2)/2sigma^2); value=Pr*Bk*Mi per candidate cell.",
+   "literature": [
+    "Appleton 1975; Hillier & Hanson 1984 (being-found needs moderate integration); Gehl 1987"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Bench against a wall facing the entrance on a moderately integrated line (findable, comfortable) vs open-middle stool with back to circulation and extreme through-movement (avoided/unsafe).",
+   "cluster": "felt-safety-lingering",
+   "rank_score": 7.5,
+   "rationale": "Inverted-U on integration is a distinct interaction from the plain product-gate seats; directly models David's lone-waiter form; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C19",
+   "name": "collaboration_bump_field",
+   "human_effect": "Where colleagues' routine paths to shared destinations overlap AND they are within communication range \u2014 Kabo's bump space \u2014 which, not raw proximity, predicts new weak-tie formation and unplanned work-relevant exchange.",
+   "effect_sign": "Improves unplanned collaboration / weak-tie formation for distributed teams; can mildly worsen concentration for adjacent focus workers. Task-dependent.",
+   "social_form": "chance encounter -> triggered conversation (weak-tie formation)",
+   "base_measures": [
+    "C6 path overlap",
+    "C5 collaborator proximity",
+    "C23 social connectedness (commons gravity)"
+   ],
+   "interaction_form": "Super-additive product: path_overlap x within-range(Allen curve) x amenity_pull. Overlap without range = anonymous passing; proximity without shared paths = silent neighbours; only the conjunction generates repeated range-close crossings.",
+   "computation": "O=route-overlap density; Rng=distance decay per Allen curve (steep <8-15 m); Pull=amenity gravity; bump=O*Rng*Pull. ABSTAINS on C5 without seat/team map.",
+   "literature": [
+    "Kabo et al. 2014: overlapping bump spaces predict new collaborations beyond proximity",
+    "Allen 1977 (Allen curve); Sailer & McCulloh 2012"
+   ],
+   "tier": "B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Shared corridor where two teams' routes to a common coffee point overlap within ~10 m (weak ties) vs equal-draw coffee point reached by non-overlapping single-team approaches (few new ties).",
+   "cluster": "chance-encounter",
+   "rank_score": 8,
+   "rationale": "Path-overlap x range x amenity is a strong, well-evidenced super-additive compound; needs team map (abstains) -> AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C20",
+   "name": "group_audibility_reserve",
+   "human_effect": "Whether a co-located group can all mutually hear one another well enough to sustain a multi-party huddle rather than a fractured conversation where the far side drops out.",
+   "effect_sign": "Improves sustained-huddle formation and turn-taking for a collaborating group; the opposite optimum to confidential viability on outward reach. Task: 3-6 people problem-solving aloud.",
+   "social_form": "sustained huddle",
+   "base_measures": [
+    "acoustic absorption proxy",
+    "material coverage (hard surfaces)",
+    "enclosure index",
+    "C5 collaborator proximity"
+   ],
+   "interaction_form": "Inverted-U (RT60 sweet-spot ~0.4-0.6 s from hard-surface vs absorption) x enclosure x 1/(mean within-cluster spacing). Value is reverberation-band x compactness x shielding, never their average.",
+   "computation": "RT60_proxy=g(hard_coverage,1-absorption); w=triangular peaking 0.5 s, 0 outside [0.2,0.9]; value=w*enclosure*clamp(1.5/d). ABSTAINS without Tier-B cluster; RT60 is material-proxy.",
+   "literature": [
+    "Bradley (classroom acoustics): mid RT + early reflections maximise multi-listener intelligibility",
+    "ANSI S12.60; Bronkhorst 2000 (cocktail-party)"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Small enclosed mid-absorption room, tight seating (huddle sustains) vs table in a large hard-surfaced atrium (far side drops out).",
+   "cluster": "confidential-huddle",
+   "rank_score": 7,
+   "rationale": "RT60 inverted-U x compactness is a genuine non-additive interaction distinct from privacy fields; proxy RT60 -> AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C21",
+   "name": "speech_privacy_gradient",
+   "human_effect": "The spatial decay steepness of intelligibility (ISO 3382-3 D2,S made a field): a steep gradient makes a space simultaneously good for local confidentiality AND concentration because conversations do not smear into neighbouring zones.",
+   "effect_sign": "Raising it improves concentration and local privacy; lowering it triggers the acoustics->listening-effort->fatigue->rough-interaction cascade. Exposes the mask where a room feels quiet (low level) yet speech carries (shallow gradient).",
+   "social_form": "solitary retreat",
+   "base_measures": [
+    "acoustic absorption proxy",
+    "enclosure index",
+    "C8 distraction distance",
+    "C7 speech privacy (STI)"
+   ],
+   "interaction_form": "Ratio/gradient: STI_within divided by STI_at-distraction-distance \u2014 a quotient of the same construct at two radii capturing decay steepness; an average of the two STIs would erase exactly the gradient wanted.",
+   "computation": "STI_in from local absorption+enclosure; STI_out at ISO 3382-3 rD from the plan; gradient=STI_in/(STI_out+eps), normalized. ABSTAINS without Tier-B; proxy STI.",
+   "literature": [
+    "ISO 3382-3:2012 (D2,S, rD)",
+    "Haapakangas/Hongisto ~2017; Sorqvist 2010 (irrelevant speech)"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Absorptive partly-enclosed workpoint (neighbour's call unintelligible two seats away) vs open reverberant bench (every conversation carries despite low dBA).",
+   "cluster": "confidential-huddle",
+   "rank_score": 7,
+   "rationale": "Ratio-of-same-construct-at-two-radii is a real compound and exposes the low-level/shallow-gradient mask; borderline overlap with C8 distraction distance (noted); AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C22",
+   "name": "cocktail_party_suppression",
+   "human_effect": "Babble build-up that collapses the speech-to-noise ratio so a would-be conversation cannot get started \u2014 the space forces shouting, a fleeting shouted exchange, or retreat.",
+   "effect_sign": "Raising it WORSENS conversation initiation, pushing the likely form toward fleeting co-presence/retreat and away from triggered/sustained talk.",
+   "social_form": "fleeting co-presence",
+   "base_measures": [
+    "C12 crowding risk",
+    "acoustic absorption proxy",
+    "enclosure index"
+   ],
+   "interaction_form": "Super-additive with nonlinear occupancy: occupancy_density^2 x (1-absorption) x (1-enclosure). Competing-talker count matters far more when the envelope neither absorbs nor shields \u2014 babble accumulates multiplicatively, occupancy squared.",
+   "computation": "occ=normalized talker density; suppression=clamp(occ^2*(1-absorption)*(1-enclosure),0,1). ABSTAINS without Tier-B occupancy.",
+   "literature": [
+    "Cherry 1953 (cocktail-party); Bronkhorst 2000; Hongisto 2005"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Absorptive partly-enclosed nook at a given occupancy (conversation starts at normal voice) vs open hard hall at the SAME occupancy (only shouted fleeting exchanges).",
+   "cluster": "conversation-initiation",
+   "rank_score": 7,
+   "rationale": "Occupancy-squared multiplicative babble is a genuine super-additive interaction; needs occupancy grid -> AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C23",
+   "name": "felt_safety_field",
+   "human_effect": "The below-awareness felt-safety FLOOR that gates whether a person will approach, stop, and stay in a region at all \u2014 the precondition for any lingering or social contact.",
+   "effect_sign": "Improves safety/approach/lingering for any occupant; a low value suppresses dwell and drives avoidance regardless of amenity.",
+   "social_form": "solitary retreat / fleeting co-presence (enabling floor beneath every form)",
+   "base_measures": [
+    "prospect (view depth)",
+    "enclosure index",
+    "brightness variance",
+    "C1 visual integration"
+   ],
+   "interaction_form": "Threshold-gated MINIMUM (Liebig weakest-link): FSF=min(prospect, refuge_effective, escape, lighting_floor). A single deficient factor (unlit corner, blocked exit) collapses the field even if the other three are excellent.",
+   "computation": "R_eff = enclosure as inverted-U (entrapment penalty at full enclosure); E from C1/decision-point preview; L=min local luminance in lower periphery; FSF=min(P,R_eff,E,L). ABSTAINS for E without inferred plan.",
+   "literature": [
+    "Fisher & Nasar 1992 (concealment+prospect+escape combine)",
+    "Blobaum & Hunecke 2005; Boomsma & Steg 2014; Appleton 1975"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Glazed lobby edge with a lit backed alcove and visible exit (high) vs bright open center whose one recessed corner is unlit and exit occluded (FSF collapses on the min).",
+   "cluster": "felt-safety-lingering",
+   "rank_score": 8.5,
+   "rationale": "Weakest-link min is the correct non-additive form and well-evidenced (fear cues combine, not add); enabling floor for all social forms; AMBER (escape needs plan).",
+   "merged_from": []
+  },
+  {
+   "id": "C24",
+   "name": "lingering_affordance",
+   "human_effect": "Predicted dwell propensity \u2014 whether a person converts passing-through into staying. Dwell is the rate-limiting step for triggered conversation and chance encounter.",
+   "effect_sign": "Improves triggered conversation/chance encounter by extending dwell; worsens throughput where flow is the goal (fit-dependent).",
+   "social_form": "fleeting co-presence -> triggered conversation; chance encounter",
+   "base_measures": [
+    "felt_safety_field",
+    "C11 prospect-refuge",
+    "C12 crowding risk",
+    "prospect (view depth)"
+   ],
+   "interaction_form": "Product gated by a crowding threshold: FSF x seat_refuge x prospect x (1-crowd_penalty), where the penalty engages only past the comfort knee \u2014 threshold-conditional, not linear subtraction.",
+   "computation": "LA=FSF*seat_refuge*prospect*(C12<knee?1:(1-(C12-knee)/(1-knee))). ABSTAINS if C11/C12 unavailable.",
+   "literature": [
+    "Whyte 1980 (dwell drives social life); Gehl 2011 (edge effect); Marcus & Francis 1997"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Backed perimeter bench facing the concourse (high dwell, high initiation) vs isolated island seat with no back and full exposure (brief rest, rarely engage).",
+   "cluster": "felt-safety-lingering",
+   "rank_score": 7.5,
+   "rationale": "Crowding-knee gate on a safety-conditioned product is genuinely compound; builds on C23 but adds a distinct threshold interaction; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C25",
+   "name": "prospect_refuge_polarity",
+   "human_effect": "One field, two opposite readouts: the lone waiter (prospect+protected back, see-and-be-found) and the formed huddle (refuge+low exposure+low speech intelligibility to others) have OPPOSITE prospect-refuge optima; scores per region which of the two it serves.",
+   "effect_sign": "A signed suitability contrast: positive pole improves solitary waiting/being-found and worsens confidential huddling; the negative pole reverses it.",
+   "social_form": "solitary retreat / waiting-to-be-found (positive) vs sustained huddle / confidential exchange (negative)",
+   "base_measures": [
+    "prospect (view depth)",
+    "enclosure index",
+    "C1 visual integration",
+    "C7 speech privacy (STI)"
+   ],
+   "interaction_form": "Signed DIFFERENCE of two threshold-products (antagonism): WaiterScore(prospect*findability*back) - HuddleScore(refuge*(1-exposure)*(1-STI_to_others)). The value lives entirely in the contrast; an average would cancel the signal.",
+   "computation": "Normalize inputs; compute both scores; Polarity=Waiter-Huddle in [-1,1]; report both scalars and polarity per cell. ABSTAINS on STI/orientation without inferred plan.",
+   "literature": [
+    "Appleton 1975 (prospect and refuge sometimes opposed)",
+    "Osmond 1957 / Sommer 1969; Gatersleben & Andrews 2013"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Near-entrance high-integration high-prospect spot (strongly positive) vs recessed low-STI enclosed alcove (strongly negative) \u2014 a good foyer contains cells at BOTH poles.",
+   "cluster": "zone-assignment",
+   "rank_score": 8,
+   "rationale": "Directly operationalises David's waiter-vs-huddle antagonism as one signed field; the difference-of-products is a true compound; high A-vs-B value; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C26",
+   "name": "safety_perception_masking_gap",
+   "human_effect": "Exposes the cardinal safety mask: a fast bright-and-open cue makes a space FEEL safe while hidden concealment/entrapment geometry still loads threat physiology; flags regions where perceived safety overstates physical safety.",
+   "effect_sign": "A large positive gap WORSENS actual safety while the surface read says otherwise \u2014 a hidden hazard; diagnostic that raising perceived-safety cues without fixing concealment is dangerous.",
+   "social_form": "solitary retreat / chance encounter on a shared path",
+   "base_measures": [
+    "vertical illuminance proxy",
+    "prospect (view depth)",
+    "processing-load/clutter proxy",
+    "enclosure index"
+   ],
+   "interaction_form": "Signed disagreement between two composites (subjective->physical test): looks_safe(brightness, prospect, low clutter) - physical_safe(occlusivity, dark-corner luminance, entrapment). Its purpose is to be non-zero when a 'good' cue hides a 'bad'.",
+   "computation": "looks_safe=mean(illuminance, prospect, 1-clutter); physical_safe=1-mean(occlusivity, entrapment, 1-corner luminance); GAP=looks_safe-physical_safe in [-1,1]. ABSTAINS where occlusivity/entrapment segmentation low.",
+   "literature": [
+    "Fisher & Nasar 1992; Nasar, Fisher & Grannis 1993; Boomsma & Steg 2014"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Bright glazed lobby with a recessed unlit blind corner off the desire line (high positive gap) vs uniformly legible daylit corridor (gap ~0).",
+   "cluster": "masking-diagnostic",
+   "rank_score": 7,
+   "rationale": "Cross-register divergence is the intended masking form (endorsed by the brief); each side is a composite but the value is their disagreement -> genuine compound; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C27",
+   "name": "restorative_refuge_window",
+   "human_effect": "Distinguishes a refuge that HEALS (a backed nook with an outward view) from a refuge that ALARMS (an enclosed low-prospect recess \u2014 entrapment); same 'refuge' label, opposite outcome, decided by whether prospect accompanies it.",
+   "effect_sign": "Improves restoration/recovery when prospect accompanies refuge; worsens it (net stress, avoidance) when refuge is high but prospect is low \u2014 sign flips conditionally on prospect.",
+   "social_form": "solitary retreat (restorative withdrawal)",
+   "base_measures": [
+    "prospect (view depth)",
+    "enclosure index",
+    "mystery occlusivity",
+    "C19 restoration/nature contact"
+   ],
+   "interaction_form": "Conditional with a sign flip: above a prospect knee, refuge adds restorative value (prospect*refuge*(1+C19)); below it, refuge is penalized as entrapment (-(refuge-prospect)*occlusivity). Non-monotone in refuge.",
+   "computation": "If prospect>=knee: RRW=prospect*refuge*(1+0.5*C19). If prospect<knee AND refuge>knee: RRW=-(refuge-prospect)*occlusivity. Output [-1,1]. ABSTAINS where prospect depth low-confidence.",
+   "literature": [
+    "Gatersleben & Andrews 2013 (high-prospect/low-refuge more restorative; entrapment reduces it)",
+    "Appleton 1975; Herzog & Kropscott 2004"
+   ],
+   "tier": "A",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Window-backed reading nook with outward view (high) vs interior windowless enclosed recess (negative \u2014 entrapment, avoided though quietest).",
+   "cluster": "restorative-social",
+   "rank_score": 7,
+   "rationale": "Encodes the exact Gatersleben-Andrews conditional with a genuine sign flip; Tier-A; AMBER (heuristic depth).",
+   "merged_from": []
+  },
+  {
+   "id": "C28",
+   "name": "natural_surveillance_reassurance",
+   "human_effect": "Felt safety in a POPULATED public setting: the reassurance of being watched-over by prosocial others while holding one's own protected position. An empty backed nook feels abandoned; a crowded exposed spot feels watched-at, not watched-over.",
+   "effect_sign": "Improves felt safety and willingness for chance encounter when surveillance-by-others AND own-refuge co-occur; surveillance without refuge worsens it (exposure stress). Non-additive.",
+   "social_form": "chance encounter / fleeting co-presence escalating to conversation",
+   "base_measures": [
+    "C1 visual integration",
+    "C11 prospect-refuge",
+    "landmark salience",
+    "prospect (view depth)"
+   ],
+   "interaction_form": "Co-occurrence product (both-or-neither): surveillance_by_others x own_refuge, each thresholded. High surveillance x low refuge = exposure; high refuge x zero surveillance = isolation; the reassuring cell is a spatial AND.",
+   "computation": "surveillance=f(C1 overseeing vantages, occupancy-in-view, orientation of others); refuge=C11; NSR=product. REQUIRES occupancy/people-in-frame -> ABSTAINS without it (C1 alone gives only latent capacity).",
+   "literature": [
+    "Jacobs 1961 (eyes on the street); Newman 1972 (defensible space); Loewen, Steel & Suedfeld 1993"
+   ],
+   "tier": "extra_input",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Overlooked-but-backed cafe edge along a busy concourse (high) vs isolated backstair landing with excellent refuge but no eyes on it (low, unsafe despite refuge).",
+   "cluster": "felt-safety-lingering",
+   "rank_score": 7,
+   "rationale": "Both-or-neither co-occurrence flags the refuge-alone-mistaken-for-safety failure; needs occupancy input (abstains) -> AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C29",
+   "name": "stranded_amenity_index",
+   "human_effect": "Masking-exposure: an amenity can be visually attractive and fluent yet socially inert because it sits off the movement lattice; flags the gap between perceived invitingness and realisable encounter so a designer is not fooled by a pretty render.",
+   "effect_sign": "Raising the index WORSENS realised social outcomes (high appeal, near-zero delivered encounters). A high value is bad \u2014 a warning signal for any commons programme relying on that amenity.",
+   "social_form": "solitary retreat / dead amenity (intended interaction fails)",
+   "base_measures": [
+    "landmark salience",
+    "perceptual-fluency affect",
+    "C1 visual integration",
+    "C2 connectivity"
+   ],
+   "interaction_form": "Ratio of attractiveness to movement: (salience x fluency) / (eps + integration x connectivity). Numerator = 'looks inviting', denominator = 'is on the flow'; the diagnostic value is their divergence, which no average expresses.",
+   "computation": "index=(s*a)/(0.05+i*c), clipped [0,3]; flag cells >1.5 as stranded. High = attractive but predicted under-used.",
+   "literature": [
+    "Whyte 1980 (attractive but off-line plazas sat empty); Gehl 2010; Reber, Schwarz & Winkielman 2004 (fluency inflates appeal)"
+   ],
+   "tier": "B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Beautifully furnished lounge at a dead-corridor end (high index, empty) vs plain bench on the main spine (low index, constantly used).",
+   "cluster": "masking-diagnostic",
+   "rank_score": 8,
+   "rationale": "Attractiveness/movement ratio catches the render-vs-use mask that designers fall for; B-tier computable; high value to the honesty of the social prediction.",
+   "merged_from": []
+  },
+  {
+   "id": "C30",
+   "name": "restorative_social_nook_score",
+   "human_effect": "A low-arousal restorative micro-setting where involuntary micro-breaks and unforced informal talk occur, as opposed to a high-arousal work grid \u2014 Kaplan soft fascination co-occurring with acoustic and material softness.",
+   "effect_sign": "Improves restoration AND informal sociality for occupants on a break/in transit; for deep-focus solo work the same softness can reduce alerting, so sign flips by task.",
+   "social_form": "triggered conversation (with sustained huddle as settled form)",
+   "base_measures": [
+    "visible vegetation fraction",
+    "soft-material composite (specularity inverse, texture homogeneity, wood/upholstery coverage)",
+    "acoustic absorption proxy",
+    "vertical illuminance / daylight proxy"
+   ],
+   "interaction_form": "Threshold-gated geometric mean (spatial AND-gate): each of the four must clear a floor; the score is the product of floored terms, so any single missing ingredient (no greenery, hard surfaces, glare-only light) collapses it.",
+   "computation": "Floor each at t=0.2 via relu; score=(veg'*soft'*absorb'*day')^(1/4). ABSTAIN if material segmentation UNKNOWN for the dominant seating plane.",
+   "literature": [
+    "Coley, Kuo & Sullivan 1997 (greenery raised social use); Kuo & Sullivan 2001; Alvarsson et al. 2010; Kaplan 1995"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Planted corner with upholstered seating, textiles, glare-controlled daylight (micro-breaks + talk) vs open desk grid, hard floor, overhead-only light (fleeting co-presence, no exchange).",
+   "cluster": "restorative-social",
+   "rank_score": 7,
+   "rationale": "AND-gated geometric mean (a maxed-daylight bare grid scores ~0) is genuinely compound; needs material segmentation -> AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C31",
+   "name": "recovery_seat_index",
+   "human_effect": "Marks a seat affording Ulrich stress recovery for a lone occupant: a nature-bearing outward view combined with a protected back \u2014 the see-and-be-found recovery position.",
+   "effect_sign": "Improves restoration and lowers stress arousal for a solitary waiting/recovering occupant; does not help a formed huddle (which wants the inverse) \u2014 sign is occupant-state-specific.",
+   "social_form": "solitary retreat, adjacent to chance encounter (stays findable)",
+   "base_measures": [
+    "prospect (view depth)",
+    "visible vegetation fraction (distal-view region only)",
+    "C11 prospect-refuge / enclosure (protected back)"
+   ],
+   "interaction_form": "Content-gated product: prospect x refuge x veg-in-view. A deep view of a parking lot (veg~0) or a nature view with an exposed back (refuge~0) both drive the product low \u2014 nature content and refuge must multiply.",
+   "computation": "recovery=prospect*veg_in_view*refuge, all normalized [0,1]. ABSTAIN if neither Tier-B plan nor a clear seat plane is detected.",
+   "literature": [
+    "Ulrich 1984 (window view sped recovery); Ulrich et al. 1991 (SRT); Appleton 1975; Dosen & Ostwald 2016"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Window-side wall-backed chair facing a planted courtyard (high) vs backless mid-floor bench facing a blank wall (low).",
+   "cluster": "restorative-social",
+   "rank_score": 7,
+   "rationale": "Content-gating (nature must be IN the view cone, not the whole frame) makes this more than a prospect+refuge average; strong Ulrich evidence; AMBER (veg rides segmentation).",
+   "merged_from": []
+  },
+  {
+   "id": "C32",
+   "name": "soft_fascination_field",
+   "human_effect": "Effortless involuntary attention (Kaplan soft fascination) from natural content at moderate, orderly complexity \u2014 restorative because it engages attention without depleting it; supports lingering that seeds chance social contact.",
+   "effect_sign": "Improves directed-attention restoration and dwell when complexity is mid-band; raising complexity past the band (clutter) worsens it (overload) \u2014 an inverted-U.",
+   "social_form": "chance encounter on a shared path (lingering raises co-presence dwell)",
+   "base_measures": [
+    "visible vegetation fraction",
+    "fractal dimension (global+local)",
+    "processing-load/clutter proxy"
+   ],
+   "interaction_form": "Band-pass gate x suppressor: veg_frac x bandpass(fractal ~1.3-1.5) x (1-clutter above threshold). The fractal term is a non-monotone inverted-U filter; clutter is a multiplicative suppressor \u2014 mid-band natural texture with LOW clutter required simultaneously.",
+   "computation": "band=exp(-((D-1.4)^2)/2*0.09); supp=relu(1-relu(clutter-0.5)/0.5); score=veg_frac*band*supp.",
+   "literature": [
+    "Kaplan & Kaplan 1989 / Kaplan 1995 (soft fascination); Hagerhall et al. 2004; Taylor 2006; Joye & van den Berg 2011 (contested)"
+   ],
+   "tier": "A",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Foliage-textured planted screen at mid fractal complexity beside a path (lingering + incidental encounters) vs over-cluttered graphic wall (pass-through).",
+   "cluster": "dwell",
+   "rank_score": 6.5,
+   "rationale": "Biophilic variant of the fractal-fascination interaction (vegetation-specific); overlaps C10 in mechanism but distinct nature construct; AMBER (veg rides segmentation); restoration link partly contested.",
+   "merged_from": []
+  },
+  {
+   "id": "C33",
+   "name": "green_commons_gravity",
+   "human_effect": "Greenery located AT a well-integrated, path-crossing commons node draws voluntary gathering and triggered conversation; the same greenery off the movement network stays unused.",
+   "effect_sign": "Improves informal gathering/connectedness only when co-located with high integration; greenery on a dead-end has near-zero social lift \u2014 the benefit is entirely conditional on placement.",
+   "social_form": "triggered conversation / chance encounter at a shared restorative anchor",
+   "base_measures": [
+    "visible vegetation fraction",
+    "C1 visual integration / C23 commons gravity",
+    "seating presence"
+   ],
+   "interaction_form": "Spatial co-occurrence product on a movement field: veg_frac x integration x seating_present. Integration near-0 off the path zeroes isolated greenery \u2014 the signal is the JOINT location of nature + integration + a reason to stop.",
+   "computation": "gravity=veg_frac*integ*seat, all [0,1]. ABSTAIN without Tier-B plan or declared integration; integration rides inferred plan.",
+   "literature": [
+    "Coley, Kuo & Sullivan 1997; Sullivan, Kuo & DePooter 2004; Whyte 1980 (triangulation); Hillier & Hanson 1984"
+   ],
+   "tier": "B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Planted seating cluster at the atrium's most integrated crossing (gathering, stranger talk) vs identical planter in a low-integration dead-end (near-zero social use).",
+   "cluster": "restorative-social",
+   "rank_score": 7,
+   "rationale": "Structurally a triangulation variant with greenery as anchor, but the vegetation->social-use evidence (Coley/Kuo) is distinct enough to retain; borderline-with-C01 noted; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C34",
+   "name": "daylit_talk_pocket",
+   "human_effect": "The documented synergy setting: glare-controlled daylight WITH acoustic absorption jointly cut visual strain and listening effort, yielding larger mood-and-conversation gains than either alone; uncontrolled glare inverts it.",
+   "effect_sign": "Improves sustained conversation/mood when glare is controlled; worsens (visual strain, avoidance, no talk) once glare passes threshold \u2014 non-monotone in glazing via the glare gate.",
+   "social_form": "sustained conversation / huddle in a comfortable daylit pocket",
+   "base_measures": [
+    "vertical illuminance / daylight proxy",
+    "acoustic absorption proxy",
+    "glare risk"
+   ],
+   "interaction_form": "Super-additive product with an inverting gate: (daylight x absorption) x (1 - 2*relu(glare-g0)). Below threshold the terms multiply (synergy > either alone); above it the gate turns negative (antagonism). A sum/average cannot represent the sign flip.",
+   "computation": "gate=1-2*relu(glare-0.4)/0.6 in [-1,1]; pocket=day*absorb*gate in [-1,1] (negative = glare-dominated, avoid).",
+   "literature": [
+    "Boubekri et al. 2014 (daylight->mood/vitality); Beute & de Kort 2014; Sarampalis et al. 2009 (listening effort); Ulrich et al. 1991"
+   ],
+   "tier": "A",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Soft-furnished corner with diffuse shaded daylight + absorptive panels (positive talk pocket) vs unshaded south glass wall with hard surfaces (negative \u2014 glare + echo suppress talk).",
+   "cluster": "cross-domain-load",
+   "rank_score": 7,
+   "rationale": "Encodes the brief's flagship synergy+antagonism with a genuine sign flip; Tier-A; AMBER (all three proxy-grade).",
+   "merged_from": []
+  },
+  {
+   "id": "C35",
+   "name": "hominess_nook_index",
+   "human_effect": "Felt hominess/belonging and willingness to settle, linger, and lower one's guard \u2014 the affective substrate for sustained and confidential exchange rather than transient contact.",
+   "effect_sign": "Improves willingness to stay and hold sustained/confidential conversation for a small group or refuge-seeker; deliberate tension with approach (which wants openness) \u2014 a good foyer needs both in different regions.",
+   "social_form": "sustained huddle / confidential exchange",
+   "base_measures": [
+    "material coverage (wood)",
+    "warm/cool ratio",
+    "enclosure index",
+    "texture micro/macro homogeneity"
+   ],
+   "interaction_form": "Inverted-U on enclosure GATED by warmth and softness: warmth_softness x bell(enclosure, peak ~0.55). Too open reads institutional, too enclosed cramped; warmth alone in an open hall is not homey \u2014 the product is the signal.",
+   "computation": "warmth_soft=0.5*warm+0.3*wood+0.2*homogeneity; bell(e)=exp(-((e-0.55)^2)/2*0.18^2); hominess=warmth_soft*bell(e). ABSTAIN if material confidence low (wood vs laminate).",
+   "literature": [
+    "Coburn et al. 2020 (hominess as a distinct dimension); Chatterjee & Vartanian 2014; Kaplan & Kaplan 1989"
+   ],
+   "tier": "A",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Carpeted wood-lined banquette alcove (settle and talk at length) vs open glass-walled atrium bench (pleasant but exposed, exchanges stay brief).",
+   "cluster": "restorative-social",
+   "rank_score": 6.5,
+   "rationale": "Inverted-U enclosure gated by warmth is a real non-additive interaction; Coburn evidence emerging; wood-vs-laminate ambiguity caps at AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C36",
+   "name": "angular_specular_avoidance",
+   "human_effect": "Implicit threat/vigilance and avoidance \u2014 the aversive pole opposite approach. Sharp contours signal potential harm; hard specular surfaces amplify perceived hardness and glare-linked discomfort.",
+   "effect_sign": "Raising it worsens approach and elevates baseline vigilance/stress for anyone, suppressing lingering and all higher social forms; danger is that such spaces read as 'premium' while loading physiology \u2014 a prestige mask.",
+   "social_form": "fleeting co-presence only (traverse, do not settle)",
+   "base_measures": [
+    "contour angularity",
+    "specularity proxy",
+    "edge clarity",
+    "glare risk"
+   ],
+   "interaction_form": "Super-additive (product) threat co-occurrence: angularity x specularity, boosted by edge-sharpness and glare. Sharp AND glossy AND high-contrast is worse than the sum \u2014 a matte angular form or a glossy curved form is far less aversive.",
+   "computation": "avoidance=(a*p)*(0.6+0.4*edge)*(1+0.4*glare), clamped [0,1].",
+   "literature": [
+    "Bar & Neta 2006/2007 (sharp contours threatening, amygdala); Vartanian et al. 2013; Coburn et al. 2020 (specularity-threat inferential \u2014 uncertainty flag)"
+   ],
+   "tier": "A",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Sharp-cornered polished-stone-and-mirror lobby edge (impressive in photo, people keep moving) vs soft matte curved seating cluster (people settle and talk).",
+   "cluster": "approach-entry",
+   "rank_score": 6.5,
+   "rationale": "Threat co-occurrence is a genuine product and the negative pole of approach; specularity-threat link is inferential (proposer's own uncertainty flag) so evidence caps it; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C37",
+   "name": "threshold_invitation_gradient",
+   "human_effect": "Whether a boundary/decision-point actively INVITES advance or REPELS it, via the spatial gradient of approach-propensity across the threshold combined with how much of what lies beyond is previewed (mystery vs blankness).",
+   "effect_sign": "A positive gradient with PARTIAL preview improves entry (mystery pull); full preview gives a weaker satisfied pull; a flat/negative gradient or high approach with zero preview (blank occlusion) worsens entry (people balk).",
+   "social_form": "chance encounter / triggered conversation (inviting thresholds route people onto shared desire lines)",
+   "base_measures": [
+    "approach_propensity_field",
+    "mystery occlusivity",
+    "decision-point preview",
+    "prospect (view depth)"
+   ],
+   "interaction_form": "Spatial-gradient x preview interaction: delta_field (far minus near across threshold) modulated by an inverted-U on preview (mystery_pull peaks at partial occlusion). Neither the gradient nor the preview alone predicts invitation.",
+   "computation": "invitation=delta_field * exp(-((preview-0.5)^2)/2*0.2^2), prospect as tiebreak, in [-1,1]. ABSTAIN if the onward region is not imaged/inferable.",
+   "literature": [
+    "Kaplan & Kaplan 1989 (mystery a strong preference predictor); Vartanian et al. 2015; Appleton 1975"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Curved brightening opening revealing ~half a welcoming room (strongly positive) vs flat door into a fully-occluded blank vestibule, or full-glazed wall with nothing withheld (near-zero/negative).",
+   "cluster": "approach-entry",
+   "rank_score": 6.5,
+   "rationale": "Gradient-x-mystery is genuinely compound (and compounds over another compound); needs two region samples across a threshold so feasibility caps it; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C38",
+   "name": "fluency_discomfort_mask",
+   "human_effect": "A masking detector: a scene that reads as smooth/fluent/pleasant to conscious judgement while its spatial-frequency structure covertly loads the visual system (asthenopia, headache, gaze aversion) \u2014 perception says 'fine', physiology says 'cost'.",
+   "effect_sign": "Raising the gap WORSENS hidden visual-stress load while subjective comfort stays flat or positive \u2014 the cardinal mask; it silently erodes dwell and mood downstream.",
+   "social_form": "none",
+   "base_measures": [
+    "perceptual-fluency proxy (symmetry + edge clarity + fractal-fit)",
+    "spectral discomfort deviation"
+   ],
+   "interaction_form": "Conditional co-occurrence flag \u2014 the signal is the DISAGREEMENT: fires only when fluency is HIGH and spectral discomfort is HIGH simultaneously (AND-gated product); either alone is not a mask.",
+   "computation": "mask_risk=fluency*spectral_deviation, evaluated only where both exceed their medians (else 0). High = looks fluent, physiologically costly -> route to ABSTAIN on dwell/comfort claims.",
+   "literature": [
+    "Fernandez & Wilkins 2008 (uncomfortable images deviate from 1/f); Wilkins 1995; O'Hare & Hibbard 2011; Reber et al. 2004"
+   ],
+   "tier": "A",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "",
+   "cluster": "masking-diagnostic",
+   "rank_score": 6.5,
+   "rationale": "AND-gated fluency-vs-discomfort divergence is a valid masking compound with strong visual-stress evidence; only two primitives and no social A-vs-B, so value to the social goal is lower; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C39",
+   "name": "cozy_dim_circadian_deficit",
+   "human_effect": "A warm, dim, 'cozy/restorative'-reading scene delivers a sub-threshold melanopic dose, so daytime alertness and circadian entrainment are undersupplied while the affect signal is strongly positive \u2014 pleasantness masks a biological-light deficit.",
+   "effect_sign": "Timing-conditional: in the morning/daytime raising it worsens alertness/entrainment (deficit hidden by comfort); in the evening the same warmth is appropriate. Without a time-of-day input the sign ABSTAINS.",
+   "social_form": "solitary retreat / sustained huddle (low-arousal settings)",
+   "base_measures": [
+    "warm/cool ratio",
+    "vertical illuminance proxy",
+    "brightness variance",
+    "circadian contrast C22"
+   ],
+   "interaction_form": "Product-of-antagonists across a nonlinear knee: coziness_affect x melanopic_deficit, where deficit is a threshold function (steep below the entrainment knee). Value is the co-occurrence of high hedonic warmth with sub-knee estimated melanopic level.",
+   "computation": "deficit=clamp((knee-vEDI_proxy)/knee,0,1) with knee ~ daytime target; score=warmth*deficit. Requires time_of_day to resolve sign; ABSTAINS on sign without it and entirely if illuminance proxy UNKNOWN.",
+   "literature": [
+    "Brown et al. 2022 (daytime melanopic EDI >=250 lux); Lucas et al. 2014; Chang et al. 2015 (evening light delays phase)"
+   ],
+   "tier": "extra_input",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Warm lounge corner (restorative, under-doses morning light) vs daylight-adjacent seat (delivers melanopic dose); code should nudge to the latter for a morning task despite the former feeling nicer.",
+   "cluster": "masking-diagnostic",
+   "rank_score": 6,
+   "rationale": "Nonlinear-knee product-of-antagonists with an honest timing abstention; melanopic-from-photo is heavily proxy and needs time input, so feasibility caps it; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C40",
+   "name": "biophilic_air_quality_halo",
+   "human_effect": "A 'green = healthy' halo: visible vegetation plus warm natural materials in an enclosed, likely under-ventilated volume generate a restoration/health affect that masks elevated CO2/VOC load \u2014 occupants feel the air is fresh because the room looks natural.",
+   "effect_sign": "Raising it WORSENS the reliability of any 'this room is healthy' inference; the CO2 cognitive decrement is undetectable from the image and must be measured. Task hit: sustained cognitive work.",
+   "social_form": "sustained huddle / behaviour-setting fit (people stay longer, raising CO2 they cannot perceive)",
+   "base_measures": [
+    "C19 restoration/nature contact",
+    "visible vegetation fraction",
+    "enclosure index",
+    "material coverage (wood)"
+   ],
+   "interaction_form": "Product with an enclosure gate: nature_halo x stagnation_proxy. Nature contact alone (open, ventilated) scores low; the compound fires only where the restorative cue co-occurs with high enclosure (proxy for low fresh-air exchange).",
+   "computation": "halo=normalized(C19+veg+wood); stagnation=enclosure with no visible operable aperture; score=halo*stagnation. Marks CO2 as extra_input; ABSTAINS on physiological magnitude until a CO2 reading is supplied.",
+   "literature": [
+    "Allen et al. 2016 (COGfx: cognition falls as CO2 rises); Satish et al. 2012; Cummings & Waring 2020 (potted plants negligible CO2/VOC removal)"
+   ],
+   "tier": "extra_input",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Planted enclosed nook (long stays raise CO2 unseen) vs open plant-light but ventilated zone.",
+   "cluster": "masking-diagnostic",
+   "rank_score": 5.5,
+   "rationale": "Enclosure-gated halo is a genuine interaction and the Cummings-Waring finding kills the halo cleanly, but enclosure is a weak ventilation proxy and the physiological term abstains without CO2 -> low feasibility; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C41",
+   "name": "visual_refuge_acoustic_leak_false_shelter",
+   "human_effect": "A false-shelter trap for confidential exchange: a nook that is VISUALLY enclosed and sheltered but acoustically leaky (hard low-absorption surfaces, high STI to bystanders) \u2014 occupants feel private and speak freely while being overheard.",
+   "effect_sign": "Raising it WORSENS confidential-exchange viability; the seat reads as safe to speak but carries uncorrected speech-transmission cost \u2014 a discount on any refuge/privacy scoring. Task hit: sensitive one-to-one.",
+   "social_form": "confidential exchange",
+   "base_measures": [
+    "enclosure index",
+    "C11 prospect-refuge",
+    "acoustic absorption proxy",
+    "C7 speech privacy (STI)"
+   ],
+   "interaction_form": "Antagonistic ratio: visual_refuge / acoustic_privacy \u2014 rises when visual shelter is high AND acoustic privacy low. Two independent privacy channels pulled apart; a nook high on both, or low on both, scores near zero. The divergence IS the attribute.",
+   "computation": "visual_refuge=norm(enclosure+C11); acoustic_leak=1-min(absorption, privacy_from_STI); score=visual_refuge*acoustic_leak. ABSTAINS if STI needs an occupancy map that is UNKNOWN.",
+   "literature": [
+    "ISO 3382-3 (STI/privacy distance independent of visual enclosure); Bradley & Gover 2004; Passero & Zannin 2012"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Visually screened but hard-surfaced alcove (high false-shelter, invites talk it cannot protect) vs soft-furnished textile-lined corner (low \u2014 route confidential exchange here).",
+   "cluster": "masking-diagnostic",
+   "rank_score": 7,
+   "rationale": "Two-privacy-channel divergence directly sharpens the confidential-exchange field David asked for; genuine ratio compound; needs STI/plan -> AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C42",
+   "name": "hue_heat_thermal_comfort_illusion",
+   "human_effect": "A cross-modal thermal illusion: a warm-hued palette plus large solar-gaining glazing lifts perceived warmth/comfort, masking real thermal load \u2014 an over-warm sunlit room still looks cozy, or a cool room reads warm enough that discomfort is under-reported.",
+   "effect_sign": "Raising it WORSENS detection of the real thermal cost; because the hue-heat literature is MIXED, the honest output is a divergence FLAG, not a temperature claim.",
+   "social_form": "none",
+   "base_measures": [
+    "warm/cool ratio",
+    "material coverage (glass)",
+    "colour palette entropy",
+    "vertical illuminance proxy"
+   ],
+   "interaction_form": "Product-of-antagonists: visual_warmth x solar_thermal_exposure. Visual warmth without glazing (stable interior) scores low; the compound fires where warm appearance co-occurs with an uncorrected thermal driver.",
+   "computation": "score=visual_warmth*solar_exposure. Marks air-temp/RH as extra_input; ABSTAINS on sign/magnitude of thermal discomfort until a temperature reading is supplied.",
+   "literature": [
+    "Fanger et al. 1977 (small hue-heat effect); Toftum et al. 2018 (small/inconsistent \u2014 hedge); Tsushima et al. 2020"
+   ],
+   "tier": "extra_input",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "",
+   "cluster": "masking-diagnostic",
+   "rank_score": 4,
+   "rationale": "Compound in form, but the underlying hue-heat interaction is by the proposer's own account small and inconsistent (contested link -> honest abstention), and the thermal magnitude abstains \u2014 lowest-value survivor, retained only as a flagged uncertainty; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C43",
+   "name": "total_environmental_load_superadditive",
+   "human_effect": "Cumulative sensory/physiological stress load and the collapse of a region's usability for demanding work; when two stressors co-occur the load exceeds their sum, so a region that looks only mildly bad on every primitive is actually unusable for focus.",
+   "effect_sign": "Worsens sustained-attention performance, elevates arousal/fatigue, and demotes a region from focus-capable to transit-only; worst for demanding solitary cognitive work.",
+   "social_form": "sustained huddle",
+   "base_measures": [
+    "glare risk",
+    "acoustic absorption proxy",
+    "warm/cool ratio"
+   ],
+   "interaction_form": "Threshold-gated super-addition: each stressor soft-thresholded above its own knee, then a pairwise PRODUCT (synergy) term added on top of the sum \u2014 the value comes from the product of co-active stressors, zero when only one is active.",
+   "computation": "s_i=max(0,(x_i-k_i)/(1-k_i)); base=\u03a3s_i; synergy=beta*(s_g*s_r+s_g*s_t+s_r*s_t), beta~0.6; load=clip(base+synergy,0,1).",
+   "literature": [
+    "Hygge & Knez 2001 (noise/heat/light interact non-additively); Witterseh, Wyon & Clausen 2004; Schweiker et al. 2020"
+   ],
+   "tier": "A",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Sunlit desk near untreated glazing (high glare + reverberation -> load ~0.8, transit-only) vs shaded absorptive alcove (~0.2, supports huddle/deep work), even though each single primitive is only 'moderately' bad in the former.",
+   "cluster": "cross-domain-load",
+   "rank_score": 7,
+   "rationale": "The explicit synergy term (not the sum) is the compound and is well-evidenced as non-additive; base for two other compounds; Tier-A; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C44",
+   "name": "agency_buffered_load",
+   "human_effect": "Discounts total environmental load wherever occupants have VISIBLE means to change their conditions (dimmer, operable blind, openable window, movable furniture); the same stressor produces a smaller stress response when controllable \u2014 the residual, agency-corrected load.",
+   "effect_sign": "Raising visible control LOWERS effective load and stress for the same stimulus; strongest for dwelling occupants, negligible for pass-through.",
+   "social_form": "solitary retreat",
+   "base_measures": [
+    "glare risk",
+    "acoustic absorption proxy",
+    "C17 local control"
+   ],
+   "interaction_form": "Conditional multiplicative discount: buffered_load = total_load x (1 - lambda*agency). Agency changes the SLOPE of stimulus->stress, a true interaction, not an average of load and control.",
+   "computation": "buffered_load=L*(1-lambda*a), lambda~0.4. ABSTAINS if neither C17 nor a controls detector/declared model is available \u2014 control presence is not reliably recoverable from a single photo.",
+   "literature": [
+    "Glass & Singer 1972 (controllability cut noise aftereffects); Boerstra et al. 2016; Leaman & Bordass 1999 (perceived control a 'killer variable')"
+   ],
+   "tier": "extra_input",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Reverberant sunlit bench, no controls (full load ~0.8) vs identical physics with an operable blind and movable chair (~0.55, more usable).",
+   "cluster": "cross-domain-load",
+   "rank_score": 6,
+   "rationale": "Slope-changing agency buffer is genuinely compound and well-evidenced, but control presence abstains from a single photo -> feasibility caps it; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C45",
+   "name": "thermal_acoustic_misattribution_index",
+   "human_effect": "Flags regions where a thermally NEUTRAL space is likely reported 'too warm/stuffy' because acoustic stress inflates perceived warmth \u2014 a misattribution trap: the complaint points at HVAC but the driver is the soundscape.",
+   "effect_sign": "Raising acoustic stress in a thermally neutral zone raises the perceived-warmth error and thermal dissatisfaction that HVAC tuning cannot fix; misleads facilities toward the wrong remedy.",
+   "social_form": "none",
+   "base_measures": [
+    "warm/cool ratio",
+    "material coverage (wood/stone)",
+    "acoustic absorption proxy"
+   ],
+   "interaction_form": "Conditional gated shift: kappa x reverberation x neutral_band(warmth) \u2014 nonzero ONLY when physical warmth sits in the neutral band AND reverberation is high; the co-occurrence (product with a band gate), not an average.",
+   "computation": "neutral_band(w)=bump peaking w in [0.4,0.6]; index=kappa*r*neutral_band(w), kappa~0.5; high = predicted thermal complaint that is really acoustic.",
+   "literature": [
+    "Pellerin & Candas 2003/2004 (noise shifts thermal preference); Schweiker et al. 2020; Torresin et al. 2021"
+   ],
+   "tier": "A",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Thermally neutral open plan with hard reverberant finishes (high index, will be called 'stuffy/warm') vs same air temperature with absorptive finishes (low index, accurate appraisal).",
+   "cluster": "masking-diagnostic",
+   "rank_score": 6,
+   "rationale": "Band-gated cross-domain misattribution is a real interaction with emerging evidence; no social A-vs-B and needs a thermal-neutrality assumption from a photo -> mid value; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C46",
+   "name": "load_gated_conversation_suppression",
+   "human_effect": "Corrects geometry-only predictions of triggered conversation: a sociopetal, well-anchored spot on a desire line still will NOT spark talk under high compound environmental load \u2014 favourable geometry is necessary but not sufficient.",
+   "effect_sign": "Raising compound load suppresses triggered conversation and chance encounters even where seating and a shared anchor would otherwise invite them.",
+   "social_form": "triggered conversation",
+   "base_measures": [
+    "landmark salience",
+    "C1 visual integration",
+    "glare risk",
+    "acoustic absorption proxy"
+   ],
+   "interaction_form": "Multiplicative gate: social_geometry x (1 - total_load). Environmental load MULTIPLIES down the geometric conversation signal \u2014 the prediction lives in the product; averaging load into geometry would hide fully-suppressed hotspots.",
+   "computation": "sg=f(salience, integration, sociopetal if available); initiation=sg*(1-L). ABSTAINS on the sociopetal term without a seat/orientation input.",
+   "literature": [
+    "Whyte 1980 (triangulation); Osmond 1957 / Sommer 1969; Glass & Singer 1972 & Cohen 1980 (stress reduces prosocial engagement)"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Sociopetal seats around a fountain on a high-integration path but under glare+reverberation (sg~0.8, L~0.7, initiation~0.24 \u2014 geometry-only overpredicts) vs identical seating in a shaded absorptive pocket (L~0.2, initiation~0.64).",
+   "cluster": "conversation-initiation",
+   "rank_score": 7,
+   "rationale": "Couples the social-geometry stack to environmental load \u2014 a genuinely corrective compound-over-compound that guards against over-optimistic conversation hotspots; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C47",
+   "name": "designed_in_conflict_flag",
+   "human_effect": "Neighbour concentration loss and stress imposed by a seating cluster that LOOKS collaborative but leaks speech into adjacent solitary-work space, while the collaboration itself self-degrades; the zone reads 'alive/buzzy' subjectively while loading the physiology of people it disrupts.",
+   "effect_sign": "Worsens focus/restoration for occupants seated adjacent to the flagged patch and degrades the conversation's own confidentiality; a defect flag, not a resource.",
+   "social_form": "collision of a triggered conversation/huddle with the solitary retreat it sits beside",
+   "base_measures": [
+    "enclosure index",
+    "acoustic absorption proxy",
+    "C7 speech privacy (STI)",
+    "C6 path overlap"
+   ],
+   "interaction_form": "Threshold-gated co-occurrence AND-gate: fires only when enclosure LOW AND absorption LOW AND STI-leak HIGH AND path-overlap HIGH in the same patch; value = product of the four breaches. Any single component below threshold zeroes it.",
+   "computation": "openness=(1-E); acoustic_exposure=(1-A); flag=openness*acoustic_exposure*STI_leak*path_overlap if all four>0.6 else 0. ABSTAIN if plane segmentation low or STI not derivable.",
+   "literature": [
+    "Kim & de Dear 2013 (loss of speech privacy the largest open-plan dissatisfier); Banbury & Berry 2005; Hongisto 2005; Osmond 1957"
+   ],
+   "tier": "A+B",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Sociopetal cluster under an absorptive soffit in a low-traffic eddy (contained, ~0) vs identical inward seating on a reverberant hard transit spine (flag ~0.8) \u2014 same appearance, opposite scores.",
+   "cluster": "masking-diagnostic",
+   "rank_score": 7,
+   "rationale": "Four-way AND-gated conflict detector catches the buzzy-vs-disruptive mask that measures the WRONG occupants' physiology; strong workplace evidence; AMBER.",
+   "merged_from": []
+  },
+  {
+   "id": "C48",
+   "name": "belonging_anchorage",
+   "human_effect": "Place attachment and territorial belonging of an occupant's home patch; predicts team cohesion, sustained presence, and identity-based well-being. Belonging needs a defensible, enclosed, personalizable, materially warm patch \u2014 not merely a seat.",
+   "effect_sign": "Improves belonging/territoriality/connectedness (sustained presence, stronger ties); depriving it (hot-desking, clean-desk, cold open bench) worsens attachment.",
+   "social_form": "sustained presence / team huddle grounded in a claimed territory",
+   "base_measures": [
+    "C16 territoriality",
+    "enclosure index",
+    "warm/cool ratio",
+    "material coverage",
+    "desk personalization"
+   ],
+   "interaction_form": "Enclosure-threshold-gated product with a personalization multiplier: belonging = territoriality x warmth x (1 + personalization), gated so that below a minimum enclosure the whole term collapses (no territory without a defensible edge). Personalization multiplies, not adds.",
+   "computation": "gate=(E>=0.4)?1:E/0.4; belonging=gate*T*warmth*(1+pers). If personalization UNKNOWN -> ABSTAIN (report partial).",
+   "literature": [
+    "Wells 2000 (personalization->well-being); Knight & Haslam 2010; Altman 1975 (territoriality); Sundstrom 1986"
+   ],
+   "tier": "extra_input",
+   "ceiling": "AMBER",
+   "region_A_vs_B": "Assigned team neighbourhood with enclosed backs, warm timber, personalized desks (strong anchorage) vs clean-desk hot-bench open plan, cold glass/metal, no personal artifacts (near-zero, or ABSTAIN if personalization unreadable).",
+   "cluster": "restorative-social",
+   "rank_score": 6,
+   "rationale": "Enclosure-gate + personalization multiplier is genuinely compound; personalization is an extra input the photo often lacks (honest abstain) so feasibility caps it; AMBER.",
+   "merged_from": []
+  }
+ ],
+ "dropped": [
+  "No proposal was dropped as non-compound: all 68 supply >=2 base measures combined by a genuine product, threshold-gate, ratio, inverted-U, sign-flip, or cross-register difference \u2014 none is a single measure or a bare average, and none merely restates a C1-C24 metric verbatim. The 30 near-duplicate writeups listed below were absorbed by merge (recorded in each survivor's merged_from), NOT dropped.",
+  "MERGED (triangulation core) into C01 triangulation_ignition_field: P1, P10, P13, P29, P30, P49 \u2014 all 'salient anchor co-located on the high-integration/path-crossing desire line converts co-presence to conversation'; same human effect + same co-occurrence-gated-product interaction. Third-term variants (prospect, enclosure, sociopetal, dwell) noted; best writeup = P1 (B-tier, cleanest desire-line gate).",
+  "MERGED (triangulation + acoustic hearability) into C02: P22, P65 \u2014 triangulation gated by a local-STI feasibility gate; retained as a distinct candidate because the acoustic gate is an added interaction, not a duplicate of C01.",
+  "MERGED (sociopetal conversation) into C03: P6, P34 \u2014 'sociopetal seating raises triggered conversation'; sociofugal-veto gate x distance/intelligibility. P34 adds the inverted-U on intelligibility, folded in.",
+  "MERGED (huddle/confidential viability) into C04: P8, P14, P17, P33, P50, P68 \u2014 all 'enclosed + acoustically private + off-integration -> unseen/unheard exchange'; product of seclusion complements. P8's closeness-vs-shelter masking cross-check folded in.",
+  "MERGED (warm-look reverberant mask) into C05: P20, P37, P52 \u2014 identical conjunctive 'affect-good x acoustic-bad fires when both high' masking detector.",
+  "MERGED (movement-vs-dwell classifier) into C06: P11, P32, P66 \u2014 ratio of through-movement to dwell/refuge classifying spine vs node. P11's pause-affordance (seating+widening) folded into the dwell denominator.",
+  "MERGED (solo focus zone) into C07: P61, P64 \u2014 weakest-link/min conjunction of low-load + privacy + refuge + low-traffic for concentrative/confidential capacity.",
+  "MERGED (curved-contour approach) into C08: P41, P51 \u2014 curvature x openness x coherence with an angular veto driving approach. P44 (angular_specular_avoidance) was NOT merged: it is the distinct threat/avoidance pole with specularity+glare, retained as C36.",
+  "MERGED (view-seat glare antagonism) into C09: P48, P53 \u2014 prospect/daylight resource vetoed by co-located glare; P48's dwell framing and P53's perceived-desirability masking framing are the same underlying physics.",
+  "MERGED (fractal fluency dwell) into C10: P43, P46 \u2014 mid-fractal fluency gated by clutter/spectral-disorder -> dwell/fascination. P38 (soft_fascination_field) was NOT merged: it is the vegetation-gated biophilic variant with distinct Kaplan/biophilia evidence, retained as C32.",
+  "BORDERLINE-RETAINED, not dropped: C21 speech_privacy_gradient (P19) sits close to C8 distraction distance (both ISO 3382-3 spatial-decay constructs) but is a ratio of STI at two radii that exposes the low-level/shallow-gradient mask, so it adds interaction beyond the single C-metric \u2014 kept with a noted caveat and moderate score.",
+  "BORDERLINE-RETAINED, not dropped: C33 green_commons_gravity (P39) is structurally the triangulation interaction with greenery as the anchor (could have merged into C01), but the vegetation->social-use evidence base (Coley/Kuo/Sullivan) and dual restoration+social effect are distinct enough to retain separately; flagged for the panel.",
+  "LOWEST-VALUE RETAINED, not dropped: C42 hue_heat_thermal_comfort_illusion (P57) is compound in form but rests on a hue-heat link its own author calls 'small and inconsistent'; per honesty constraint 3 it is kept only as a flagged uncertainty/abstention (rank 4.0), not dropped, since weak construct validity is not a drop criterion \u2014 non-compound-ness or C1-C24 duplication is."
+ ],
+ "verdicts": {
+  "C07": {
+   "id": "C07",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "YES, genuinely. min(q1..q4) is a Liebig weakest-link gate: the minimum component dominates, so one acoustic/visual/traffic breach collapses the score regardless of the other three. That is a true non-additive interaction, not an average. The score=m^0.5*g^0.5 blend correctly keeps the min in control while letting the geometric mean break ties. This is the strongest 'is it compound' case in the batch.",
+   "double_counting_risk": "REAL and must be fixed before shipping. C11 (prospect-refuge, seat-level) ALREADY internalizes enclosure/refuge, yet enclosure index is fed again as a separate input; and the '(1-total_load)' multiplier is presumably built from glare risk + absorption, which are ALSO listed as standalone base measures. So refuge is counted via both C11 and enclosure, and glare/absorption are counted via both the load term and their own slots \u2014 the min-gate dampens but does not eliminate the double-weight. Fix: pick ONE representative per sensory channel (privacy=C7, distraction=C8, refuge=C11 OR enclosure not both, visual-comfort=glare-in-load not glare-standalone).",
+   "citation_concern": "None material. Hongisto 2005 genuinely shows acoustic cost is driven by worst-case intelligibility exposure (supports the min-gate on the acoustic leg); Banbury & Berry 2005 (irrelevant-speech effect), Appleton 1975 (prospect-refuge), Kim & de Dear 2013 (open-plan noise/privacy as top dissatisfier) are all real and on-point. Anchors support the structure, not just the topic.",
+   "fixed_computation": "Deduplicate inputs to one-per-channel (privacy, distraction, refuge, traffic, visual-comfort load), then m=min over the deduped gated qualities, score=sqrt(m)*sqrt(geomean). Keep ABSTAIN on privacy without plan/STI. Region-A-vs-B claim (perimeter protected-back desk vs central cross-path desk dragged to ~0.25 by the privacy min) follows correctly from the min-gate.",
+   "reasons": "Real non-additive weakest-link interaction, evidence supports the min structure not just the topic, computable on Tier A+B. Ceiling AMBER is correct (rides inferred plan/STI). Only defect is input double-counting between C11 and enclosure/glare/absorption, which is a fix, not a kill."
+  },
+  "C08": {
+   "id": "C08",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "YES, mostly. The multiplicative gate curvature x (1-enclosure) x (1-clutter) is genuinely more than parts: a curved but fully enclosed volume, or a curved but visually chaotic one, both collapse \u2014 the openness and coherence factors are not cosmetic. The value is not a disguised average. Caveat: curvature is doing most of the lifting and the warmth term is a bounded modulator only.",
+   "double_counting_risk": "Two flags. (1) INTERNAL: 'curvature/rectilinearity index' and 'contour angularity' plus the 'sharp-angularity veto' are the same underlying contour signal read up to three times (once as the driving factor, once as a veto). Defensible ONLY if the mapping is non-monotone (moderate curve rewards, sharp angle vetoes) rather than linear-repeated \u2014 state that explicitly or the veto is redundant. (2) EXTERNAL: the Vartanian curvature->approach signal is essentially what the fluency->affect hedonics layer already encodes, so compounding curvature here re-weights a signal already scored downstream. Ensure this field is used as a spatial 'where do people advance' field, not summed back into the global hedonic score.",
+   "citation_concern": "Anchors are legitimate and, unusually, the social/behavioural claim is supported: Vartanian et al. 2013 (PNAS) did measure approach-avoidance ('enter' vs 'exit') decisions for curved vs rectilinear interiors, so 'drives enter decisions' is not overclaimed. Bar & Neta 2006 (sharp contour -> threat/amygdala) and Coburn et al. 2020 support the veto. Good.",
+   "fixed_computation": "Collapse curvature + contour-angularity into a single non-monotone contour term (reward mid-curvature, hard veto only past a sharpness threshold) so the signal is not triple-counted, then field=(contour*openness*coherence)*(1+0.5*warm). A-vs-B (curved open reception nucleates vs rectilinear low-soffit corridor mouth passes through) follows from the gate.",
+   "reasons": "Genuine conjunctive gate, Tier-A computable, and the approach evidence actually measured approach behaviour. AMBER correct (proxy-grade approach link + heuristic segmentation). Contour-signal redundancy and external double-count with the hedonics layer are fixable, not fatal."
+  },
+  "C09": {
+   "id": "C09",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "YES. resource=(prospect x daylight)*(1-glare_gate) is a true sign-flipping antagonism: identical view depth yields opposite dwell because glare co-locates as a veto cost. An average would report 'moderate' for the exact case (high view + high glare) where the real outcome is near-zero occupancy. This is precisely the kind of interaction single primitives miss.",
+   "double_counting_risk": "Moderate. prospect (view depth), daylight/vertical-illuminance proxy, AND glass material coverage all rise monotonically with aperture size, so prospect x daylight partly multiplies aperture by itself. Use glass coverage only inside the glare_gate scaler (as specified) and not as a fourth positive term, and treat prospect and daylight as the two semi-independent legs, to avoid squaring window-size.",
+   "citation_concern": "Anchors real and correctly typed: Appleton 1975 (prospect), Jakubiec & Reinhart 2012 (Daylight Glare Probability / adaptive-zone DGP \u2014 a genuine glare metric, not a preference proxy), Osterhaus 2005 (discomfort-glare review), Boubekri et al. 1991 (window/sunlight penetration and well-being). No preference-sold-as-stress problem here.",
+   "fixed_computation": "Keep resource=sqrt(prospect*daylight); glare_gate=sigmoid past a discomfort threshold scaled by glass*(1-shade_cue); value=resource*(1-glare_gate). CRITICAL computability caveat to record: glare risk from a single photo is confounded by camera auto-exposure (a window is often blown out regardless of true UGR/DGP) and shade-cue detection is fragile \u2014 hence AMBER is mandatory and the field should lean toward ABSTAIN when exposure metadata is missing. A-vs-B (north-shaded perch dwelt-in vs west-glary identical-view seat empty at peak sun) follows from the veto.",
+   "reasons": "True antagonism with a documented sign flip, real glare metrics behind it, Tier-A. The single-photo glare confound is the one substantive risk and is correctly capped at AMBER; keep it as a compound but guard the glare leg."
+  },
+  "C10": {
+   "id": "C10",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "YES structurally \u2014 a mid-fractal inverted-U CONDITIONED on a coherence gate with a discomfort veto is non-monotone and sign-flipping (the same raw richness helps when organized, repels when not). That conditioning is a real interaction, not a mean.",
+   "double_counting_risk": "THE dominant concern in this candidate, and it is serious. Fractal dimension, colour-palette entropy, and Rosenholtz clutter are three CORRELATED complexity measures; the formula arbitrarily assigns fractal='complexity', entropy+symmetry='coherence', clutter=separate \u2014 but entropy is itself a complexity/disorder measure being repurposed as coherence, which is dubious. Worse: the 'spectral discomfort deviation' (deviation from a 1/f amplitude spectrum, Fernandez & Wilkins) is mathematically near-tautological with fractal dimension, since the fractal dimension of an image is derived from the SAME amplitude-spectrum slope. So the 'complexity band' term and the 'discomfort veto' term risk reading one physical property twice, and fractal already feeds the hedonics inverted-U layer downstream \u2014 triple exposure of the spectral signal.",
+   "citation_concern": "Anchors themselves are real (Kaplan & Kaplan 1989 complexity-needs-coherence; Taylor 2011 / Hagerhall 2004 mid-fractal ~1.3-1.5 preference; Reber et al. 2004 fluency; Fernandez & Wilkins 2008 discomfort from non-1/f images). Note most are PREFERENCE/comfort findings, so the 'restoration/dwell' outcome sign is proxy-grade, not a physiological result \u2014 keep AMBER and do not sell as a stress/biosignal claim without the survey->biosignal->physical triplet.",
+   "fixed_computation": "Disentangle the spectral overlap: if fractal D and the 1/f-deviation are both computed from the amplitude spectrum, use ONE spectral term (either the band OR the deviation-veto, not both as independent factors) and source the coherence gate from a genuinely orthogonal cue (horizontal symmetry / edge-alignment), not from entropy. Then value=band(D) * symmetry_coherence * (1-clutter), emit overload_flag. A-vs-B (rhythmic symmetric gallery wall slows people vs equal-richness mismatched ductwork speeds them up) still follows.",
+   "reasons": "Coherence-gated non-monotone fascination is a legitimate compound and Tier-A computable, but it is one algebraic step from double-counting the amplitude-spectrum slope (fractal vs 1/f-deviation) and from re-weighting fractal already in the hedonics layer. Survives as VIABLE only conditional on the spectral-term disentangling above; AMBER is correct."
+  },
+  "C11": {
+   "id": "C11",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "is_it_really_compound": "YES on paper \u2014 a threshold-gated PRODUCT (sittability x prospect x back-refuge) correctly zeroes a wall-facing bench (high seat provision, zero prospect) where a mean would report 'moderate'. The compound logic is sound and it exposes exactly the code-masking (seat COUNT met by seats facing a wall) the brief cares about.",
+   "double_counting_risk": "Minor: enclosure index supplies 'back-refuge' and also bounds prospect; keep enclosure on the refuge leg only. The larger problem is not double-counting but a base-measure/computation MISMATCH \u2014 the interaction form is written over {sittability, prospect, back-refuge} yet the declared base_measures are {prospect, enclosure, acoustic absorption proxy}. 'Sittability' is never defined as an input and 'acoustic absorption proxy' never appears in the computation. The spec is internally inconsistent.",
+   "citation_concern": "None \u2014 anchors are top-tier and correctly social: Whyte 1980 (sittable space dominates plaza use), Gehl 1987/2011 (edge effect), Appleton 1975 (prospect). This is the best-evidenced candidate.",
+   "fixed_computation": "Two required inputs before it can produce a non-abstaining number: (1) a seatable-plane / seat-height detector \u2014 classical CV cannot reliably identify a ~40-50cm sittable ledge from a monocular photo (needs metric scale, which the photo lacks -> monocular scale ambiguity), so this must come from Tier-B declared seat geometry or a 3D model, and on pure Tier-A it will ABSTAIN nearly always; (2) reconcile the dangling acoustic-absorption input (either drop it or make it a fourth gated leg for 'found-not-overheard'). With a declared seat map it becomes a clean product-gate. A-vs-B (planter ledge back-to-wall facing entry stream occupied vs backless open-middle stools empty) is correct.",
+   "reasons": "Excellent Whyte/Gehl grounding and a correct product-gate, but it is not viable as an autonomous Tier-A photo attribute: it fundamentally needs a seat-plane / seatable-surface input the photo cannot supply, and its base-measure list does not match its own computation. Resolve the seat-geometry input and the absorption mismatch and it upgrades to VIABLE (AMBER). Concept is good \u2014 hence not a KILL."
+  },
+  "C12": {
+   "id": "C12",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "is_it_really_compound": "YES \u2014 a three-way spatial co-occurrence (sun-patch \u2229 sittable \u2229 within r of amenity) with a THERMAL sign-gate flipping sun from resource to cost is a genuine non-additive, context-dependent interaction, exactly the timing/sign-flip pattern the brief wants. Two-of-three low collapses it; an average would not.",
+   "double_counting_risk": "Not classic double-counting, but a VALIDITY substitution: 'landmark salience' is used to stand in for 'food/amenity anchor'. Whyte's engine is specifically FOOD + seating + sun; a generic saliency proxy fires on a sculpture or a bright sign as readily as a coffee cart, so the amenity leg is measuring the wrong construct. And, as in C11, 'sittability' appears in the computation but is not in the base-measure list.",
+   "citation_concern": "Anchors are real (Whyte 1980 sun+food+seating as strongest use correlates; Nikolopoulou & Lykoudis 2006 outdoor thermal adaptation/comfort; Gehl 1987/2011). But the computation under-delivers on Whyte because landmark salience does not identify FOOD \u2014 so the literature is invoked more tightly than the computable inputs actually support. Flag as a construct-mapping stretch.",
+   "fixed_computation": "Requires multiple declared inputs the photo cannot give: (1) sun-patch geometry \u2014 a single photo is a snapshot and cannot yield the daily/seasonal sun path, so this needs a declared 3D + solar-position model (correctly self-flagged, tier=3D_model, ABSTAIN on photo); (2) a real thermal-comfort input (weather/declared, not a photo proxy); (3) an amenity/POI map that actually tags food/service, replacing landmark salience; (4) a seatable-plane detector as in C11. With those, value = overlap-area product x sign(thermal_comfort) in [-1,+1] is clean. A-vs-B (cool-day sunlit ledge 2m from a coffee cart dense vs shaded seats 40m from amenity empty, flipping in a July heatwave) is a correct consequence of the sign-gate.",
+   "reasons": "The interaction and thermal sign-flip are genuinely valuable and real, but the attribute stands on four inputs the photo cannot supply (solar/3D sun-patch, thermal, amenity-semantics, seat detection) and substitutes landmark salience for the food anchor Whyte actually requires. Low feasibility (rank 5.5) is honest. Not a KILL \u2014 with a declared 3D/solar model + thermal input + a true amenity map it is a legitimate AMBER compound \u2014 but as specified it needs those extra inputs to compute what it claims."
+  },
+  "C01": {
+   "id": "C01",
+   "verdict": "VIABLE",
+   "is_it_really_compound": "Yes \u2014 genuinely compound. The value comes strictly from CO-LOCATION: a threshold gate on the anchor's normal distance to the max-integration desire-line ridge. Salience alone or integration alone cannot fire it, and a plain average of salience and integration would wrongly score the dead-alcove fountain highly; the gate correctly zeros it. The interaction is real, not a disguised sum.",
+   "double_counting_risk": "landmark salience and C1 integration also feed the hedonics/plan-score layer; if this field is ALSO summed into the aggregate score, both signals get re-weighted. Keep it as its own social field, not added back into the general valence score.",
+   "citation_concern": "Whyte 1980 (triangulation prop must lie where people cross) and Hillier et al. 1993 (integration predicts natural movement) are both real and accurately characterized. No overclaim; neither is a social study sold as physiological.",
+   "fixed_computation": "Require the anchor to be detected in photo-salience AND registered to a plan cell above a confidence threshold; abstain (UNKNOWN) when cross-tier registration confidence is low rather than guessing the centroid.",
+   "reasons": "Flagship of David's core social lever and the cleanest compound in the set. Computable NOW at Tier B. Chief residual risk is cross-tier registration: you must place a photo-detected salient anchor onto a single-photo-INFERRED plan grid and overlay it on a VGA ridge derived from that same inferred plan \u2014 a stack of heuristics, correctly capped at AMBER. Region-A-vs-B (cross-path fountain ignites vs dead-alcove fountain admired) follows directly from the gate. I would defend this to Kirsh."
+  },
+  "C02": {
+   "id": "C02",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes \u2014 triangulation pull (salience x integration/path-overlap) MULTIPLIED by an acoustic-hearability gate (STI_local>0.5). Pull without hearability = 0 and hearability without pull = 0; the acoustic term is a distinct signal from the pull, so it is a real compound extension of C01, not a rename.",
+   "double_counting_risk": "Reuses the same salience x integration pull as C01 and the same absorption proxy as C04/C05. If both C01 and C02 feed a downstream score, triangulation pull is counted twice. The acoustic gate is the only new information here.",
+   "citation_concern": "Hongisto 2005 is primarily a distraction/performance-vs-STI model (rising speech intelligibility raises distraction), NOT a study of the STI floor needed to SUSTAIN a two-talker conversation. The physical requirement is uncontroversial, but crediting it to Hongisto 2005 is a mild mischaracterization \u2014 cite a direct two-talker communication/STI source.",
+   "reasons": "Genuine compound, but STI_local is estimated from absorption + enclosure proxies that are themselves inferred from a photo \u2014 a proxy of a proxy. Its ceiling is therefore permanently AMBER; it can never validate without a real ISO 3382-3 measurement. Viable and useful for the mature-vs-abort distinction, but the amber cap is structural, not incidental."
+  },
+  "C03": {
+   "id": "C03",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "is_it_really_compound": "Yes, and the strongest interaction design in the set: the sociofugal veto multiplicatively zeros the whole product regardless of Hall-distance, barrier, or intelligibility. Combined with the Hall-band bump and an inverted-U on C3, it is emphatically non-additive \u2014 exactly the kind of interaction the brief wants.",
+   "double_counting_risk": "C1 integration and C3 intelligibility are reused from the plan-metric layer; low concern relative to the input gap.",
+   "citation_concern": "Anchors are real and on-point: Osmond 1957 (sociopetal/sociofugal), Sommer & Ross 1958 (facing-in roughly doubled conversation \u2014 a genuine SOCIAL-interaction study, correctly used), Hall 1966, Mehrabian & Diamond 1971. Evidence layer is strong and honestly social.",
+   "reasons": "The blocker is input, not logic. It requires recoverable seat FACING vectors; social.sociopetal sits in the cataloged-but-uncomputed registry, and chair orientation/pose from a single photo needs semantics classical CV does not reliably provide. The candidate honestly abstains without seat orientation, which means in current practice it abstains most of the time. Genuinely valuable once a seat/orientation map exists \u2014 hence NEEDS_EXTRA_INPUT rather than KILL."
+  },
+  "C04": {
+   "id": "C04",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "is_it_really_compound": "Yes \u2014 product of complements: refuge x (1-STI_to_others) x (1-integration/exposure) x absorption. Conjunctive: any single high-exposure term drives it to zero, so it is a true multiplicative interaction (all seclusion conditions must co-hold), not an average of privacy-ish scores.",
+   "double_counting_risk": "refuge/enclosure, integration, and absorption are shared with C05/C06 and it is the geometric mirror of C01/C06, so the plan-integration signal recurs across the family. Manage shared-input weighting at the score layer.",
+   "citation_concern": "Sailer & McCulloh 2012 (segregated locations host longer uninterrupted interaction \u2014 real, social), Osmond/Sommer, Appleton 1975 (prospect-refuge), ISO 3382-3, Alexander et al. 1977 (alcoves/intimacy gradient) all real and correctly applied. No overclaim.",
+   "reasons": "The candidate itself declares tier=extra_input and is right to: the STI_to_others privacy term needs a material/absorption table or a declared 3D model and abstains from a bare photo. The geometry sub-part (refuge x segregation) is computable as SCORED-partial, but full value \u2014 the whole point, acoustic seclusion \u2014 requires the extra acoustic input. Honest design (partial-geometry SCORED vs privacy UNKNOWN). NEEDS_EXTRA_INPUT."
+  },
+  "C05": {
+   "id": "C05",
+   "verdict": "VIABLE",
+   "is_it_really_compound": "Yes \u2014 conjunctive masking detector: affect_good (warm/wood/fluency) x reverb_bad (hard+specular, low-absorption), firing only when BOTH exceed threshold. The product of a POSITIVE perceptual signal with a NEGATIVE physical one is precisely the masking signature and cannot be recovered from either primitive alone. (Minor: reverb_bad internally sums two hardness proxies \u2014 an acceptable within-term aggregation; the headline interaction remains a product.)",
+   "double_counting_risk": "IMPORTANT: the affect_good term literally reuses the fluency->affect signal that already feeds the hedonics layer, and absorption/warm-cool/wood feed it too. This is fine ONLY because the output is a divergence FLAG, not a score contributor. It must never be added into the positive valence score, or it double-weights affect. Keep strictly diagnostic.",
+   "citation_concern": "Peelle 2018 (listening effort is a measurable physiological load even at maintained comprehension \u2014 a genuine biosignal-level finding, not a preference study), Pichora-Fuller et al. 2016 (FUEL), Reber/Winkielman/Schwarz 1998/2004 (fluency->affect) are all real and correctly characterized. No preference-sold-as-stress error.",
+   "reasons": "The exemplary masking compound and a textbook subjective-vs-physical divergence, computable at Tier A from the photo material palette. Directly implements the doc's cardinal masking trap. Ceiling AMBER is honest because RT60/absorption is a photo proxy and true validity needs the subjective->biosignal->physical triplet. Strong; I would defend it."
+  },
+  "C06": {
+   "id": "C06",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes \u2014 a ratio, and the division is what makes the meaning RELATIONAL: the same integration reads as 'spine' when refuge/enclosure are low and 'dwell node' when high. An average of movement and stay potentials would collapse that distinction; the ratio preserves it. Genuine compound, correctly a discriminator rather than a valence.",
+   "double_counting_risk": "Heavy, and internal to the compound: the numerator multiplies THREE correlated through-movement proxies (I integration, K connectivity, p path-overlap all covary), inflating the movement side; the denominator multiplies two correlated enclosure proxies (refuge x enclosure). The direction is sound but the magnitude is over-driven by redundant inputs. Also I/K are reused across C01-C04.",
+   "citation_concern": "Hillier 1996 (through-movement/choice vs to-movement/integration), Gehl 2010 (movement vs staying), Turner 2001 (VGA), Whyte 1980 all real and correctly used.",
+   "fixed_computation": "Replace I*K*p with a single decorrelated movement score (e.g., betweenness/choice) and refuge*enclosure with one dwell/enclosure score, then keep the ratio. This removes the intra-term double-counting while preserving the relational discriminator.",
+   "reasons": "Genuinely useful ratio compound for optimiser furniture placement (spine vs one-step-off dwell node), computable at Tier B. Kept off VIABLE only by the correlated-input inflation on both sides of the ratio, which should be orthogonalized before the number is trusted quantitatively. Region-A-vs-B follows from the ratio. AMBER cap appropriate (rides inferred plan)."
+  },
+  "C19": {
+   "id": "C19",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes \u2014 genuine super-additive product O*Rng*Pull. Overlap without range = anonymous passing; proximity without shared paths = silent neighbours; only the conjunction yields repeated range-close crossings. The value lives in the interaction, not an average.",
+   "double_counting_risk": "Pull term is C23 commons-gravity used as one input; not re-weighted elsewhere in this attribute. Low risk. Watch that C6 path-overlap and C5 proximity are computed on the SAME inferred plan so the product isn't two views of one geometry.",
+   "citation_concern": "Clean \u2014 Kabo et al. 2014 genuinely shows bump-space overlap predicts new collaboration BEYOND raw proximity (the exact super-additive claim); Allen 1977 curve real. Social claim rests on a social study. Good.",
+   "reasons": "Strong, well-evidenced compound. The Allen-curve range gate on path overlap is exactly the interaction Kabo isolates. Region A-vs-B (overlapping ~10 m corridor to shared coffee vs non-overlapping single-team approaches) follows directly from the computation. Correctly ABSTAINS on C5 without a seat/team map, which is what forces the AMBER ceiling. Defensible to Kirsh."
+  },
+  "C20": {
+   "id": "C20",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes \u2014 inverted-U RT60 band \u00d7 enclosure \u00d7 1/spacing is genuinely non-additive; a group both under- (dead) and over-reverberant fails, and the peak only helps when compact and shielded. Not an average.",
+   "double_counting_risk": "Real but non-fatal: 'acoustic absorption proxy' and 'material coverage (hard surfaces)' are two names for the same plane-material segmentation, so RT60_proxy is derived from ONE acoustic signal, not two. The cross-family compound survives because the interaction is RT60-band \u00d7 enclosure \u00d7 spacing, three independent axes.",
+   "citation_concern": "Mild stretch: Bradley/ANSI S12.60 evidence is single-talker classroom intelligibility; a 3-6 person multi-talker huddle is an extrapolation. Bronkhorst 2000 supports the multi-talker direction. Proxy-grade link, honestly AMBER.",
+   "reasons": "Distinct from the privacy fields (it wants reverberation IN-band and inward reach, the opposite optimum to confidentiality). Genuine interaction, but absorption/hard-coverage redundancy should be stated so the RT60 proxy isn't sold as two evidence sources, and the huddle application of classroom data is proxy-grade. ABSTAINS without Tier-B cluster. AMBER correct."
+  },
+  "C21": {
+   "id": "C21",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "is_it_really_compound": "As written, NO \u2014 this is the disguised-single-measure trap. C8 distraction distance rD is DEFINED (ISO 3382-3) as the radius where STI reaches a fixed value (~0.5). Sampling STI_out AT rD pins the denominator to that constant, so STI_in/STI_out reduces to STI_in rescaled \u2014 a single measure wearing two names \u2014 and/or a restatement of C8 itself. The gradient is real only if the two radii are chosen independently of the STI value.",
+   "double_counting_risk": "Severe overlap with C8: rD IS the inverse gradient, so a gradient built on rD re-derives C8. The prior committee's parenthetical 'borderline overlap with C8 (noted)' understates this \u2014 it is potentially the whole attribute.",
+   "fixed_computation": "Sample STI at two FIXED geometric radii independent of rD (e.g. STI_in at 1 m, STI_out at a fixed 4-5 m), gradient = STI_in/(STI_out+eps). Then the denominator varies with the actual acoustic field and the ratio genuinely captures decay steepness. With that respec it becomes a real compound and a valuable low-level/shallow-gradient mask detector.",
+   "citation_concern": "ISO 3382-3:2012, Haapakangas/Hongisto, S\u00f6rqvist 2010 (irrelevant-speech effect) all real and on-point. Evidence is fine; the defect is computational, not citational.",
+   "reasons": "The IDEA (gradient steepness makes a space simultaneously private and focus-friendly, and exposes the quiet-level/carrying-speech mask) is genuinely valuable. But the specified computation, tying the outer radius to C8's definitional rD, risks collapsing to a rescaled single STI or to C8. Requires the two-fixed-radii respec above before it can ship; not a KILL, but not viable as written."
+  },
+  "C22": {
+   "id": "C22",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes \u2014 occ^2 \u00d7 (1-absorption) \u00d7 (1-enclosure) is genuinely super-additive: competing-talker babble accumulates far faster when the envelope neither absorbs nor shields. The multiplication of occupancy-nonlinearity with acoustic leakage is the signal.",
+   "double_counting_risk": "Distinct from C20/C21 (babble build-up vs group intelligibility vs decay steepness). Low risk. Ensure absorption and enclosure are drawn once and not re-weighted.",
+   "citation_concern": "Cherry 1953, Bronkhorst 2000, Hongisto 2005 all real and on-topic. One honesty note: the SQUARE exponent on occupancy is a modelling choice, not a literature-fixed value \u2014 SNR degradation with talker count is documented as nonlinear/monotone but the specific power of 2 is heuristic. State it as 'nonlinear (illustratively squared)' rather than an empirical exponent.",
+   "reasons": "Genuine multiplicative interaction with correct sign (raising it worsens conversation initiation, pushing toward fleeting/retreat). Region A-vs-B at the SAME occupancy (absorptive nook: normal-voice conversation starts; hard hall: only shouted exchanges) follows cleanly and controls for density, which is the sharp part. ABSTAINS without occupancy grid. AMBER right; flag the exponent as heuristic."
+  },
+  "C23": {
+   "id": "C23",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes, and the form is correct: a threshold-gated MINIMUM (Liebig weakest-link) is exactly right for fear cues, which combine as a binding constraint, not a sum. One unlit corner or blocked exit collapses the field regardless of the other factors \u2014 an average would wrongly let a bright open plan compensate for a blocked exit.",
+   "double_counting_risk": "The min form structurally resists double-weighting (it returns the binding factor, not a sum), so even though enclosure/prospect also feed other layers, no signal is silently doubled here. Low risk.",
+   "citation_concern": "Strongest evidence set of the batch: Fisher & Nasar 1992 is an actual fear-of-crime study showing concealment+prospect+escape COMBINE (not a preference study sold as a stress result); Appleton 1975, Bl\u00f6baum & Hunecke 2005 on-point. Safety claim rests on safety studies. Clean.",
+   "reasons": "Correct non-additive form, correct sign (a low value suppresses dwell/approach for any occupant), and it is honestly framed as the enabling FLOOR beneath every social form. Minor spec nit: the named base measure 'brightness variance' is global while the computation uses min local luminance in the lower periphery \u2014 reconcile the named input with the lighting-floor term. ABSTAINS on escape without inferred plan \u2192 AMBER. rank 8.5 justified; best of the batch."
+  },
+  "C24": {
+   "id": "C24",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "The NEW interaction \u2014 a crowding-KNEE gate on a safety-conditioned dwell term \u2014 is genuinely compound and threshold-conditional. But as written the attribute also multiplies redundant constituents, so most of its factors are not adding independent information.",
+   "double_counting_risk": "SEVERE and undersold by the prior committee: felt_safety_field (C23) ALREADY contains prospect and enclosure/refuge, yet C24 re-multiplies by C11 (prospect-refuge) AND by standalone prospect (view depth). That triple-counts prospect and double-counts refuge, silently over-weighting the prospect/refuge signal by 2-3x. A naive implementation returns a wrong (over-weighted) number.",
+   "fixed_computation": "Strip the redundant terms: LA = felt_safety_field \u00d7 (C12<knee ? 1 : 1-(C12-knee)/(1-knee)). Optionally retain a SEAT-level refuge term ONLY if it carries information not already in C23's refuge (e.g. chair-back presence from the photo, distinct from architectural enclosure). Drop the duplicate prospect and C11 factors. The genuinely novel content is the crowding-knee gate on safety \u2014 keep exactly that.",
+   "citation_concern": "Whyte 1980, Gehl 2011 (edge effect), Marcus & Francis 1997 all real and support dwell-drives-social-life. Evidence fine; the defect is the double-count, not the citations.",
+   "reasons": "Conceptually sound and distinct from C23 (adds a real crowding threshold interaction), but ships a formula bug: it re-multiplies prospect and refuge that C23 already encodes, over-weighting them. Viable only after de-duplication per fixed_computation; with that, the safety\u00d7crowding-knee gate is a legitimate AMBER compound. Region A-vs-B (backed perimeter bench vs exposed island seat) follows. AMBER, conditional on the fix."
+  },
+  "C13": {
+   "id": "C13",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes, genuinely compound and non-additive. The value is base(F*P*V) multiplied by an inverted-U crowding term m=crowd*(1-crowd)/0.25 that peaks at moderate density and collapses at both extremes. Neither raw flow nor raw pinch nor raw crowding predicts the peak alone; the signal lives in the product-times-nonmonotone-gate. Strongest interaction form in the set.",
+   "double_counting_risk": "C12 crowding enters twice conceptually (it is density-derived, and threshold density is also a base measure), but it is re-expressed through a non-monotone transform rather than re-summed, so it is not silent double-weighting. Mild flag only.",
+   "citation_concern": "Whyte 1980 self-congestion, Gehl and Hillier are real. But the SPECIFIC inverted-U crowding penalty (comfort knee) is a modeling assumption, not a Whyte measurement; Whyte documented conversation clustering mid-stream, not the descending limb. Label the knee as a proxy calibration, not an observed curve.",
+   "fixed_computation": "Name the two unnamed inputs: mutual visibility V and pinch-narrowing P are used in the computation but are NOT in the declared base-measure list (C6, threshold density, C12). V should be sourced explicitly from C1/isovist and P from plan geometry; per honesty constraint 1 every input must be named or the attribute abstains.",
+   "reasons": "Best-evidenced, most genuinely non-monotone interaction here; Tier-B computable on the inferred plan; high A-vs-B value (pinch vs even corridor follows from the P term). AMBER is correct because it rides inferred plan and a calibrated (not observed) crowding knee. Fix: declare V and P as named inputs."
+  },
+  "C14": {
+   "id": "C14",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Compound via spatial co-occurrence: the per-anchor product s_i*I_i rewards only anchors that are salient AND on the integrated network, and the ratio measures what fraction of attractor mass lands on paths. An off-path sculpture inflates the denominator but not the numerator. Caveat: with a single detected anchor R degenerates to that anchor's integration (a single measure); the compound character only emerges with multiple anchors, so it must abstain or flag when only one anchor is found.",
+   "double_counting_risk": "C24 awe is used only as the external comparison term for masking detection, not inside R, so no double-weighting in the ratio itself. Clean.",
+   "citation_concern": "Whyte 1980 triangulation and Hillier & Hanson 1984 configurational social yield are real and on-point. No overclaim.",
+   "reasons": "Standout masking-diagnostic: it catches decoration-as-social-generosity that inflates awe/richness while producing zero contact, which no single primitive sees, and it directly guards the score layer's honesty. Computability is AMBER because it needs discrete anchor localization onto the plan grid (saliency maps to plan cells), which is heuristic and needs semantics classical CV only approximates. Add the single-anchor degeneracy guard."
+  },
+  "C15": {
+   "id": "C15",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes: a conjunctive min-gate times a product, min(sociofugal, refuge)*(1-path_overlap)*(1-STI). A plush high-refuge seat on a busy desire line fails the path-overlap term and collapses; a quiet seat facing inward fails the sociofugal term. Failing any single component drags the whole product down, a real Liebig-style interaction, not an average.",
+   "double_counting_risk": "Its four inputs (sociopetal, C11, C6, C7) each also feed other scores, but they are combined conjunctively into a distinct construct (retreat) rather than re-summed into an existing one; acceptable.",
+   "citation_concern": "Sommer 1966 (solo readers chose back-to-wall/corner), Appleton 1975, Hall 1966 all real and correctly applied.",
+   "reasons": "Distinct human effect (see-without-being-engaged) and distinct interaction form (min-gate) from the huddle/co-awareness fields; scores oppositely to sociopetal clusters by construction, giving genuine A-vs-B value. Honestly abstains without seat orientation, an acceptable design under constraint 1. AMBER because it needs inferred seat facing."
+  },
+  "C16": {
+   "id": "C16",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "is_it_really_compound": "The interaction is genuine and is the best-motivated agency-buffer in the set: the same intimate-distance stimulus scores very differently depending on the multiplicative (1-barrier)*(1-control) attenuation. Not an average.",
+   "double_counting_risk": "Low; the components are combined into a new construct.",
+   "citation_concern": "Evans & Wener 2007 (commuter proximity raised crowding and cortisol) and Evans & Stecker 2004 (agency buffer) are real and correctly cited as STRESS/physiology findings, not preference. Good.",
+   "fixed_computation": "The step function fires only below ~0.45 m, a HARD METRIC threshold, but monocular photos and heuristic vanishing-point plans carry severe scale ambiguity at that resolution; a 0.45 m step is fragile against scale error. More decisively, firing requires detecting occupant PAIRS and their pairwise metric distances and facing directions - a real seat/occupancy map that Tier A/B do not provide and that is not in the declared base palette. Control also abstains unless declared.",
+   "reasons": "Interaction and evidence are solid, but this cannot compute on the declared palette: it needs (a) a person/occupancy-pair map, (b) reliable metric scale for the intimate step, (c) seat orientation, and (d) declared control. Three of these are inputs the photo/inferred plan do not carry, so it would abstain in nearly all real cases. Not a KILL (the construct is valid) but gated behind occupancy + metric-scale inputs it does not yet have. Lowest rank in the set is consistent with this."
+  },
+  "C17": {
+   "id": "C17",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Marginally, and only under one reading. The claimed mask (high centrality, low realized visibility) requires C1 and prospect/isovist to be SEPARABLE. But VGA integration (C1) is itself computed from the visibility graph, so C1 and isovist prospect are largely the same underlying signal; multiplying them risks squaring visibility rather than capturing an interaction. It survives only because global configurational centrality (graph position across the whole plan) genuinely differs from the LOCAL directional isovist toward occupiable seats - a desk connected around a corner can be graph-central yet have a low forward isovist to occupied planes.",
+   "double_counting_risk": "REAL and must be flagged: C1 (VGA) and prospect are both visibility-graph-derived and both feed the score/hedonics layer; compounding them re-weights visibility twice. Mitigate by restricting the V term strictly to the DIRECTIONAL isovist toward occupiable planes (not omnidirectional openness), so it is orthogonal to global integration.",
+   "citation_concern": "Backhouse & Drew 1992 (interaction tracks mutual visibility, not proximity), Rashid et al. 2006, Benedikt 1979 all real and apt.",
+   "fixed_computation": "value = C1_global * V_directional_to_occupiable, where V is explicitly the forward isovist restricted to occupiable planes, NOT total openness, to avoid squaring the visibility signal.",
+   "reasons": "Clean central-but-blind mask with strong evidence and clear A-vs-B (integrated open desk vs integrated desk behind a partition). Downgraded from its self-assigned top rank because of the C1/isovist collinearity: the interaction is real only for the global-centrality-vs-local-directional-visibility distinction, which must be enforced in code or it degenerates into visibility-squared. AMBER."
+  },
+  "C18": {
+   "id": "C18",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "The distinctive contribution - the Gaussian inverted-U on integration (moderate integration preferred: findable but not over-exposed) - IS a genuine, novel interaction not present in the other seat fields. That part is defensible and compound.",
+   "double_counting_risk": "SERIOUS as written: prospect enters TWICE (raw prospect term, and again inside C11 which is prospect-refuge), and refuge enters TWICE (inside C11, and again as the standalone back-refuge Bk term). So prospect^~2 * refuge^~2 * gauss(C1) silently double-weights prospect and refuge. This is the exact averaging/double-counting trap the constraints forbid.",
+   "citation_concern": "Appleton 1975 and Gehl 1987 are apt. But attributing the inverted-U 'being-found needs MODERATE integration' to Hillier & Hanson 1984 is an extrapolation - H&H link integration to movement/co-presence, not a documented over-exposure penalty; label the descending limb a modeling inference, not an H&H finding.",
+   "fixed_computation": "Collapse the redundant terms: value = C11(prospect-refuge) * gauss(C1), dropping the standalone raw prospect and standalone Bk terms since C11 already carries both. This preserves the distinct inverted-U signal while eliminating the prospect/refuge double-count. After the fix it is cleanly distinct from C17 (inverted-U vs monotone).",
+   "reasons": "Not a KILL because the inverted-U on integration is a real, distinct interaction that directly models David's lone-waiter form and yields a clean A-vs-B (wall bench facing entrance vs exposed open-middle stool). But it must ship with the de-duplication fix, or it double-weights prospect and refuge. AMBER, conditional on the fixed computation."
+  },
+  "C25": {
+   "id": "C25",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "YES. Polarity = WaiterScore - HuddleScore where each pole is a TRIPLE PRODUCT (prospect*findability*back) and (refuge*(1-exposure)*(1-STI)). A difference of two genuine multiplicative terms is not linear in the primitives, so the value survives as an interaction, not an average. The antagonism (one region can serve waiter XOR huddle, not both) is exactly David's stated waiter-vs-huddle contrast, made into one signed field.",
+   "double_counting_risk": "Mild. prospect+enclosure already combine in C11 prospect-refuge and the hedonic layer; C25 recombines the same primitives. Safe ONLY if C25 is consumed as a standalone zone-assignment diagnostic (as positioned) and NOT summed back into the hedonic score alongside C11. Also the two poles are not fully orthogonal: enclosure enters positively in BOTH the waiter's 'protected back' and the huddle's 'refuge', so it is prospect/integration/STI (not enclosure) that carries the antagonism.",
+   "citation_concern": "Appleton 1975 is cited for 'prospect and refuge sometimes opposed', but Appleton's thesis is their COMPLEMENTARITY (see without being seen), not opposition. The opposition/antagonism finding is really Gatersleben & Andrews 2013. Lean on Gatersleben & Andrews for the sign, treat Appleton as background. Osmond/Sommer for seating orientation is correct.",
+   "reasons": "Genuine difference-of-products compound directly operationalising the brief's core waiter-vs-huddle antagonism; STI/orientation require inferred plan so it honestly abstains at Tier B \u2192 AMBER. The A-vs-B claim (entrance high-integration positive pole vs recessed low-STI alcove negative pole) follows directly from the signed field. Defensible to Kirsh at AMBER; fix the Appleton attribution and keep it out of the additive hedonic aggregate."
+  },
+  "C26": {
+   "id": "C26",
+   "verdict": "KILL",
+   "is_it_really_compound": "NO \u2014 this is the decisive failure. Expand it: GAP = mean(illum, prospect, 1-clutter) - [1 - mean(occ, entrap, 1-corner)] = mean(illum,prospect,1-clutter) + mean(occ,entrap,1-corner) - 1. That is a plain WEIGHTED SUM of six base measures. There is no product, ratio, threshold, conditional, or co-occurrence anywhere \u2014 both composites are arithmetic means and their difference stays linear. A masking gap must DETECT the conjunction 'looks-safe HIGH while physical-safe LOW'; a linear difference cannot \u2014 a bland medium-everything cell scores identically to the genuinely dangerous high-look/low-physical cell whenever the sums match. It is a disguised average wearing a two-register costume.",
+   "double_counting_risk": "Prospect appears on BOTH sides (directly in looks_safe, inversely via occlusivity/entrapment in physical_safe), so the 'gap' is partly a repackaged single openness axis rather than a true cross-register divergence.",
+   "citation_concern": "Fisher & Nasar 1992 and Nasar, Fisher & Grannis 1993 are perceived-fear/perception studies; Boomsma & Steg 2014 is perceived social safety. NONE measured physiology, yet the human_effect claims the mask 'still loads threat physiology'. That is a perception result sold as a biosignal result \u2014 an overclaim the brief's evidence rule forbids. A physiological-masking claim needs an actual SUBJECTIVE\u2192BIOSIGNAL\u2192PHYSICAL triplet, not three perception surveys.",
+   "fixed_computation": "Reformulate as an explicit conjunction so the interaction is real: MASK = relu(looks_safe - t) * relu((1-physical_safe) - t), i.e. fires only when a bright/open surface read CO-OCCURS with a concealed/entrapping physical reality; then re-cite for the physiology claim or downgrade the claim to perceived-safety only. As a product-of-thresholded-terms it would become a genuine compound and could be reconsidered.",
+   "reasons": "Killed as specified: it is a linear sum of six primitives, not a compound, and the physiology effect is unsupported by the perception-only citations. Respectable KILL \u2014 the underlying masking intent is legitimate and endorsed by the brief, but the author must make the interaction real (conjunction, above) before resubmission."
+  },
+  "C27": {
+   "id": "C27",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "YES. A conditional sign-flip: above the prospect knee refuge ADDS restorative value (prospect*refuge*(1+0.5*C19)); below it refuge is PENALIZED as entrapment (-(refuge-prospect)*occlusivity). Non-monotone in refuge, gated on prospect \u2014 a textbook conditional interaction, not an average. The same 'refuge' input yields opposite signs depending on prospect, which is the whole point.",
+   "double_counting_risk": "Low. C19 and prospect/enclosure feed other layers, but the conditional recombination is new structure and the output is a standalone restorative-suitability field, not an additive re-weighting.",
+   "citation_concern": "Clean. Gatersleben & Andrews 2013 genuinely found high-prospect/low-refuge most restorative and refuge-without-prospect (entrapment) reducing it \u2014 the computation encodes exactly that finding. Herzog & Kropscott 2004 (prospect/refuge/mystery, preference and perceived danger) is real and on-point.",
+   "reasons": "The candidate literally implements the Gatersleben-Andrews conditional; genuine sign-flip compound at Tier A, riding heuristic monocular depth/occlusivity \u2192 AMBER. A-vs-B (window-backed nook positive vs windowless enclosed recess negative/entrapment) follows directly from the branch logic. Defensible."
+  },
+  "C28": {
+   "id": "C28",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "is_it_really_compound": "YES in structure \u2014 surveillance_by_others x own_refuge as a thresholded co-occurrence product (both-or-neither AND-gate): high surveillance x low refuge = exposure stress, high refuge x zero surveillance = isolation, only the joint cell reassures. That is a true multiplicative interaction that flags the 'refuge-alone-mistaken-for-safety' failure.",
+   "double_counting_risk": "Low as scoped.",
+   "citation_concern": "Solid: Jacobs 1961 (eyes on the street), Newman 1972 (defensible space / natural surveillance), Loewen, Steel & Suedfeld 1993 (prospect/refuge and fear). The felt-safety-in-populated-setting construct is well anchored.",
+   "reasons": "Not computable on the declared Tier-A photo / Tier-B inferred-plan palette: 'surveillance by others' needs a real occupancy / people-in-view / gaze-orientation map that the single photo generally cannot supply (C1 gives only latent overseeing CAPACITY, not who is actually watching). The candidate honestly marks tier=extra_input and abstains without occupancy \u2014 so the correct verdict is NEEDS_EXTRA_INPUT: viable and well-grounded, but gated on an occupancy input beyond the base measures. The A-vs-B claim follows only once that input is present."
+  },
+  "C29": {
+   "id": "C29",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "YES. index = (salience x fluency) / (eps + integration x connectivity) \u2014 a ratio of an appeal product to a movement product. Ratio and products are genuine interactions; the diagnostic value is the DIVERGENCE between 'looks inviting' and 'is on the flow', which no arithmetic average expresses. A pretty-but-off-the-lattice amenity is precisely a high numerator / low denominator cell.",
+   "double_counting_risk": "Present but tolerable. perceptual-fluency-affect feeds the hedonics layer and landmark salience feeds the landmark layer; C29 reuses both. This is safe ONLY because C29 is a standalone warning diagnostic (high = predicted under-used) rather than an additive contribution to the appeal score \u2014 if it were summed into the hedonic score it would double-weight fluency/salience. Flag to keep it segregated.",
+   "citation_concern": "Strong and directly on-point: Whyte 1980 documented attractive off-desire-line plazas sitting empty and triangulation/desire lines; Reber, Schwarz & Winkielman 2004 shows fluency inflates appeal (justifying why the numerator over-reads use). Gehl 2010 supports movement-lattice dependence. No overclaim.",
+   "reasons": "Genuine appeal/movement ratio catching the render-vs-use mask designers fall for; a high value correctly WORSENS the realised-encounter prediction. Rides Tier-B inferred integration/connectivity \u2192 AMBER. A-vs-B (furnished lounge at dead-corridor end high/empty vs plain bench on the spine low/used) follows directly from the ratio. Defensible at AMBER."
+  },
+  "C30": {
+   "id": "C30",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "YES. Threshold-gated geometric mean (veg'*soft'*absorb'*day')^(1/4) with relu floors is a spatial AND-gate: any single missing ingredient (no greenery, hard/glary surfaces, overhead-only light) drives the term to ~0 in a way an arithmetic mean would not (a maxed-daylight bare grid collapses). That non-substitutability is a real multiplicative interaction, not an average.",
+   "double_counting_risk": "REAL \u2014 flag prominently. The 'soft-material composite' (specularity-inverse, texture homogeneity, wood/upholstery coverage) and the 'acoustic absorption proxy' are BOTH derived from the same material coverage table over planes; they are strongly correlated by construction. Multiplying them in the geometric mean over-weights material softness relative to the veg and daylight terms \u2014 a hidden double-count of one signal. Consider collapsing soft-material and absorption into one material-softness term, or down-weighting, before use.",
+   "citation_concern": "Acceptable but note grade: Coley, Kuo & Sullivan 1997 and Kuo & Sullivan 2001 are observational field studies (greenery raised social use / reduced aggression in public housing) \u2014 correlational-leaning, not RCT; Alvarsson et al. 2010 (nature sound aids stress recovery) and Kaplan 1995 (ART) are real. The greenery\u2192social-use anchor is the load-bearing one and it is genuine. Present as observational, not causal.",
+   "reasons": "Genuine AND-gated geometric-mean compound with a real greenery\u2192social-use anchor; needs material segmentation of the dominant seating plane and abstains when UNKNOWN \u2192 AMBER. A-vs-B (planted upholstered glare-controlled corner vs open hard-floored overhead-lit desk grid) follows from the gate. Viable at AMBER provided the soft-material/absorption double-count is resolved and the task-conditional sign-flip (softness reduces alerting for deep solo focus) is retained."
+  },
+  "C31": {
+   "id": "C31",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes. A three-way content-gated product where any zero factor collapses the score: a deep view of a parking lot (veg_in_view~0) and a nature view with an exposed back (refuge~0) both drive it to zero. The value comes from the JOINT satisfaction of prospect AND nature-content AND protected-back, not from any average. The content-gating of vegetation to the DISTAL view cone (not the whole frame) is what lifts it above a plain prospect+refuge sum \u2014 a lush foreground with a blank distal wall scores low. Genuine interaction.",
+   "citation_concern": "Anchors are real and, crucially, the effect-anchor matches the claimed sign: Ulrich 1984 and Ulrich et al. 1991 (SRT) are genuine STRESS-RECOVERY / physiological results (not mere preference), so 'improves restoration/lowers arousal' is properly grounded. Appleton 1975 and Dosen & Ostwald 2016 legitimately support the prospect-refuge leg. No overclaim.",
+   "double_counting_risk": "Low-to-moderate, and self-limited: the base_measures list names both 'prospect' AND 'C11 prospect-refuge', which would double-weight prospect \u2014 but the computation actually multiplies prospect x veg x REFUGE (the enclosure-behind component of C11 only), so if implementation truly takes only the refuge sub-signal there is no double count. Must be enforced: do NOT multiply full-composite C11 (which already contains prospect) by standalone prospect. Also note prospect and refuge both feed the prospect-refuge hedonic already; recomputing here re-weights that axis \u2014 acceptable because the veg-gated recovery construct is distinct, but flag it.",
+   "fixed_computation": "recovery = prospect * veg_in_view * refuge_only, where refuge_only is the protected-back/enclosure sub-component, NOT full C11. ABSTAIN without a Tier-B plan or a detected seat plane, and abstain when the distal-view depth segmentation confidence is low (veg-in-cone rides segmentation \u2192 AMBER).",
+   "reasons": "Cleanest candidate in the set alongside C34: real multiplicative content-gate, computable at Tier A+B, and the strongest literature (Ulrich is an actual recovery/physiology finding, matching the claimed sign). Occupant-state-specificity (helps a lone waiter, not a huddle) is stated honestly and the A-vs-B prediction (window-side wall-backed chair facing planting vs backless mid-floor bench at a blank wall) follows directly from the computation. Ceiling correctly AMBER because veg-in-view rides heuristic segmentation and seat-plane inference. VIABLE provided the refuge-only extraction is enforced so prospect is not double-weighted."
+  },
+  "C32": {
+   "id": "C32",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes at the top level: veg_frac x bandpass(fractal) x clutter-suppressor. The bandpass is a genuine non-monotone inverted-U (peak ~1.4, penalising both low and high fractal), and clutter enters as a multiplicative suppressor, not an additive term \u2014 mid-band natural texture AND low clutter are required simultaneously. That is a real interaction. HOWEVER the decisive risk is that fractal dimension and the clutter/processing-load proxy may be near-collinear (both are texture-complexity measures); if clutter is essentially high edge-density/high-fractal, then bandpass(fractal) x (1-clutter) is one complexity axis fighting itself, and the true compound degenerates to veg x complexity-band \u2014 still compound (2 real measures) but not the 3 claimed. Must verify fractal\u22a5clutter empirically before trusting the third term.",
+   "citation_concern": "Kaplan & Kaplan 1989 / Kaplan 1995 (soft fascination, ART) are real and on-point. But Hagerhall et al. 2004 and Taylor 2006 are PREFERENCE/aesthetic-response studies, here recruited partly for a RESTORATION/dwell claim; Joye & van den Berg 2011 is honestly flagged as contesting the biophilic-restoration story. The proposer concedes 'restoration link partly contested', which is the correct honest posture. Separately, the SOCIAL leg ('lingering seeds chance social contact') rests on none of the cited studies \u2014 ART/fractal work is not social-interaction research; that inference borrows Whyte-style co-presence logic not present in the citations. Downgrade the social claim to inferential.",
+   "double_counting_risk": "Two flags. (a) Fractal dimension already feeds the hedonics/perceptual-fluency inverted-U layer (Reber/Winkielman); reusing it here re-weights the same fluency signal. (b) Possible fractal\u2194clutter collinearity (see compound test) risks silently double-representing complexity within the attribute itself.",
+   "reasons": "Genuine non-additive structure and fully Tier-A computable, so it survives \u2014 but it is a vegetation-flavoured re-use of the fractal-fascination interaction with three soft spots: contested restoration evidence, a social claim not supported by any cited social study, and a real collinearity threat between its fractal and clutter terms. Keep only if (i) fractal\u22a5clutter is checked so the third factor is not decorative, and (ii) the social/dwell claim is demoted to an uncertainty-flagged inference. AMBER is correct (veg rides segmentation, restoration link proxy-grade)."
+  },
+  "C33": {
+   "id": "C33",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes as a spatial co-occurrence product: veg_frac x integration x seat_present, where integration~0 off the movement network zeroes isolated greenery. The signal is the JOINT location of nature + a path-crossing node + a reason to stop, which no single primitive carries \u2014 a planter in a dead-end and an integrated crossing with no greenery both score low. Real interaction, not an average.",
+   "citation_concern": "Strong and, unlike C32, the social claim rests on SOCIAL studies: Coley, Kuo & Sullivan 1997 and Sullivan, Kuo & DePooter 2004 directly show greenery increases social use of common space; Whyte 1980 (triangulation) and Hillier & Hanson 1984 (integration) are real and apt. Evidence is the candidate's strongest asset.",
+   "double_counting_risk": "Significant. The base measure is stated as 'C1 visual integration / C23 commons gravity' \u2014 but C23 is ALREADY a commons-gravity composite (integration + social pull) that feeds the score layer. Multiplying veg by C23 double-counts the gathering-node property; the attribute then reduces to 'C23 with a green tint'. To stay honest it must multiply veg by RAW C1 integration (a primitive), not by the C23 composite. The genuinely new signal is the veg\u00d7integration gate (Coley/Kuo), which is defensible; the C23 route is not.",
+   "fixed_computation": "gravity = veg_frac * C1_integration_raw * seat_present (use C1, NOT C23). ABSTAIN without a Tier-B plan or declared integration. NOTE a real computability gap: 'seat_present' from a single photo needs object detection beyond classical CV \u2014 supply it from the Tier-B plan or a declared model, else abstain.",
+   "reasons": "Best-evidenced social attribute of the set and a real placement-conditional product, so VIABLE \u2014 but tightly bounded: it must consume raw C1 integration rather than the C23 commons-gravity composite (otherwise it double-counts and becomes a duplicate of C23/triangulation), and seat presence must come from plan/declared model, not photo semantics. Tier B, AMBER (integration rides inferred plan; veg rides segmentation)."
+  },
+  "C34": {
+   "id": "C34",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes \u2014 the strongest non-additivity in the set. (daylight x absorption) x (1 - 2*relu(glare-g0)) has a SIGN FLIP: below the glare threshold the terms multiply (synergy, larger than either alone); above it the gate goes negative (antagonism, glare-dominated avoidance). No sum or average can represent a sign change, so this is unambiguously compound and directly encodes the brief's flagship synergy+antagonism pattern.",
+   "citation_concern": "Component anchors are real and on-target: Boubekri 2014 and Beute & de Kort 2014 (daylight\u2192mood/vitality), Sarampalis 2009 (acoustic/listening-effort cognitive cost), Ulrich 1991. One honest caveat: every cited study is SINGLE-FACTOR; none measures the daylight\u00d7absorption INTERACTION, so the super-additive 'larger than either alone' magnitude is a composition hypothesis, not a measured effect. The antagonistic glare gate, by contrast, is well grounded (glare\u2192discomfort/avoidance is settled). Present the synergy magnitude as a modelled prediction, not an established interaction effect.",
+   "double_counting_risk": "Moderate. Glare feeds the discomfort hedonic, daylight feeds C10/C22 circadian, absorption feeds C7/C20 acoustics \u2014 all three are re-weighted here. Acceptable because the sign-flipping interaction is genuinely novel (not captured by any single downstream layer) and the three inputs are relatively independent (low mutual collinearity, unlike C32/C36), so the compound is not silently re-representing one axis.",
+   "reasons": "Co-strongest with C31. Genuine sign-flipping product, all three inputs Tier-A computable (vertical-illuminance proxy, material-table absorption proxy, glare risk), and it operationalises exactly the daylight-with-acoustic-treatment synergy AND the untreated-glass antagonism the brief calls flagship. A-vs-B (shaded diffuse-daylit absorptive corner = positive talk pocket vs unshaded south glass + hard surfaces = negative) follows mechanically. VIABLE; AMBER because all three are proxy-grade and the synergy magnitude is a modelled composition rather than a measured interaction."
+  },
+  "C35": {
+   "id": "C35",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Partly. The TOP level is a real non-additive interaction: warmth_softness x bell(enclosure, peak~0.55) \u2014 the inverted-U bell means warmth in a too-open hall (reads institutional) or a too-enclosed cell (reads cramped) both score low, so warmth and enclosure genuinely gate each other; that survives the test. BUT the warmth_softness term is itself an explicit WEIGHTED AVERAGE (0.5*warm + 0.3*wood + 0.2*homogeneity) of three warmth-family measures \u2014 the disguised-average trap the brief warns about. So the attribute is really a 2-term compound (warmth-composite \u00d7 enclosure-bell), not the 4-way interaction the base list implies. Honest label: 2 interacting constructs, one of which is a pooled average.",
+   "citation_concern": "Coburn et al. 2020 legitimately identifies 'hominess' as a distinct dimension of architectural experience (psychometric/neuro), and Chatterjee & Vartanian 2014 and Kaplan & Kaplan 1989 are real \u2014 but Coburn's hominess is an AFFECTIVE/perceptual dimension, described by the proposer as 'emerging'. The claim that hominess raises willingness to hold SUSTAINED/CONFIDENTIAL exchange is an inference beyond Coburn (no cited study measures conversation duration or disclosure), i.e. a social-interaction claim resting on a non-social affective study. Flag as inferential.",
+   "double_counting_risk": "Real. warm/cool ratio and wood coverage are correlated (wood is warm-toned), so averaging them inside warmth_softness partially double-counts warmth; and 'warm' already feeds the affect/hedonic layer. The pooled warmth term thus over-represents one signal.",
+   "fixed_computation": "Keep the genuine interaction: hominess = warmth_softness * bell(enclosure). To avoid the internal double-count, either drop wood OR down-weight it given its collinearity with warm, and treat warmth_softness honestly as a composite index rather than three independent measures. ABSTAIN when material confidence is low (wood vs laminate) \u2014 correctly noted.",
+   "reasons": "Survives because the enclosure-gated-by-warmth inverted-U is a true non-additive interaction with a plausible A-vs-B (wood-lined carpeted banquette alcove = settle and talk vs glass-walled atrium bench = pleasant but exposed), but it is weaker than C31/C34: the warmth leg is an average (mild double-count of warm/wood), the hominess\u2192confidential-exchange link is inferential beyond the cited affective study, and wood/laminate material ambiguity caps it. VIABLE at AMBER only with the warmth-average double-count acknowledged and the social claim demoted to inference."
+  },
+  "C36": {
+   "id": "C36",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Core yes, but weakened by amplifier collinearity. The heart is angularity x specularity (threat co-occurrence: sharp AND glossy worse than either \u2014 a matte angular form or a glossy curved form scores far lower), which is a genuine product. The two remaining factors are multiplicative BOOSTERS, and both are near-collinear with a factor they boost: edge clarity amplifies angularity but edge sharpness and contour angularity are largely the same edge signal, and glare amplifies specularity but glossy surfaces PRODUCE glare \u2014 so (angularity\u00b7edge) and (specularity\u00b7glare) each partly let one measure amplify itself. The real compound is the 2-way angularity\u00d7specularity product; the edge and glare terms risk being self-amplification, not independent evidence.",
+   "citation_concern": "Bar & Neta 2006/2007 is a real AFFECT/threat result (angular contours judged threatening, amygdala response) and properly supports the angular leg with the correct sign. Vartanian et al. 2013 is real but a curvature-PREFERENCE/beauty study used for approach/avoidance \u2014 defensible but note the preference-vs-stress slippage. The specularity\u2192threat leg is the weak one and the proposer self-flags Coburn 2020 as 'inferential (uncertainty flag)'; no biosignal study is cited for specular surfaces, so the 'loads physiology while reading premium' prestige-mask claim is an unevidenced physiological assertion on the specular half. Keep the specular leg uncertainty-flagged.",
+   "double_counting_risk": "Two collinear amplifier pairs: angularity\u2194edge clarity (shared edge-sharpness), and specularity\u2194glare (gloss generates glare). Both boosters double-count the primitive they multiply, inflating scores for scenes that are merely sharp-and-shiny along one axis. Also edge clarity and glare feed other layers already.",
+   "fixed_computation": "Reduce to the defensible core: avoidance = angularity * specularity, and only ADD edge/glare boosters if they are shown to carry variance independent of angularity/specularity respectively (otherwise they are self-amplification). Cap at AMBER and carry the specularity-threat uncertainty flag until a SUBJECTIVE\u2192BIOSIGNAL\u2192PHYSICAL triplet validates the specular\u2192vigilance link.",
+   "reasons": "Retained as the honest negative pole of approach (Bar & Neta genuinely grounds angular\u2192threat, and the A-vs-B \u2014 sharp polished-stone-and-mirror edge people traverse vs soft matte curved cluster people settle in \u2014 follows), but it is the shakiest of the six: two of its four inputs are collinear amplifiers that double-count, and the specularity-threat half is inferential by the proposer's own admission (a preference/premium reading sold with a physiological-loading claim no citation supports). VIABLE only trimmed to the angularity\u00d7specularity core with the specular leg uncertainty-flagged; AMBER."
+  },
+  "C37": {
+   "id": "C37",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes \u2014 genuinely compound. The value comes from an interaction, not a sum: a spatial gradient term (delta_field = far minus near across the threshold) MODULATED by an inverted-U gate on preview. Neither the gradient alone (high approach with zero preview = balk) nor preview alone predicts invitation; the product is the signal. It also legitimately compounds over another compound (approach_propensity_field), which is allowed.",
+   "double_counting_risk": "Real and specific: 'mystery occlusivity' is listed as a base measure AND the inverted-U on 'decision-point preview' (peaks at partial occlusion) re-encodes exactly the same occlusion-of-what-lies-beyond signal. Mystery ~= partial preview. As written the occlusion channel is weighted twice. Fix: drop the standalone mystery term and let the preview inverted-U carry mystery, OR use mystery for the gate and preview only for the tiebreak \u2014 not both as independent multiplicands.",
+   "citation_concern": "Kaplan & Kaplan 1989 and Vartanian 2015 are real but are PREFERENCE/aesthetic-rating findings; here they are extended to ENTRY/approach BEHAVIOR ('people balk', 'route onto desire lines'). Defensible extrapolation but it is a behavioral claim resting on preference studies \u2014 flag, do not treat as settled behavioral evidence.",
+   "fixed_computation": "Collapse the occlusion double-count (mystery XOR the preview inverted-U). Keep abstention when the onward region is not imaged/inferable.",
+   "reasons": "Compound is real (gradient x mystery-inverted-U). Two feasibility caps justify AMBER honestly: (a) approach_propensity_field and decision-point preview/mystery occlusivity are among the 50 UNCOMPUTED newly-proposed primitives, so it rides proxy-grade inputs; (b) it needs two region samples across a threshold, and abstains if the beyond-region is not imaged. The A-vs-B claim (curved brightening half-reveal vs blank/full-glazed) follows from the computation. Survives as VIABLE only after the mystery/preview double-count is fixed; keep at AMBER."
+  },
+  "C38": {
+   "id": "C38",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes \u2014 a proper conditional co-occurrence / AND-gated divergence detector. The signal is precisely the DISAGREEMENT (high conscious fluency co-occurring with high spectral discomfort); either alone scores zero. This is the textbook masking pattern and the interaction, not an average, carries the value.",
+   "double_counting_risk": "STRONGEST concern of all survivors. The fluency proxy explicitly includes a 'fractal-fit' (1/f) term, and 'spectral discomfort deviation' IS deviation from the 1/f amplitude spectrum. On that shared component the two 'independent' channels are near-inverse BY CONSTRUCTION (good fractal-fit = close to 1/f = low spectral deviation), so the AND-gate can rarely fire on the fractal axis and the divergence is partly self-contradictory. The genuine independent variance comes only from fluency's symmetry + edge-clarity terms vs. the Wilkins mid-band excess-energy signal. Fix: remove the fractal-fit term from the fluency proxy for this compound, so the two inputs are structurally independent.",
+   "citation_concern": "Anchors are real and on-point: Fernandez & Wilkins 2008 (uncomfortable images deviate from 1/f), Wilkins 1995, O'Hare & Hibbard 2011 (discomfort from filtered noise), Reber et al. 2004 (fluency->affect). Strong visual-stress evidence; no overclaim. Note the discomfort literature is asthenopia/headache in lab viewing \u2014 extrapolation to in-situ dwell erosion is proxy-grade, which is why AMBER not GREEN.",
+   "fixed_computation": "Redefine fluency without the 1/f/fractal term so it is structurally independent of the spectral-deviation input; keep the AND-gate on medians.",
+   "reasons": "Valid masking compound over Tier-A GREEN primitives, strong evidence, honest (no social form claimed). Held to VIABLE_CEILING_AMBER because (a) the fractal-fit/1-f overlap must be removed or the divergence is partly an artifact, and (b) the in-situ construct link (this divergence predicts real visual-stress/dwell loss) is proxy-grade. Lower social value since it is only two primitives with no A-vs-B, but honest and useful as a masking flag."
+  },
+  "C39": {
+   "id": "C39",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "is_it_really_compound": "Yes in form \u2014 product-of-antagonists (coziness_affect x melanopic_deficit) across a nonlinear entrainment knee, with the deficit a threshold function. The co-occurrence of high hedonic warmth with sub-knee melanopic level is a real interaction, not an average.",
+   "double_counting_risk": "Present: C22 (circadian contrast) is a plan metric almost certainly already derived from warm/cool ratio + brightness/melanopic estimates, yet warm/cool ratio AND vertical illuminance proxy AND C22 all appear as separate inputs. C22 straddles both the 'coziness' and 'deficit' sides, double-weighting the same CCT/brightness signal. Separate the affect side (warm/dim) cleanly from the melanopic side and do not reuse C22 on both.",
+   "citation_concern": "Evidence is genuinely strong and correctly used: Brown et al. 2022 (>=250 melanopic EDI daytime), Lucas et al. 2014 (metrology), Chang et al. 2015 (evening light phase delay). No overclaim; the timing conditionality is honest.",
+   "fixed_computation": "Requires (1) time_of_day to resolve sign and (2) an absolute melanopic/illuminance reading, because a standard auto-exposed photo destroys absolute luminance \u2014 vEDI_proxy cannot be located relative to a 250-lux knee from pixels alone. Abstains on both counts as written.",
+   "reasons": "The core defect for computability is decisive: melanopic-EDI-from-a-single-photo is not recoverable (camera auto-exposure normalizes away absolute levels), so the knee threshold that makes the deficit meaningful cannot be measured without a sensor, and the sign cannot be set without time_of_day. The proposal itself marks tier 'extra_input' and abstains \u2014 that is the honest classification. Genuinely compound and well-evidenced, but not computable from the image alone: NEEDS_EXTRA_INPUT (time_of_day + melanopic reading), and fix the C22 double-count before wiring."
+  },
+  "C40": {
+   "id": "C40",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "is_it_really_compound": "Yes in form \u2014 a product with an enclosure gate (nature_halo x stagnation_proxy) that fires only where a restorative cue co-occurs with high enclosure. The gate makes it an interaction, not a sum of nature cues.",
+   "double_counting_risk": "Explicit and severe on the halo side: score uses normalized(C19 + veg + wood), but C19 (restoration/nature contact) is itself built FROM vegetation fraction and natural-material/wood coverage. Summing a composite with its own ingredients literally double- and triple-counts vegetation and wood. This must be fixed (use C19 alone, or veg+wood alone \u2014 not the composite plus its parts).",
+   "citation_concern": "Evidence is strong and honestly deployed: Allen et al. 2016 (COGfx, cognition falls as CO2 rises), Satish et al. 2012, and critically Cummings & Waring 2020, which cleanly kills the 'plants clean the air' halo (potted plants remove negligible CO2/VOC). No overclaim.",
+   "fixed_computation": "The stagnation_proxy = 'enclosure with no visible operable aperture' is a WEAK ventilation proxy: an enclosed room may be mechanically (HVAC) ventilated and fresh, while an open/glassy room may be stuffy \u2014 enclosure does not entail low fresh-air exchange. And the physiological magnitude (CO2 cognitive decrement) is not imageable and is marked extra_input.",
+   "reasons": "The masking construct is valid and the Cummings-Waring anchor is exactly the right kill for the halo. But three problems hold it to NEEDS_EXTRA_INPUT: (1) the halo term double-counts veg/wood through C19 and must be rebuilt; (2) enclosure is a poor stand-in for ventilation, so the gate is confounded; (3) the physiological term abstains without a CO2 reading, which the image can never supply. Without CO2 it can only raise a soft risk flag, not measure the mask \u2014 so it needs extra input to become a real claim."
+  },
+  "C41": {
+   "id": "C41",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes \u2014 the cleanest interaction in the set. Two independent privacy CHANNELS (visual shelter, acoustic privacy) pulled apart by an antagonistic ratio; a nook high on both or low on both scores ~0, and only the DIVERGENCE (visually enclosed but acoustically leaky) scores. The value is the interaction, and it directly instantiates a masking/false-shelter pattern.",
+   "double_counting_risk": "Minor and manageable: visual_refuge = norm(enclosure + C11), but C11 (seat-level prospect-refuge) likely already incorporates enclosure, so enclosure is lightly double-weighted on the visual side. The acoustic side uses min(absorption, privacy_from_STI) rather than a sum, which mitigates the absorption->STI overlap. Recommend visual_refuge = C11 alone (which already carries enclosure) to remove the residual double-count.",
+   "citation_concern": "Anchors are real and appropriate: ISO 3382-3 (STI/privacy-distance methodology), Bradley & Gover 2004, Passero & Zannin 2012. The premise that visual enclosure and acoustic privacy are independent channels (a screened booth with hard surfaces leaks speech) is well established. No overclaim; this is an acoustics result used for an acoustics claim.",
+   "fixed_computation": "Drop enclosure from the visual sum (C11 already contains it). STI/speech-privacy needs a plan + occupancy/acoustic params; abstains when occupancy is UNKNOWN \u2014 honest.",
+   "reasons": "Highest-value survivor. It directly sharpens the confidential-exchange field David explicitly asked for, and the region A-vs-B claim (hard-surfaced screened alcove = false shelter that invites unprotectable talk vs. textile-lined corner = real privacy, route confidential exchange there) follows straight from the computation. Genuine ratio compound, strong evidence, honest tier. AMBER because it rides absorption proxy + inferred-plan/STI and abstains without occupancy. VIABLE after the small enclosure double-count is trimmed."
+  },
+  "C42": {
+   "id": "C42",
+   "verdict": "KILL",
+   "is_it_really_compound": "Compound in FORM only (product-of-antagonists visual_warmth x solar_thermal_exposure), but the interaction has no reliable signal to carry. By the proposer's own citations the hue-heat effect is 'small' (Fanger 1977) and 'small/inconsistent' (Toftum 2018). A product whose modulating construct is near-null is a formally-compound function that measures essentially noise.",
+   "double_counting_risk": "Secondary given the primary defect, but present: warm/cool ratio + colour palette entropy on the visual side, and glass coverage + vertical illuminance on the solar side, each pair shares a brightness/warmth signal, and warm/cool + vEDI recur across both terms.",
+   "citation_concern": "The citations are honest but self-defeating: they establish that the very effect the attribute exploits is small and inconsistent (contested link). Per the honesty constraints, the correct design for a contested link is an uncertainty flag or abstention \u2014 not a scored attribute. Tsushima 2020 is a perceptual-rating result, not thermal-physiology.",
+   "fixed_computation": "The real thermal cost (air temp/RH) is not imageable and is marked extra_input \u2014 it must be measured by a sensor regardless. Once you have that sensor reading, the visual-warmth 'mask' term adds little, because the physical thermal state is already known directly.",
+   "reasons": "Adversarially this does not clear the bar. (1) Its signal rests on an interaction its own evidence calls small and inconsistent \u2014 a masking detector whose 'mask' is a near-null perceptual effect is not detecting a robust mask. (2) The thermal cost it claims to expose can only be established with a temperature/RH sensor, which makes the visual term nearly decorative once that input exists. (3) No social form, no A-vs-B, lowest rank (4). KILL is the respectable call; at most demote to a low-confidence uncertainty flag, but it should not ship as a scored compound attribute."
+  },
+  "C43": {
+   "id": "C43",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Genuinely compound. The value is NOT the sum \u2014 the base=\u03a3s_i term is discardable; the load-bearing signal is the pairwise PRODUCT synergy=beta*(s_g*s_r + s_g*s_t + s_r*s_t), which is zero when only one stressor is active and only fires on co-occurrence above each knee. That is a true threshold-gated interaction, exactly the 'super-additive' pattern the CNfA doc names. Passes.",
+   "double_counting_risk": "Mild. glare risk, absorption proxy and warm/cool ratio very likely already feed the hedonics/affect layer; re-multiplying them here re-weights the same three primitives. Acceptable because the SYNERGY term is new information (an interaction the primitives cannot express), but the additive base term should be down-weighted or dropped so it does not silently re-sum signals already scored elsewhere.",
+   "citation_concern": "Hygge & Knez 2001 (noise/heat/light \u00d7 memory), Witterseh/Wyon/Clausen 2004 (noise\u00d7temp \u00d7 office work), Schweiker et al. 2020 (combined IEQ) are all real and genuinely document non-additive interaction \u2014 good anchors. BUT the studies concern ACTUAL thermal load; this compound's third stressor is 'warm/cool ratio', a COLOUR-palette proxy, not temperature. Warm-toned finishes do not impose the thermal physiology those papers measured. The synergy structure and the glare\u00d7acoustic pair are well-supported; the thermal leg is a proxy substitution the cited literature does not license.",
+   "fixed_computation": "Keep the pairwise-product synergy as the reported value; either drop the additive base term or flag it as non-compound. Replace/label the thermal leg: warm/cool ratio is a colour proxy, so the thermal-stress interpretation ABSTAINS without a declared temp/RH; glare\u00d7reverberation super-addition stands on its own as the defensible core.",
+   "reasons": "Real interaction (product, not average), Tier-A computable, non-additivity well-evidenced for glare\u00d7acoustic. Ceiling AMBER because absorption proxy rides material-over-segmented-plane heuristics. Two live flags: (a) warm/cool colour ratio is not thermal load \u2014 the cited papers are about real heat, so the thermal leg overclaims; (b) mild double-count of primitives already in the hedonics layer via the additive term. Defensible to Kirsh once the thermal leg is honestly labelled a colour proxy and the additive term de-weighted."
+  },
+  "C44": {
+   "id": "C44",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "is_it_really_compound": "Yes \u2014 buffered_load = L*(1 - lambda*a) is slope-changing, not averaging: agency alters the stimulus\u2192stress gradient so the SAME physical load yields less residual load. That is the documented agency-buffer interaction (Glass & Singer). Genuine compound-over-compound.",
+   "double_counting_risk": "Low. C17 here modulates rather than adds; glare/absorption enter only through L. As long as L is the C43-family load and not re-scored independently downstream, no double weighting.",
+   "citation_concern": "Strong and correctly typed. Glass & Singer 1972 is causal and a STRESS (aftereffect) result, not a preference study \u2014 exactly right for an effect_sign claim about stress. Boerstra et al. 2016 and Leaman & Bordass 1999 ('perceived control a killer variable') are real and on point. No overclaim.",
+   "fixed_computation": "No math fix needed. Requirement: it must fire only when C17 (from a declared 3D/controls model) or a validated controls-detector is present, and ABSTAIN otherwise \u2014 which the candidate already specifies.",
+   "reasons": "Conceptually the strongest-evidenced item, and honestly self-abstaining. But 'visible means of control' (operable blind, dimmer, thermostat, movable chair) is not recoverable from a single photo, and C17 itself is not reliably derivable from vanishing-point plan inference \u2014 it needs a declared model or real controls audit. Because it cannot fire on Tier A / inferred-plan alone, the honest verdict is NEEDS_EXTRA_INPUT, not VIABLE. Keep it \u2014 it is the right correction \u2014 but gate it on the declared-control input."
+  },
+  "C45": {
+   "id": "C45",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "is_it_really_compound": "The interaction FORM is real: index = kappa * reverberation * neutral_band(warmth) is a band-gated product, nonzero only when high reverberation co-occurs with thermal neutrality. Not an average. So it passes the compound test in principle.",
+   "double_counting_risk": "Secondary to the computability problem. material coverage (wood/stone) is listed as a base measure but does not appear in the computation (only w and r) \u2014 the input list is loose and should be reconciled.",
+   "citation_concern": "The PHENOMENON is real and correctly cited: Pellerin & Candas 2003/2004 (noise shifts thermal preference), Schweiker 2020, Torresin 2021 \u2014 genuine cross-modal misattribution evidence. Not overclaimed.",
+   "fixed_computation": "neutral_band must be gated on a MEASURED/DECLARED thermal state (air temp/RH in the neutral band), not on warm/cool colour ratio. As specified it ABSTAINS on Tier A and only computes when a physical thermal input is supplied; the material coverage input should be dropped or folded into a stated warmth model.",
+   "reasons": "Fatal-as-specified but salvageable, hence not a clean KILL. The gating variable is 'physical warmth sits in the neutral band', but the computation reads that from warm/cool COLOUR ratio \u2014 a category error (colour-temperature appearance \u2260 thermal comfort, and colour is confounded by white balance, materials, lighting). A photo cannot know a room is thermally neutral, so labelling this Tier A and computing neutrality from colour is exactly the invented-mapping / fabrication the honesty rules forbid \u2014 it would fire on a cool-toned hot room and miss a warm-timber cold one. The idea (acoustic\u2192perceived-warmth misattribution diagnostic) is worth keeping ONLY if it takes a declared thermal input and abstains without it; that makes it NEEDS_EXTRA_INPUT, and its self-assessment as Tier A must be rejected."
+  },
+  "C46": {
+   "id": "C46",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes, and the decisive test passes: initiation = sg*(1 - L). At L\u21921 the geometric conversation signal is driven to zero regardless of how favourable the seating/anchor/integration are \u2014 a genuine multiplicative suppression, not a blend of load and geometry. The corrective information lives entirely in the product.",
+   "double_counting_risk": "Mild and intentional. glare and absorption feed both the environmental-load family (C43) and this gate; that is legitimate compound-over-compound reuse, but if C43's load and this gate are both surfaced as scores, note that the same two primitives now influence two reported fields.",
+   "citation_concern": "Whyte 1980 (triangulation) and Osmond 1957/Sommer 1969 (sociopetal/sociofugal) are genuine SOCIAL-interaction findings \u2014 correctly social, not a social claim resting on a non-social study. Glass & Singer 1972 / Cohen 1980 support stress\u2192reduced prosocial engagement. Anchors are honest.",
+   "fixed_computation": "No fix required; sg must ABSTAIN on the sociopetal/orientation term without a seat map (as specified), degrading to salience+integration.",
+   "reasons": "A genuinely corrective compound that guards against geometry-only over-prediction of conversation hotspots \u2014 the A-vs-B example (sg~0.8,L~0.7\u21920.24 vs L~0.2\u21920.64) follows directly from the computation. Ceiling AMBER because C1 (VGA) rides the inferred plan and the sociopetal term abstains from a photo. Defensible to Kirsh."
+  },
+  "C47": {
+   "id": "C47",
+   "verdict": "VIABLE_CEILING_AMBER",
+   "is_it_really_compound": "Yes \u2014 a four-way AND-gate where any single component below 0.6 zeroes the flag, value = product of the four breaches. This is the purest interaction of the set: it fires only on the specific co-occurrence (open AND hard AND leaky-speech AND high-traffic), which no single primitive and no average could isolate.",
+   "double_counting_risk": "Real flag. acoustic absorption enters TWICE \u2014 once as acoustic_exposure=(1-A) and again inside C7 STI_leak (STI/RT60 is itself a function of absorption). The product therefore roughly squares the absorption signal, over-weighting acoustics within a term that is supposed to require four independent breaches. Recommend using absorption in only one leg (prefer the STI leg, since that is the validated speech-privacy construct) or explicitly orthogonalising the two.",
+   "citation_concern": "Strong, correctly-typed workplace evidence: Kim & de Dear 2013 (speech-privacy loss = largest open-plan dissatisfier), Banbury & Berry 2005, Hongisto 2005, Osmond 1957. No overclaim; the masking framing (buzzy subjectively while loading the WRONG occupants' physiology) matches the doc's mask trap.",
+   "fixed_computation": "Remove the redundant acoustic leg: use openness*STI_leak*path_overlap with a single absorption-derived speech term, or keep (1-A) only where STI is unavailable. Retain the all-four-above-threshold AND-gate and ABSTAIN when plane-seg is low or STI is underivable.",
+   "reasons": "Best-structured interaction in the batch and a valuable masking diagnostic (measures the physiology of the occupants the buzzy zone disrupts, not the talkers). AMBER because C6/C7 ride inferred plan + acoustic params the photo lacks. One correction required: the absorption double-count inside (1-A) and STI must be resolved so the flag does not silently privilege acoustics over the other three breaches."
+  },
+  "C48": {
+   "id": "C48",
+   "verdict": "NEEDS_EXTRA_INPUT",
+   "is_it_really_compound": "Yes \u2014 belonging = gate(E) * T * warmth * (1+pers): an enclosure-threshold gate that collapses the whole term below a defensible edge, times a personalization MULTIPLIER (not addend). Genuine gated product, not an average.",
+   "double_counting_risk": "Two flags. (a) enclosure appears both as the explicit gate AND inside C16 territoriality (defensible-space/territoriality is partly derived from enclosure), so enclosure is counted twice. (b) warm/cool ratio and material coverage both feed 'warmth' here and also feed C43 and the hedonics layer, so the warmth signal is re-weighted across multiple compounds. Neither is fatal but both should be disclosed / orthogonalised.",
+   "citation_concern": "Real and appropriately scoped to attachment/well-being (self-report), not oversold as physiology: Wells 2000 (personalization\u2192well-being), Knight & Haslam 2010 (empowerment/greening\u2192well-being & productivity), Altman 1975 (territoriality), Sundstrom 1986. Correlational/satisfaction evidence sold as a belonging/attachment claim \u2014 consistent, no overreach.",
+   "fixed_computation": "Keep the enclosure gate and personalization multiplier, but (a) source enclosure OR C16 in the term, not both; (b) require desk-personalization from a semantic detector or declared model and ABSTAIN otherwise, as specified.",
+   "reasons": "Genuinely compound and honestly self-abstaining, but the personalization multiplier \u2014 recognising personal artifacts (photos, mugs, plants) as territory markers \u2014 needs object-level semantics classical CV lacks, and C16 territoriality needs a Tier-B/declared model. It cannot fire on Tier A. Combined with the enclosure double-count, the honest verdict is NEEDS_EXTRA_INPUT: retain the idea, gate it on the personalization/territoriality inputs, and de-duplicate enclosure."
+  }
+ }
+}

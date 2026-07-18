@@ -58,16 +58,29 @@ def verify_record(record: Dict, *, replay: bool = True) -> Tuple[str, Dict]:
     have = frozenset(record.get("unit_inputs", [])) | {"plan"}
     scores = {s["predicate"]: s for s in record.get("scores", [])}
 
-    # M5a: registry coverage — every predicate present exactly once
+    # mode-aware expected set (Decision D1): a `tier_a_only` view is expected to carry ONLY the
+    # GREEN image-attribute predicates, so coverage is checked against that subset, not the full
+    # registry. Every other mode expects the full registry.
+    if record.get("mode") == "tier_a_only":
+        expected_specs = [p for p in R.PREDICATES
+                          if p["kind"] == "image_attr" and p["tier_hint"] == "GREEN"]
+    else:
+        expected_specs = list(R.PREDICATES)
+
+    # M5a: coverage — every EXPECTED predicate present exactly once
     if len(record.get("scores", [])) != len(scores):
         problems.append("duplicate predicate entries")
-    missing = [p["id"] for p in R.PREDICATES if p["id"] not in scores]
+    expected_ids = {p["id"] for p in expected_specs}
+    missing = [p["id"] for p in expected_specs if p["id"] not in scores]
     if missing:
         problems.append(f"coverage_gap:missing={missing[:5]}{'...' if len(missing) > 5 else ''}")
+    extra = [pid for pid in scores if pid not in expected_ids]
+    if extra:
+        problems.append(f"unexpected_predicate:{extra[:3]}")   # a plan metric in a Tier-A view
 
     replay_vals = _replay(record) if replay and not problems else {}
 
-    for spec in R.PREDICATES:
+    for spec in expected_specs:
         pid = spec["id"]
         s = scores.get(pid)
         if s is None:

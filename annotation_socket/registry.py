@@ -25,7 +25,7 @@ are satisfied by the unit, each reaching SCORED or a verified ABSTAINED — neve
 from __future__ import annotations
 from typing import Callable, Dict, FrozenSet, List
 
-MODEL_VERSION = "cnfa_algs-2026-07-15+seed1234"   # bump on any algorithm/seed change
+MODEL_VERSION = "cnfa_algs-2026-07-15+seed1234+reliableA"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
 
 # input tokens a unit may carry beyond the image
 #   plan            inferable from the image (Tier B) — always satisfiable
@@ -49,6 +49,24 @@ PREDICATES: List[Dict] = [
     _spec("cnfa.fluency.color_palette_entropy",    "image_attr", IMAGE_ONLY, "replayable", "GREEN"),
     _spec("cnfa.fluency.processing_load_proxy",    "image_attr", IMAGE_ONLY, "replayable", "GREEN"),
     _spec("cnfa.fractal_dimension",                "image_attr", IMAGE_ONLY, "replayable", "GREEN"),
+    _spec("cnfa.fluency.fractal_mid_d_band",       "image_attr", IMAGE_ONLY, "replayable_tol", "GREEN",
+          "V9: inverted-U response of fractal D vs the preferred/calming mid-band [1.3,1.5] + "
+          "per-tile coverage; reads the fractal output (no recompute). Preference leg strong, "
+          "stress leg preliminary."),
+    _spec("cnfa.fluency.spectral_discomfort_deviation", "image_attr", IMAGE_ONLY, "replayable_tol", "GREEN",
+          "V2: FFT 1/f-slope naturalness + Penacchio-Wilkins CSF mid-band residual (visual "
+          "discomfort). Slope scale-free; discomfort magnitude assumes FOV=65deg (declared)."),
+    _spec("cnfa.fluency.edge_orientation_entropy", "image_attr", IMAGE_ONLY, "replayable_tol", "GREEN",
+          "V13: Sobel orientation-histogram entropy (1st+2nd order); isotropy vs cardinal order "
+          "(Redies lab)."),
+    _spec("cnfa.geometry.contour_angularity", "image_attr", IMAGE_ONLY, "replayable_tol", "GREEN",
+          "V1: Canny+turning-angle curve-fraction vs sharp-corner density (signed valence). "
+          "Curvature preference (Bar&Neta 2006); object-contour confound declared."),
+    _spec("cnfa.fluency.subband_entropy_clutter", "image_attr", IMAGE_ONLY, "replayable_tol", "GREEN",
+          "V6: oriented-subband coefficient entropy (Rosenholtz 2007). Clutter family V6/V7/legacy "
+          "- pick ONE for hedonics (Decision D2)."),
+    _spec("cnfa.fluency.feature_congestion_clutter", "image_attr", IMAGE_ONLY, "replayable_tol", "GREEN",
+          "V7: Feature Congestion (Rosenholtz 2005). Clutter family - see Decision D2."),
     _spec("glare-risk",                            "image_attr", IMAGE_ONLY, "replayable", "GREEN"),
     _spec("cnfa.light.warm_vs_cool_ratio",         "image_attr", IMAGE_ONLY, "replayable", "GREEN"),
     _spec("cnfa.cognitive.landmark_salience",      "image_attr", IMAGE_ONLY, "replayable", "GREEN"),
@@ -70,6 +88,14 @@ PREDICATES: List[Dict] = [
     _spec("C13.setting_fit",        "plan_metric", PLAN, "replayable_tol", "AMBER"),
     _spec("C24.spatial_generosity", "plan_metric", PLAN, "replayable_tol", "AMBER",
           "2D openness-contrast proxy; true awe wants Tier-C height"),
+    _spec("C01.triangulation_ignition", "plan_metric", PLAN, "replayable_tol", "AMBER",
+          "COMPOUND: landmark_salience x C1 integration x co-location gate to the desire-line "
+          "ridge; anchor off ridge -> ~0; registration-unconfident -> UNKNOWN. Own social field "
+          "(excluded from score_layout aggregation)."),
+    _spec("C29.stranded_amenity_index", "plan_metric", PLAN, "replayable_tol", "AMBER",
+          "COMPOUND (C01 inverse): appeal x (1-co-location gate) x usable-surface; high = "
+          "attractive amenity stranded OFF the desire line (redesign flag). Own diagnostic "
+          "field (excluded from score_layout aggregation)."),
 
     # ---- predicates needing inputs an image does not contain (ABSTAIN on image-only units) ----
     _spec("C5.collaborator_proximity", "plan_metric", PLAN | {"seats", "collab_pairs"}, "replayable_tol", "GREEN"),
