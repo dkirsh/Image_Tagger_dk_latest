@@ -32,7 +32,13 @@ HEDONIC_SHAPE: Dict[str, Dict] = {
          "note": "figure-ground contrast/clarity raises fluency"},
     "cnfa.fluency.processing_load_proxy":
         {"shape": "inverted_u", "evidence": "CONTESTED", "peak": 0.40,
-         "note": "complexity: Berlyne collative inverted-U; disfluency drives INTEREST — NOT monotone"},
+         "note": "clutter proxy (CONTESTED) retained as the ONLY licensed clutter->hedonic "
+                 "signal for backward compatibility; whether clutter belongs in hedonics at all "
+                 "is UNRESOLVED pending corpus calibration (Decision D2). V6/V7 are AMBER proxies, "
+                 "NOT licensed here."},
+    # V7 local_congestion_proxy is DELIBERATELY NOT registered here (Codex 2026-07-18):
+    # it is an AMBER, uncalibrated PROXY, so it must not emit a *licensed* hedonic value until a
+    # faithful implementation is corpus-calibrated (Decision D2). Descriptive output only.
     "cnfa.fluency.color_palette_entropy":
         {"shape": "inverted_u", "evidence": "CONTESTED", "peak": 0.50,
          "note": "colour variety: moderate preferred, too much = overload (inverted-U)"},
