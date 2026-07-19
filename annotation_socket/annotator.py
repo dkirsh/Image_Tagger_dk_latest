@@ -239,6 +239,93 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset(),
         return rec
     compound_fns["cnfa.acoustic.street_noise_intrusion"] = _street_noise
 
+    # ---- CC-3 (2026-07-19): C5-C23 declared-input VALUE bundles ----------------------
+    # Registry `requires` tokens name the inputs; the VALUES ride input_values (street-noise
+    # pattern, Codex S0S2 HIGH-1: token without value is a unit-construction error -> UNKNOWN,
+    # fail closed). One lazy score_layout() pass serves every layout criterion on the unit.
+    # Token -> scenario-key translation (registry vocabulary vs score_layout vocabulary):
+    _LAYOUT_TOKEN_KEYS = {
+        "seats": ["seats"], "glazing": ["glazing"],
+        "collab_pairs": ["collaborator_pairs"],
+        "collab_sources": ["collab_sources"], "focus_seats": ["focus_seats"],
+        "destinations": ["destinations"], "amenities": ["amenities"],
+        "commons": ["commons"], "nature_cells": ["nature_cells"],
+        "territory_spec": ["territory"], "control_zones": ["control_zones_wb"],
+        "air_spec": ["air"], "acoustic_params": ["d2s", "L_noise"],
+    }
+    # optional pass-through values (no token gate; refine scoring when present)
+    _LAYOUT_OPTIONAL = ["landmarks", "retreats", "entrance", "stair", "elevator",
+                        "hemisphere", "headcount", "demand", "evening_light_low",
+                        "positive_soundscape_zones", "noise_sources", "collab_max_m",
+                        "control_zones"]
+    _layout_cache: Dict = {}
+
+    def _layout_result():
+        if "res" not in _layout_cache:
+            from cnfa_algs.score_layout import score_layout
+            iv = input_values or {}
+            scenario: Dict = {"pg": pg}
+            for tok, skeys in _LAYOUT_TOKEN_KEYS.items():
+                if tok in iv:
+                    v = iv[tok]
+                    if tok == "acoustic_params":         # dict bundle -> spread keys
+                        for sk in skeys:
+                            if isinstance(v, dict) and sk in v:
+                                scenario[sk] = v[sk]
+                    else:
+                        scenario[skeys[0]] = v
+            for k in _LAYOUT_OPTIONAL:
+                if k in iv:
+                    scenario[k] = iv[k]
+            _layout_cache["res"] = score_layout(scenario)
+        return _layout_cache["res"]
+
+    def _layout_compound(pid: str, cid: str):
+        def _fn():
+            iv = input_values or {}
+            spec = next(s for s in R.PREDICATES if s["id"] == pid)
+            missing = sorted(t for t in spec["requires"] if t != "plan" and t not in iv)
+            if missing:
+                return D.unknown(pid, f"declared_input_value_missing:{','.join(missing)}")
+            # seat/cell coordinate sanity (fail closed BEFORE scoring): every RC must be in-grid
+            gh_, gw_ = pg.grid.shape
+            for tok in ("seats", "collab_sources", "nature_cells", "amenities",
+                        "commons", "destinations"):
+                for rc_ in (iv.get(tok) or []):
+                    if not (0 <= rc_[0] < gh_ and 0 <= rc_[1] < gw_):
+                        return D.unknown(pid, f"{tok}_cell_out_of_grid:{tuple(rc_)}")
+            res = _layout_result()
+            val = res.get("criteria_scored", {}).get(cid)
+            if val is None:
+                return D.unknown(pid, f"layout_criterion_unscored:{cid}")
+            rawc = res.get("raw", {}).get(cid) or {}
+            method = (rawc.get("method") if isinstance(rawc, dict) else None) \
+                or f"score_layout criterion {cid} (composite)"
+            conf = float(rawc.get("confidence", 0.5) or 0.5) if isinstance(rawc, dict) else 0.5
+            rec = D.scored(pid, float(val), plan_ev(f"{cid}: {method}", conf),
+                           spec["tier_hint"], (H, W))
+            if isinstance(rawc, dict) and rawc.get("extras"):
+                rec["extras"] = rawc["extras"]
+            if fields_sink is not None:
+                fields_sink["_meta"][pid] = {"method": f"{cid}: {method}", "scalar": float(val),
+                                             "confidence": conf,
+                                             "failure_modes": ["normalized layout criterion; "
+                                                               "declared inputs are unit-supplied "
+                                                               "plan-grid coordinates"]}
+            return rec
+        return _fn
+
+    for _pid_, _cid_ in [("C5.collaborator_proximity", "C5"), ("C6.path_overlap", "C6"),
+                         ("C7.focus_speech_privacy", "C7"), ("C8.distraction_distance", "C8"),
+                         ("C9.view_equity", "C9"), ("C10.daylight_proximity", "C10"),
+                         ("C11.prospect_refuge", "C11"), ("C12.crowding_risk", "C12"),
+                         ("C14.focus_collab_separation", "C14"), ("C15.active_design", "C15"),
+                         ("C16.territory", "C16"), ("C17.local_control", "C17"),
+                         ("C18.air_quality", "C18"), ("C19.restoration_nature", "C19"),
+                         ("C20.chronic_soundscape", "C20"), ("C21.thermal", "C21"),
+                         ("C22.circadian_contrast", "C22"), ("C23.social_connectedness", "C23")]:
+        compound_fns[_pid_] = _layout_compound(_pid_, _cid_)
+
     for spec in R.PREDICATES:
         pid = spec["id"]
         if not (spec["requires"] <= (have | {"plan"})):
