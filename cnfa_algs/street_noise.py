@@ -179,6 +179,14 @@ if __name__ == "__main__":
     print(f"inverted-U: quietest {n_q:.1f} < best-huddle {n_h:.1f} < loudest {n_max:.1f} dBA; "
           f"huddle {hud[hc]:.2f} > {hud[qc]:.2f}  OK")
 
+    # degenerate TOO-QUIET regime (Codex S0S2 A5): huddle must collapse to ~0, not fake an
+    # inverted-U — with no masking available, privacy ~0 everywhere and the operator says so
+    gq = np.full((20, 30), FREE, np.int8)
+    gq[0, :] = OBST; gq[-1, :] = OBST; gq[:, 0] = OBST; gq[:, -1] = OBST
+    rq = street_noise_fields(PG(gq, cell), 0, np.full(30, 80.0), 0.95, outdoor_leq=45.0)
+    assert rq["extras"]["best_huddle"] < 0.05
+    print(f"too-quiet regime: best_huddle={rq['extras']['best_huddle']} (~0, no fake inverted-U)  OK")
+
     # determinism x3
     for _ in range(2):
         r2 = street_noise_fields(pg, 0, Rp, alpha, outdoor_leq=68.0)

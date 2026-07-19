@@ -92,3 +92,15 @@ def unknown(pred_id: str, reason: str) -> Dict:
     """Fail-closed: should have been derivable, was not. Never a number; routes RED."""
     return {"predicate": pred_id, "status": UNKNOWN, "reason": reason,
             "value": None, "evidence": None}
+
+
+def abstain_signal(pred_id: str, reason: str, absence_evidence: Dict) -> Dict:
+    """SIGNAL-ABSENT abstention (Codex S0+S2 attack HIGH-2, 2026-07-19): the predicate is
+    applicable and the worker ran, but the measured signal does not exist in THIS image (a blank
+    wall has no shadow edges, no line segments, no chromaticity). Distinct from abstain() —
+    which names missing DECLARED INPUTS — and from unknown() — which is a failure. The verifier
+    accepts it ONLY for predicates registry-flagged MAY_LACK_SIGNAL and ONLY with non-empty
+    algorithm-specific absence evidence (edge counts, std, saturation), else it is a problem."""
+    return {"predicate": pred_id, "status": ABSTAINED, "signal_absent": True,
+            "reason": str(reason)[:120], "absence_evidence": dict(absence_evidence or {}),
+            "value": None, "evidence": None}

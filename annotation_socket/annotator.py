@@ -48,7 +48,8 @@ def _field_argmax_bbox(field, img_shape, tile: int = 3):
     return [x0, y0, x1, y1]
 
 
-def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -> Dict:
+def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset(),
+                   input_values: Dict | None = None) -> Dict:
     """Compute the annotation record for one image: geometry once, then every APPLICABLE
     predicate through the chokepoint; every inapplicable one ABSTAINED with the named
     missing inputs. Returns the quarantine-ready record."""
@@ -60,12 +61,8 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -
     from cnfa_algs.plan import infer_plan_from_image, FREE
     from cnfa_algs import space_syntax as ss, setting_classifier as st, affordance as af
 
-    img = cv2.imread(image_path)
-    if img is None:
-        raise ValueError(f"unreadable image: {image_path}")
-    scale = 900 / max(img.shape[:2])
-    if scale < 1:
-        img = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+    from . import m1_prime as MP
+    img = MP.load_for_m1p(image_path)   # SINGLE shared loader (Codex S0S2 MED-4: no inline duplicate)
     H, W = img.shape[:2]
 
     # ---- shared geometry (computed once; every plan metric cites it as upstream) ----
@@ -162,6 +159,35 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -
     from .predicates import fractal_band as FB
     compound_fns["cnfa.fluency.fractal_mid_d_band"] = lambda: FB.compute(img, fractal())
 
+    # street-noise (declared-input): tokens name the inputs; VALUES ride input_values (Codex S0S2
+    # HIGH-1 — a token without its value is a unit-construction error -> UNKNOWN, fail closed).
+    def _street_noise():
+        from cnfa_algs.street_noise import street_noise_fields
+        iv = input_values or {}
+        leq = iv.get("outdoor_leq")
+        fs = iv.get("facade_spec") or {}
+        missing = [k for k, v in [("outdoor_leq", leq), ("facade_spec.facade_row", fs.get("facade_row")),
+                                  ("facade_spec.Rp", fs.get("Rp"))] if v is None]
+        if missing:
+            return D.unknown("cnfa.acoustic.street_noise_intrusion",
+                             f"declared_input_value_missing:{','.join(missing)}")
+        nc = pg.grid.shape[1]
+        rp_in = fs["Rp"]
+        Rp = np.full(nc, float(rp_in)) if np.isscalar(rp_in) else np.asarray(rp_in, float)
+        if Rp.shape[0] != nc:
+            return D.unknown("cnfa.acoustic.street_noise_intrusion",
+                             f"facade_spec.Rp_length_{Rp.shape[0]}_vs_grid_cols_{nc}")
+        r = street_noise_fields(pg, int(fs["facade_row"]), Rp,
+                                fs.get("alpha", 0.10), outdoor_leq=float(leq))
+        if r.get("status") != "scored":
+            return D.unknown("cnfa.acoustic.street_noise_intrusion",
+                             f"street_noise:{r.get('status')}")
+        ev = plan_ev(r["method"], r["confidence"])
+        rec = D.scored("cnfa.acoustic.street_noise_intrusion", r["scalar"], ev, "AMBER", (H, W))
+        rec["extras"] = r["extras"]          # declared constants + cell landmarks for audit
+        return rec
+    compound_fns["cnfa.acoustic.street_noise_intrusion"] = _street_noise
+
     for spec in R.PREDICATES:
         pid = spec["id"]
         if not (spec["requires"] <= (have | {"plan"})):
@@ -171,9 +197,14 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -
             if pid in attr_fns:
                 res = attr_fns[pid]()
                 if res.scalar is None:
-                    # signal undefined on THIS input (e.g. <25 shadow edges, near-blank image):
-                    # UNKNOWN keeps the fail-closed contract — never a fabricated number.
-                    scores.append(D.unknown(pid, f"signal_undefined:{res.method[:60]}"))
+                    # signal ABSENT on this image (Codex S0S2 HIGH-2): applicable + worker ran,
+                    # but the measured signal does not exist here. Registry-gated abstention
+                    # subtype with the operator's own absence evidence; never a number.
+                    if pid in R.MAY_LACK_SIGNAL:
+                        scores.append(D.abstain_signal(pid, res.method,
+                                                       getattr(res, "extras", None) or {}))
+                    else:
+                        scores.append(D.unknown(pid, f"signal_undefined:{res.method[:60]}"))
                 else:
                     scores.append(D.scored(pid, res.scalar, img_ev(res), spec["tier_hint"], (H, W)))
             elif pid in plan_fns:
@@ -208,6 +239,7 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -
         "image_sha256": hashlib.sha256(Path(image_path).read_bytes()).hexdigest(),
         "model_version": R.MODEL_VERSION,
         "unit_inputs": sorted(have),
+        "input_values": input_values or {},
         "geometry_chain": chain,
         "scores": scores,
         "coverage": {"applicable": n_scored + n_unknown, "scored": n_scored,

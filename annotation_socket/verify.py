@@ -48,7 +48,8 @@ def _replay(record: Dict) -> Dict[str, float]:
     """Independent re-derivation: recompute the annotation from the image bytes with the
     pinned model version. Deterministic (S2 seeding), so a genuine score matches."""
     from .annotator import annotate_image
-    fresh = annotate_image(record["image_path"], frozenset(record.get("unit_inputs", [])))
+    fresh = annotate_image(record["image_path"], frozenset(record.get("unit_inputs", [])),
+                           input_values=record.get("input_values") or None)
     return {s["predicate"]: s["value"] for s in fresh["scores"] if s["status"] == D.SCORED}
 
 
@@ -121,10 +122,12 @@ def verify_record(record: Dict, *, replay: bool = True) -> Tuple[str, Dict]:
                 ac, mp_params = MP.M1P_BINDINGS[pid]
                 m1p = s.get("m1p")
                 if not m1p or "error" in m1p:
-                    # legacy allowance (Codex mapping): a missing/failed block DEMOTES to AMBER,
-                    # never passes silently. Faithful-claim predicates would RED here instead.
-                    if pid not in ambers:
-                        ambers.append(pid)
+                    # STRICT gate (Codex S0S2 MED-3): the annotator emits m1p on every bound
+                    # predicate, and MODEL_VERSION content-addressing invalidates all pre-M1'
+                    # records — so a missing/failed block on a bound predicate is tampering or
+                    # a broken worker, never legacy. Fail closed.
+                    problems.append(f"M1_PRIME:{pid}:missing_stats")
+                    continue
                 else:
                     try:
                         mimg = MP.load_for_m1p(record["image_path"])
@@ -139,7 +142,16 @@ def verify_record(record: Dict, *, replay: bool = True) -> Tuple[str, Dict]:
                 ambers.append(pid)
         elif st == D.ABSTAINED:
             # M4 abstention audit
-            if applicable:
+            if s.get("signal_absent"):
+                # SIGNAL-ABSENT subtype (Codex S0S2 HIGH-2): allowed ONLY for registry-flagged
+                # predicates, ONLY with the operator's own absence evidence; demotes to AMBER.
+                if pid not in R.MAY_LACK_SIGNAL:
+                    problems.append(f"SIGNAL_ABSENT_UNSANCTIONED:{pid}")
+                elif not s.get("absence_evidence"):
+                    problems.append(f"SIGNAL_ABSENT_NO_EVIDENCE:{pid}")
+                elif pid not in ambers:
+                    ambers.append(pid)
+            elif applicable:
                 problems.append(f"ABSTENTION_LAUNDERING:{pid} abstained though applicable")
             else:
                 claimed = set(s.get("missing_inputs", []))

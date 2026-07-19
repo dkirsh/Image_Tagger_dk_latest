@@ -25,7 +25,7 @@ are satisfied by the unit, each reaching SCORED or a verified ABSTAINED — neve
 from __future__ import annotations
 from typing import Callable, Dict, FrozenSet, List
 
-MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
+MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1+codexS0S2fix"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
 
 # input tokens a unit may carry beyond the image
 #   plan            inferable from the image (Tier B) — always satisfiable
@@ -101,7 +101,7 @@ PREDICATES: List[Dict] = [
     _spec("cnfa.light.dark_zone_map", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
           "dark zones map, NOT 'safety'; abstains on globally-dark input"),
     _spec("cnfa.material.texture_density", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
-          "micro-texture after structure removal; abstains when <20% survives the structure mask"),
+          "RESIDUAL micro-texture EXCLUDING structured/periodic pattern (wallpaper/ribbing read as structure and mask out — Codex S0S2 MED; periodic-texture stat is future work)"),
     _spec("cnfa.geometry.orderliness_alignment", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
           "LSD segment orientation order (segment-scale; V13 stays pixel-scale); abstains <20 segments"),
     # street-noise acoustic operator (declared-input; docs/STREET_NOISE_ACOUSTIC_OPERATOR_SPEC)
@@ -164,3 +164,19 @@ def applicable(unit_inputs: FrozenSet[str]) -> List[Dict]:
 def abstained(unit_inputs: FrozenSet[str]) -> List[Dict]:
     have = frozenset(unit_inputs) | {"plan"}
     return [p for p in PREDICATES if not (p["requires"] <= have)]
+
+# Predicates allowed to return a SIGNAL-ABSENT abstention (Codex S0+S2 HIGH-2, 2026-07-19):
+# applicable, worker ran, but the measured signal does not exist in this image (blank wall -> no
+# shadow edges / no segments / no chromaticity). verify() accepts signal_absent ONLY for these ids
+# AND only with non-empty absence evidence; everything else stays fail-closed UNKNOWN->RED.
+MAY_LACK_SIGNAL = frozenset({
+    "cnfa.fluency.edge_orientation_entropy",     # <40 edge px (F1)
+    "cnfa.geometry.contour_angularity",          # no usable contours
+    "cnfa.light.luminance_gradient_contrast",    # near-blank (std<2DN)
+    "cnfa.light.shadow_softness",                # <25 accepted illumination edges
+    "cnfa.light.evening_ambience",               # <100 usable bright-band px
+    "cnfa.light.temperature_mismatch",           # saturation too low for chromaticity
+    "cnfa.light.dark_zone_map",                  # globally dark image
+    "cnfa.material.texture_density",             # structure mask leaves <20%
+    "cnfa.geometry.orderliness_alignment",       # <20 segments
+})

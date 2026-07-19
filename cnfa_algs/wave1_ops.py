@@ -74,6 +74,7 @@ def luminance_gradient_contrast(img_bgr) -> AttributeResult:
     if float(g.std()) < (2.0 / 255.0):
         return AttributeResult(key="cnfa.light.luminance_gradient_contrast", scalar=None,
                                confidence=0.0, method="ABSTAIN: near-blank image (std<2DN)",
+                               extras={"std_dn": round(float(g.std()) * 255, 3)},
                                failure_modes=["undefined on blank input"])
     gx = cv2.Sobel(G, cv2.CV_32F, 1, 0, ksize=3)
     gy = cv2.Sobel(G, cv2.CV_32F, 0, 1, ksize=3)
@@ -194,7 +195,9 @@ def shadow_softness(img_bgr) -> AttributeResult:
                                "soft_full": PENUMBRA_SOFT_FRAC, "soft_flag": PENUMBRA_SOFT_FLAG,
                                "chroma_tol": SHADOW_CHROMA_TOL, "lum_ratio_min": SHADOW_LUM_RATIO_MIN}},
         failure_modes=["illumination/material separation is heuristic (AMBER)",
-                       "defocus blur reads as soft shadow", "requires >=25 accepted edges"])
+                       "defocus blur reads as soft shadow", "requires >=25 accepted edges",
+                       "colored-light boundaries (warm/cool illuminant change) are NOT separable "
+                       "from material edges in one photo (Codex S0S2 LOW) — single-photo limit"])
 
 
 # ================================================================ W1.3 sun_patch_geometry
@@ -257,6 +260,7 @@ def evening_ambience(img_bgr) -> AttributeResult:
     if band.sum() < 100:
         return AttributeResult(key="cnfa.light.evening_ambience", scalar=None, confidence=0.0,
                                method="ABSTAIN: <100 usable bright-band pixels",
+                               extras={"n_usable_px": int(band.sum()), "clipped_frac": round(clipped_frac, 4)},
                                failure_modes=["undefined on clipped/blank input"])
     cct = mccamy_cct(float(x[band].mean()), float(y[band].mean()))
     mean_lum = float(g.mean())
@@ -289,6 +293,7 @@ def temperature_mismatch(img_bgr, k: int = 3) -> AttributeResult:
     if float(sat[ok].mean() if ok.any() else 0) < 0.05:
         return AttributeResult(key="cnfa.light.temperature_mismatch", scalar=None, confidence=0.0,
                                method="ABSTAIN: mean saturation < 0.05 (chromaticity uninformative)",
+                               extras={"mean_saturation": round(float(sat[ok].mean()) if ok.any() else 0.0, 4)},
                                failure_modes=["undefined on near-grayscale input"])
     pts = np.stack([x[ok], y[ok]], -1).astype(np.float32)
     cv2.setRNGSeed(1234)
@@ -361,6 +366,7 @@ def dark_zone_map(img_bgr) -> AttributeResult:
     if med < 0.02:
         return AttributeResult(key="cnfa.light.dark_zone_map", scalar=None, confidence=0.0,
                                method="ABSTAIN: image globally dark (median<0.02) — zones undefined",
+                               extras={"global_median": round(med, 5)},
                                failure_modes=["a night photo is not a dark ZONE finding"])
     mask = (G < 0.25 * med).astype(np.uint8)
     n, lbl, stats, _ = cv2.connectedComponentsWithStats(mask, 8)
@@ -391,7 +397,9 @@ def texture_density(img_bgr) -> AttributeResult:
     g = _gray01(img_bgr)
     if float(g.std()) < (2.0 / 255.0):
         return AttributeResult(key="cnfa.material.texture_density", scalar=None, confidence=0.0,
-                               method="ABSTAIN: near-blank image", failure_modes=["undefined"])
+                               method="ABSTAIN: near-blank image",
+                               extras={"std_dn": round(float(g.std()) * 255, 3)},
+                               failure_modes=["undefined"])
     k = np.ones((5, 5), np.uint8)
     rng = cv2.dilate(g, k) - cv2.erode(g, k)              # local range (max-min)
     edges = cv2.Canny((g * 255).astype(np.uint8), 60, 160)
@@ -430,6 +438,7 @@ def orderliness_alignment(img_bgr) -> AttributeResult:
         return AttributeResult(key="cnfa.geometry.orderliness_alignment", scalar=None,
                                confidence=0.0,
                                method=f"ABSTAIN: {n} segments < {LSD_MIN_SEGMENTS}",
+                               extras={"n_segments": int(n)},
                                failure_modes=["orientation order undefined without segments"])
     P = segs.reshape(-1, 4)
     dx, dy = P[:, 2] - P[:, 0], P[:, 3] - P[:, 1]
@@ -454,11 +463,15 @@ def orderliness_alignment(img_bgr) -> AttributeResult:
         d = np.minimum(d, np.pi - d)
         return d <= tol
     aligned = float(length[near(m1) | near(m2)].sum() / (length.sum() + 1e-12))
+    bin_sep = min(abs(m1 - m2), nb - abs(m1 - m2))
+    modes_adjacent = bool(bin_sep <= 2)   # Codex S0S2 LOW: adjacent modes = ONE broadened axis,
+                                          # so 'alignment_2mode' reads as dominant-axis coverage
     return AttributeResult(
         key="cnfa.geometry.orderliness_alignment", scalar=float(np.clip(orderliness, 0, 1)),
         confidence=0.7,
         method="LSD segments: 1 - length-weighted orientation entropy; alignment to 2 modes (M1)",
         extras={"n_segments": int(len(P)), "alignment_2mode": round(aligned, 4),
+                "modes_adjacent": modes_adjacent, "mode_bin_separation": int(bin_sep),
                 "entropy_norm": round(H, 4), "nbins": nb, "mode_bins": [m1, m2],
                 "total_length_px": round(float(length.sum()), 1)},
         failure_modes=["LSD sensitivity to blur/noise (declared params)",
