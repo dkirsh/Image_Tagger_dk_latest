@@ -1,7 +1,7 @@
 # SESSION RESUME — 2026-07-19 evening (Fable/Cowork restart point)
 
 **Purpose**: paste-ready state transfer so a NEW session lands exactly where this one stopped.
-**Repo**: `/Users/davidusa/REPOS/Image_Tagger_dk_latest` · branch `cnfa-algs-2026-07-14` · HEAD `7346ded7` (+1 pending commit for `viz/layered_viewer.py`, see below).
+**Repo**: `/Users/davidusa/REPOS/Image_Tagger_dk_latest` · branch `cnfa-algs-2026-07-14` · HEAD `d5fe276b` (VIEW-0/1/2 + CC-2 all committed).
 
 ## Absolute-path manifest (all verified on device this session)
 - `/Users/davidusa/REPOS/Image_Tagger_dk_latest/TASKS.md` — THE sprint queue (COMP-CORRECT CC-1..10 + Sprint VIEW-0..5 + DEC + DK rows). Read FIRST.
@@ -21,10 +21,10 @@
 6. VIEW-1 layered viewer: built, self-test passed on unit 04d7e703eb98678e (sandbox demo image). NOT yet git-committed; size-slimming open.
 
 ## Immediate next actions (in order)
-1. Commit `viz/layered_viewer.py` (lock-sweep protocol; message "VIEW-1 layered HTML viewer (self-contained; slimming pending)").
-2. Slim VIEW-1 output (<5 MB target): downscale overlay PNGs (half display res is fine for heatmaps) and/or paletted PNG; keep zone layer crisp.
-3. Poll for `/Users/davidusa/REPOS/Image_Tagger_dk_latest/docs/CODEX_ATTACK_TAX_VERDICT_2026-07-19.md`; when present, read FULLY and disposition every finding (fix or refute with evidence) before CC-4.
-4. Then per TASKS.md: VIEW-2 function inspector (manifest `extras` is its data feed — already captured per-predicate), CC-2 owed M1′ classes, CC-3 input_values wiring C5–C23.
+1. DONE this session: VIEW-1 slimmed (229640f0), VIEW-2 inspector (88e55989), CC-2 M1' classes (d5fe276b). Codex CC-1 attack DROPPED by David ~this hour — poll `/Users/davidusa/REPOS/Image_Tagger_dk_latest/docs/CODEX_ATTACK_TAX_VERDICT_2026-07-19.md` and disposition FULLY when it lands (gates CC-4).
+2. CC-3: C5–C23 declared-input VALUE bundles through input_values + full-socket fixtures (street_noise is the pattern: token+value+bundle binding in annotator).
+3. Then CC-4 (post-attack), VIEW-3 question-driven composer (acceptance: street-noise-on-foyer), VIEW-4 A/B compare.
+4. NOTE: Codex/ccode may be committing to the same repo — sweep ONLY zero-byte locks older than 120 s; defer commits when a live lock is present.
 
 ## Standing rules that bit us today (do not relearn)
 - Sandbox mirror of the repo lives at `/home/claude/` (cnfa_algs/, annotation_socket/, viz/, committee/); Mac repo is the truth for git. Every ship = SendUserFile → device_commit_files → git commit via device_bash with lock-sweep.

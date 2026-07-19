@@ -1,6 +1,6 @@
 # TASKS.md — Image_Tagger / CNfA sprint queue
 
-*Last updated: 2026-07-19 (Fable/Cowork). THE authoritative live queue (root-CLAUDE.md protocol).
+*Last updated: 2026-07-19 late (Fable/Cowork). THE authoritative live queue (root-CLAUDE.md protocol).
 Goal of record: **every attribute in the registry is a computational, effective procedure —
 algorithmically correct, stats-audited (M1′), honestly tiered — and the results are viewable and
 questionable.** Sprint docs give the how; this file tracks the what/when/who. Never delete
@@ -16,7 +16,6 @@ DAVID (only-human-can) / PANEL (decision). Every CODEX row names its committed a
 | ID | P | Task | Owner | Blocked by |
 |----|---|------|-------|-----------|
 | CC-1 | P0 | External ATTACK pass on the un-attacked batch: clutter_stack + complexity_partition (11-class taxonomy) + faithful FC/SE + wave2_geometry — the cadence rule says attack before building on top | CODEX (prompt to write; artifact `docs/CODEX_ATTACK_TAX_VERDICT_<date>.md`) | — |
-| CC-2 | P1 | M1′ audit classes still owed: ssim_map, contour_stats, penumbra_stats, texture_stats + classes for faithful FC (`feature_congestion` layer means) and SE (subband entropy vector) and complexity_partition (zone table digest) | FABLE | — |
 | CC-3 | P1 | C5–C23 declared-input VALUE bundles through the `input_values` channel (street-noise opened it); full-socket fixtures per predicate | FABLE | — |
 | CC-4 | P1 | S3 remainder: W2.2 ceiling_openness_relative, W2.3 double-height flag, W2.4 blind_corner_index, W2.5 barrier_permeability, W2.8 thresholds; register W2.1 verticality + W2.6 choice_richness with the batch | FABLE | CC-1 (attack first) |
 | CC-5 | P1 | S4 detector wave: pinned segmentation model → vegetation/window-view/blue-space/sociopetal ops; upgrades the partition's biophilic gate + adds segment-count clutter layer; art-CONTENT + text/signage VLM-tier gates ride the same decision | FABLE build; PANEL/DAVID model choice (Q1) | DEC-1 |
@@ -40,9 +39,6 @@ scores — same separation as the ≠-mind judge).*
 
 | ID | P | Task | Owner | Blocked by |
 |----|---|------|-------|-----------|
-| VIEW-0 | P1 | Field-sidecar persistence: worker writes each operator's field + zone table to `fields/<unit_id>.npz` (+PNG renders), content-addressed; viewer consumes ONLY records+sidecars (never recomputes) | FABLE | — |
-| VIEW-1 | P1 | Layered static viewer: self-contained HTML per unit (canvas overlays, the 8 layer groups above, toggles+opacity+legend, zone tooltips with class/D/hypothesis). Acceptance: open one HTML file, understand a room's annotation without any docs | FABLE | VIEW-0 |
-| VIEW-2 | P1 | Function inspector: per-predicate page — value, field, evidence bbox, ALL declared params/constants (from extras), method string, failure modes, M1′ digest + tier; deep-linkable from any layer. Parameterized ops (street-noise Leq/R′) show their declared inputs; interactive re-run is a later server-mode task (VIEW-5) | FABLE | VIEW-1 |
 | VIEW-3 | P1 | Question-driven composer: question → (LLM, registry-aware) → display-composition JSON {layers, focus bboxes, narrative-with-anchors} → rendered view. Acceptance test IS David's example: "effects of street noise on the foyer" → explanatory answer + SPL/huddle layers + how-to-read guidance pointing at specific zones. Template library for the common question classes (noise, clutter-where, biophilia, wayfinding, privacy) | FABLE (+VLM) | VIEW-1; street-noise needs input_values (CC-3) for live units |
 | VIEW-4 | P2 | A-vs-B compare view (two units side-by-side, synchronized layers) — also the corpus-labeling tool | FABLE | VIEW-1 |
 | VIEW-5 | P3 | Server mode: parameter sliders with live recompute; batch browsing | FABLE | VIEW-2 |
@@ -75,3 +71,7 @@ scores — same separation as the ≠-mind judge).*
 | Complexity partition + 11-class Kellert/Terrapin taxonomy | 07-19 | registered; DT-1 resolved (Farnsworth 0.711 vs office 0.258 biophilic) |
 | L5 cross-env (decode finding, tolerances, geometry amplification) | 07-19 | closed with findings; corpus must be PNG |
 | Codex cycles: S0S2 attack+fixes, S1 adjudication, S1B subband dump | 07-19 | all dispositioned; artifact contract in repo CLAUDE.md |
+| VIEW-0 field sidecars (fields_sink; npz+manifest v2 w/ meta; deterministic) | 07-19 | commit 7346ded7, 88e55989 |
+| VIEW-1 layered viewer (8 register groups, zone tooltips, 4.8 MB) | 07-19 | commits a3995318, 229640f0; example in viz/examples/ |
+| VIEW-2 function inspector (61 predicate pages, all constants surfaced) | 07-19 | commit 88e55989 |
+| CC-2 owed M1' classes (7 bindings; 15 predicates now emit M1') | 07-19 | commit d5fe276b; MODEL_VERSION +cc2m1p |
