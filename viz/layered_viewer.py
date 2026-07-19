@@ -33,7 +33,7 @@ GROUP_TITLE = {"semantic_zones": "2 · Semantic zones", "light": "3 · Light",
 
 def _png_data_url(bgra: np.ndarray) -> str:
     import cv2
-    ok, buf = cv2.imencode(".png", bgra)
+    ok, buf = cv2.imencode(".png", bgra, [cv2.IMWRITE_PNG_COMPRESSION, 9])
     assert ok
     return "data:image/png;base64," + base64.b64encode(buf.tobytes()).decode()
 
@@ -116,7 +116,10 @@ def build_viewer(sidecar_dir: str, unit_id: str, record_path: str | None = None,
         elif a.ndim != 2:
             continue
         else:
-            ov = _heat_overlay(a, W, H)
+            # heatmaps render at HALF display resolution (the browser upscales the <img>
+            # smoothly) — cuts file size ~4x with no legibility cost for continuous fields;
+            # the categorical zone layer above stays full-res crisp
+            ov = _heat_overlay(a, max(2, W // 2), max(2, H // 2))
         layers.append({"key": key, "group": g, "url": _png_data_url(ov),
                        "label": key.split(".")[-1].replace("_", " ")})
 
