@@ -38,6 +38,7 @@ from cpp import stage
 
 from . import registry as R
 from . import derivation as D
+from . import m1_prime as MP
 
 CHECKER_ID = "verify-mechanical"        # != cnfa-annotator (I1 by topology)
 TOL = 0.02
@@ -113,6 +114,26 @@ def verify_record(record: Dict, *, replay: bool = True) -> Tuple[str, Dict]:
                 if abs(rv - s["value"]) > tol + 1e-9:
                     problems.append(f"REPLAY:{pid} mismatch claimed={s['value']} replay={rv}")
                     continue
+            # M1' sufficient-statistic replay (S0, 2026-07-19): predicates with a bound
+            # audit_class must ship their pre-scalar signature, and the checker recomputes it
+            # from the image bytes. A scalar that matches by a DIFFERENT procedure fails here.
+            if replay and pid in MP.M1P_BINDINGS:
+                ac, mp_params = MP.M1P_BINDINGS[pid]
+                m1p = s.get("m1p")
+                if not m1p or "error" in m1p:
+                    # legacy allowance (Codex mapping): a missing/failed block DEMOTES to AMBER,
+                    # never passes silently. Faithful-claim predicates would RED here instead.
+                    if pid not in ambers:
+                        ambers.append(pid)
+                else:
+                    try:
+                        mimg = MP.load_for_m1p(record["image_path"])
+                        mv, mdetail = MP.replay(m1p, mimg, **mp_params)
+                    except Exception as e:
+                        mv, mdetail = MP.STATS_MISMATCH, {"error": f"replay_failed:{type(e).__name__}"}
+                    if mv != MP.MATCH:
+                        problems.append(f"M1_PRIME:{pid}:{mv}")
+                        continue
             # tiering
             if spec["tier_hint"] == "AMBER" or ev.get("confidence", 0) < 0.6:
                 ambers.append(pid)

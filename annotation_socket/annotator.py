@@ -56,6 +56,7 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -
     import cnfa_algs as ca
     from cnfa_algs import attributes as A
     from cnfa_algs import reliable_attrs as RA
+    from cnfa_algs import wave1_ops as W1
     from cnfa_algs.plan import infer_plan_from_image, FREE
     from cnfa_algs import space_syntax as ss, setting_classifier as st, affordance as af
 
@@ -109,11 +110,21 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -
         "cnfa.spatial.prospect":                  lambda: A.prospect(img, planes, Z),
         "acoustic_absorption_proxy":              lambda: A.acoustic_absorption(img, planes, Z),
         "cnfa.light.vertical_illuminance_proxy":  lambda: A.vertical_illuminance_proxy(img, planes),
-        "cnfa.fluency.spectral_discomfort_deviation": lambda: RA.spectral_discomfort_deviation(img),
+        "cnfa.fluency.spectral_slope_deviation":  lambda: RA.spectral_discomfort_deviation(img),
         "cnfa.fluency.edge_orientation_entropy":  lambda: RA.edge_orientation_entropy(img),
         "cnfa.geometry.contour_angularity":       lambda: RA.contour_angularity_index(img),
-        "cnfa.fluency.subband_entropy_clutter":   lambda: RA.subband_entropy_clutter(img),
-        "cnfa.fluency.feature_congestion_clutter":lambda: RA.feature_congestion_clutter(img),
+        "cnfa.fluency.grayscale_gabor_entropy_proxy": lambda: RA.subband_entropy_clutter(img),
+        "cnfa.fluency.local_congestion_proxy":    lambda: RA.feature_congestion_clutter(img),
+        # Wave-1 classical-CV operators (Sprint COMP-CORRECT S2, 2026-07-19) — all AMBER
+        "cnfa.light.luminance_gradient_contrast": lambda: W1.luminance_gradient_contrast(img),
+        "cnfa.light.shadow_softness":             lambda: W1.shadow_softness(img),
+        "cnfa.light.sun_patch_geometry":          lambda: W1.sun_patch_geometry(img),
+        "cnfa.light.evening_ambience":            lambda: W1.evening_ambience(img),
+        "cnfa.light.temperature_mismatch":        lambda: W1.temperature_mismatch(img),
+        "cnfa.light.spotlight_pool_geometry":     lambda: W1.spotlight_pool_geometry(img),
+        "cnfa.light.dark_zone_map":               lambda: W1.dark_zone_map(img),
+        "cnfa.material.texture_density":          lambda: W1.texture_density(img),
+        "cnfa.geometry.orderliness_alignment":    lambda: W1.orderliness_alignment(img),
     }
     # ---- plan metrics from the inferred plan alone ----
     def _vga():
@@ -159,7 +170,12 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -
         try:
             if pid in attr_fns:
                 res = attr_fns[pid]()
-                scores.append(D.scored(pid, res.scalar, img_ev(res), spec["tier_hint"], (H, W)))
+                if res.scalar is None:
+                    # signal undefined on THIS input (e.g. <25 shadow edges, near-blank image):
+                    # UNKNOWN keeps the fail-closed contract — never a fabricated number.
+                    scores.append(D.unknown(pid, f"signal_undefined:{res.method[:60]}"))
+                else:
+                    scores.append(D.scored(pid, res.scalar, img_ev(res), spec["tier_hint"], (H, W)))
             elif pid in plan_fns:
                 val, signal, conf = plan_fns[pid]()
                 scores.append(D.scored(pid, val, plan_ev(signal, conf), spec["tier_hint"], (H, W)))
@@ -170,6 +186,18 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset()) -
                 scores.append(D.unknown(pid, "no_binding_for_supplied_inputs"))
         except Exception as e:
             scores.append(D.unknown(pid, f"compute_failed:{type(e).__name__}"))
+
+    # ---- M1' sufficient-statistic emission (S0, 2026-07-19): every SCORED predicate with a
+    # bound audit_class ships its pre-scalar signature so verify can replay the METHOD, not
+    # just the number. Emission failure is recorded, never silently dropped.
+    from . import m1_prime as MP
+    for s in scores:
+        if s["status"] == D.SCORED and s["predicate"] in MP.M1P_BINDINGS:
+            ac, mp_params = MP.M1P_BINDINGS[s["predicate"]]
+            try:
+                s["m1p"] = MP.emit(ac, img, **mp_params)
+            except Exception as e:
+                s["m1p"] = {"audit_class": ac, "error": f"emit_failed:{type(e).__name__}"}
 
     n_scored = sum(1 for s in scores if s["status"] == D.SCORED)
     n_abst = sum(1 for s in scores if s["status"] == D.ABSTAINED)

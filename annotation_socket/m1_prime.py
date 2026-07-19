@@ -78,8 +78,10 @@ def _to_gray(img) -> np.ndarray:
 
 def stats_luminance_field(img, window: int = 31) -> Dict:
     """Sufficient stats for the brightness_variance operator (scalar = global luminance SD).
-    Emits global mean/std, local-SD quantiles, bright-pixel fraction — the pre-scalar signature."""
-    g = _to_gray(img)
+    Emits global mean/std, local-SD quantiles, bright-pixel fraction — the pre-scalar signature.
+    3-channel input is assumed BGR (cv2.imread order) and flipped so BT601 weights land correctly."""
+    a = np.asarray(img)
+    g = _to_gray(a[..., ::-1] if a.ndim == 3 else a)
     # local SD via integral-image box filter (deterministic, no cv2 dependency)
     H, W = g.shape
     k = window
@@ -121,8 +123,10 @@ def stats_luminance_field(img, window: int = 31) -> Dict:
 def stats_radial_fft(img, n_bins: int = 32, fit_lo: float = 0.10, fit_hi: float = 0.80) -> Dict:
     """Sufficient stats for the spectral_slope_deviation / V2 radial-1/f proxy: Hann-windowed 2-D FFT,
     radially-binned log power, and the log-log slope/intercept/R2 over a fit band. The radial profile
-    digest is the faithfulness check — a different procedure that hits the same slope fails here."""
-    g = _to_gray(img)
+    digest is the faithfulness check — a different procedure that hits the same slope fails here.
+    3-channel input is assumed BGR (cv2.imread order)."""
+    a = np.asarray(img)
+    g = _to_gray(a[..., ::-1] if a.ndim == 3 else a)
     g = g - g.mean()
     H, W = g.shape
     wr = np.hanning(H)[:, None]
@@ -165,10 +169,124 @@ def stats_radial_fft(img, n_bins: int = 32, fit_lo: float = 0.10, fit_hi: float 
     }
 
 
+def stats_orientation_hist(img, nbins: int = 18, mag_frac: float = 0.05, min_edge_px: int = 40) -> Dict:
+    """Sufficient stats for V13 edge_orientation_entropy — mirrors reliable_attrs._orientation_hist
+    EXACTLY (Sobel k=3 on gray01, undirected angles, mask = mag > 0.05*max, 18 bins, magnitude-weighted).
+    Below min_edge_px the distribution is undefined (F1 rule): emitted as abstained=True, no histogram."""
+    import cv2
+    g = _to_gray(img[..., ::-1] if np.asarray(img).ndim == 3 else img) / 255.0
+    g = g.astype(np.float32)
+    gx = cv2.Sobel(g, cv2.CV_32F, 1, 0, ksize=3)
+    gy = cv2.Sobel(g, cv2.CV_32F, 0, 1, ksize=3)
+    mag = np.sqrt(gx * gx + gy * gy)
+    ang = (np.arctan2(gy, gx) % np.pi)
+    m = mag > (mag_frac * mag.max() + 1e-9)
+    n_edge = int(m.sum())
+    out = {"audit_class": "orientation_hist", "conversion": "BT601-on-RGB/255",
+           "nbins": int(nbins), "mag_frac": float(mag_frac), "min_edge_px": int(min_edge_px),
+           "n_edge_px": n_edge, "shape": [int(g.shape[0]), int(g.shape[1])]}
+    if n_edge < min_edge_px:
+        out["abstained"] = True
+        return out
+    idx = np.minimum((ang[m] / np.pi * nbins).astype(int), nbins - 1)
+    h = np.bincount(idx, weights=mag[m], minlength=nbins).astype(float)
+    h = h / (h.sum() + 1e-12)
+    p = h[h > 0]
+    out["hist"] = [float(v) for v in h]
+    out["entropy_norm"] = float(-(p * np.log(p)).sum() / np.log(nbins))
+    return out
+
+
+def stats_box_count(img, canny_lo: int = 60, canny_hi: int = 160) -> Dict:
+    """Sufficient stats for fractal_dimension / V9 — mirrors attributes._boxcount_D_r2 EXACTLY
+    (Canny(60,160) on uint8 gray, occupancy at box sizes 2/4/8/16 by max-pooling, log-log polyfit)."""
+    import cv2
+    g = _to_gray(img[..., ::-1] if np.asarray(img).ndim == 3 else img)
+    g8 = np.clip(g, 0, 255).astype(np.uint8)
+    e = cv2.Canny(g8, canny_lo, canny_hi)
+    out = {"audit_class": "box_count", "conversion": "BT601-on-RGB uint8",
+           "canny": [int(canny_lo), int(canny_hi)], "edge_px": int((e > 0).sum()),
+           "shape": [int(e.shape[0]), int(e.shape[1])]}
+    sizes, counts, series = [], [], []
+    for s in (2, 4, 8, 16):
+        Ht, Wt = (e.shape[0] // s) * s, (e.shape[1] // s) * s
+        if Ht == 0 or Wt == 0:
+            continue
+        S = int((e[:Ht, :Wt].reshape(Ht // s, s, Wt // s, s).max(axis=(1, 3)) > 0).sum())
+        series.append([int(s), S])
+        if S > 0:
+            sizes.append(np.log(1 / s)); counts.append(np.log(S))
+    out["series"] = series
+    if (e > 0).sum() < 20 or len(sizes) < 3:
+        out["abstained"] = True
+        return out
+    x, y = np.array(sizes), np.array(counts)
+    slope, intercept = np.polyfit(x, y, 1)
+    yhat = slope * x + intercept
+    ss_res = float(((y - yhat) ** 2).sum()); ss_tot = float(((y - y.mean()) ** 2).sum())
+    out["D"] = float(slope)
+    out["R2"] = float(max(0.0, min(1.0, 1.0 - ss_res / ss_tot if ss_tot > 1e-12 else 1.0)))
+    return out
+
+
+def stats_color_palette(img, k: int = 8) -> Dict:
+    """Sufficient stats for color_palette_entropy — mirrors attributes.palette_entropy (Lab kmeans,
+    cv2.setRNGSeed(1234), k=8, attempts=2, PP centers). Centers are canonicalized by sorting on
+    (L,a,b) and COARSELY rounded (1 decimal; proportions 3) because kmeans float paths may differ
+    at fine precision across BLAS builds — the digest is over the rounded, sorted stats."""
+    import cv2
+    a = np.asarray(img)
+    if a.ndim != 3:
+        a = np.stack([a] * 3, -1).astype(np.uint8)
+    lab = cv2.cvtColor(a.astype(np.uint8), cv2.COLOR_BGR2LAB).reshape(-1, 3).astype(np.float32)
+    cv2.setRNGSeed(1234)
+    _, labels, cents = cv2.kmeans(lab, k, None,
+        (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0), 2, cv2.KMEANS_PP_CENTERS)
+    p = np.bincount(labels.ravel(), minlength=k) / len(labels)
+    H = float(-(p[p > 0] * np.log(p[p > 0])).sum() / np.log(k))
+    order = np.lexsort((cents[:, 2], cents[:, 1], cents[:, 0]))
+    return {"audit_class": "color_palette", "colorspace": "cv2-BGR2LAB", "k": int(k),
+            "seed": 1234, "attempts": 2,
+            "centers": [[round(float(c), 1) for c in cents[i]] for i in order],
+            "proportions": [round(float(p[i]), 3) for i in order],
+            "entropy_norm": round(H, 4),
+            "shape": [int(a.shape[0]), int(a.shape[1])]}
+
+
 AUDIT_CLASSES = {
     "luminance_field": stats_luminance_field,
     "radial_fft": stats_radial_fft,
+    "orientation_hist": stats_orientation_hist,
+    "box_count": stats_box_count,
+    "color_palette": stats_color_palette,
 }
+
+# predicate -> (audit_class, image_prep) producer/checker binding. image_prep names the array the
+# stats fn expects: 'bgr' = as loaded by cv2.imread (the stats fns handle conversion internally).
+# Shared by annotator (emit) and verify (replay) so the two sides cannot drift apart.
+M1P_BINDINGS = {
+    "cnfa.light.brightness_variance":        ("luminance_field", {}),
+    "cnfa.fluency.spectral_slope_deviation": ("radial_fft", {}),
+    "cnfa.fluency.edge_orientation_entropy": ("orientation_hist", {}),
+    "cnfa.fractal_dimension":                ("box_count", {}),
+    "cnfa.fluency.color_palette_entropy":    ("color_palette", {}),
+}
+
+
+# ------------------------------------------------------------------ shared loader
+def load_for_m1p(image_path: str):
+    """EXACTLY the annotator's load+resize pipeline (cv2.imread BGR, downscale to max-dim 900 with
+    INTER_AREA). Producer and checker must see identical pixels; this is the single shared definition
+    the checker uses. If annotate_image's loader ever changes, this must change with it — the wiring
+    test (same-image digest equality) catches drift immediately."""
+    import cv2
+    img = cv2.imread(image_path)
+    if img is None:
+        raise ValueError(f"unreadable image: {image_path}")
+    scale = 900 / max(img.shape[:2])
+    if scale < 1:
+        img = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+    return img
 
 
 # ------------------------------------------------------------------ emit + replay
@@ -221,7 +339,13 @@ if __name__ == "__main__":
     base = base + 15 * np.sin(xx / 3.0) * np.cos(yy / 4.0)
     img = np.clip(np.stack([base, base * 0.9, base * 0.8], -1), 0, 255).astype(np.uint8)
 
-    for ac in ("luminance_field", "radial_fft"):
+    # --- _canon rounding-boundary lock (S0.4): the 6-decimal grid is a threshold; prove it ---
+    assert digest({"v": 0.1234567}) == digest({"v": 0.123457}), "1e-7 difference must collapse"
+    assert digest({"v": 0.12345}) != digest({"v": 0.12346}), "1e-5 difference must distinguish"
+    assert _canon(-0.0) == 0.0 and canonical_json({"a": np.float64(1.5)}) == '{"a":1.5}'
+    print("  _canon boundary: 1e-7 collapses, 1e-5 distinguishes, -0.0 normalized  OK")
+
+    for ac in ("luminance_field", "radial_fft", "orientation_hist", "box_count", "color_palette"):
         m = emit(ac, img)
         # 1. genuine record replays MATCH
         v, d = replay(m, img)
@@ -230,10 +354,10 @@ if __name__ == "__main__":
         assert digest(AUDIT_CLASSES[ac](img)) == m["digest"]
         # 3. a TAMPERED statistic (keep the old digest) is caught as stats_mismatch
         tampered = json.loads(json.dumps(m))
-        if ac == "luminance_field":
-            tampered["stats"]["global_std"] = float(tampered["stats"]["global_std"]) + 5.0
-        else:
-            tampered["stats"]["slope"] = float(tampered["stats"]["slope"]) + 0.5
+        tamper_key = {"luminance_field": "global_std", "radial_fft": "slope",
+                      "orientation_hist": "n_edge_px", "box_count": "edge_px",
+                      "color_palette": "entropy_norm"}[ac]
+        tampered["stats"][tamper_key] = float(tampered["stats"][tamper_key]) + 5.0
         # attacker forges a matching digest for the tampered stats -> caught because RECOMPUTE differs
         tampered["digest"] = digest(tampered["stats"])
         v2, d2 = replay(tampered, img)

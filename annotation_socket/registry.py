@@ -25,7 +25,7 @@ are satisfied by the unit, each reaching SCORED or a verified ABSTAINED — neve
 from __future__ import annotations
 from typing import Callable, Dict, FrozenSet, List
 
-MODEL_VERSION = "cnfa_algs-2026-07-15+seed1234+reliableA"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
+MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
 
 # input tokens a unit may carry beyond the image
 #   plan            inferable from the image (Tier B) — always satisfiable
@@ -49,24 +49,28 @@ PREDICATES: List[Dict] = [
     _spec("cnfa.fluency.color_palette_entropy",    "image_attr", IMAGE_ONLY, "replayable", "GREEN"),
     _spec("cnfa.fluency.processing_load_proxy",    "image_attr", IMAGE_ONLY, "replayable", "GREEN"),
     _spec("cnfa.fractal_dimension",                "image_attr", IMAGE_ONLY, "replayable", "GREEN"),
-    _spec("cnfa.fluency.fractal_mid_d_band",       "image_attr", IMAGE_ONLY, "replayable_tol", "GREEN",
-          "V9: inverted-U response of fractal D vs the preferred/calming mid-band [1.3,1.5] + "
-          "per-tile coverage; reads the fractal output (no recompute). Preference leg strong, "
-          "stress leg preliminary."),
-    _spec("cnfa.fluency.spectral_discomfort_deviation", "image_attr", IMAGE_ONLY, "replayable_tol", "GREEN",
-          "V2: FFT 1/f-slope naturalness + Penacchio-Wilkins CSF mid-band residual (visual "
-          "discomfort). Slope scale-free; discomfort magnitude assumes FOV=65deg (declared)."),
-    _spec("cnfa.fluency.edge_orientation_entropy", "image_attr", IMAGE_ONLY, "replayable_tol", "GREEN",
-          "V13: Sobel orientation-histogram entropy (1st+2nd order); isotropy vs cardinal order "
-          "(Redies lab)."),
-    _spec("cnfa.geometry.contour_angularity", "image_attr", IMAGE_ONLY, "replayable_tol", "GREEN",
-          "V1: Canny+turning-angle curve-fraction vs sharp-corner density (signed valence). "
-          "Curvature preference (Bar&Neta 2006); object-contour confound declared."),
-    _spec("cnfa.fluency.subband_entropy_clutter", "image_attr", IMAGE_ONLY, "replayable_tol", "GREEN",
-          "V6: oriented-subband coefficient entropy (Rosenholtz 2007). Clutter family V6/V7/legacy "
-          "- pick ONE for hedonics (Decision D2)."),
-    _spec("cnfa.fluency.feature_congestion_clutter", "image_attr", IMAGE_ONLY, "replayable_tol", "GREEN",
-          "V7: Feature Congestion (Rosenholtz 2005). Clutter family - see Decision D2."),
+    _spec("cnfa.fluency.fractal_mid_d_band",       "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "V9 (AMBER per Fable F5): declared trapezoid over whole-interior Canny box-count D. R2 "
+          "does NOT prove a valid scale range (checkerboard D=0,R2=1); response constants are "
+          "engineering. Scaling validity + labeled calibration owed before GREEN."),
+    _spec("cnfa.fluency.spectral_slope_deviation", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "V2 (AMBER + RENAMED per Fable F2): radial 1/f power-slope + mid-band residual. This is "
+          "NOT the 2-D Penacchio-Wilkins discomfort metric (radial averaging discards the 2-D "
+          "Fourier-energy distribution) and does NOT use FOV (removed). Scale-dependent; ship as "
+          "a named spectral statistic only."),
+    _spec("cnfa.fluency.edge_orientation_entropy", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "V13 (AMBER per Fable F1, blank-image bug FIXED -> abstains on <40 edge px). 2nd-order "
+          "is a first-neighbour proxy, NOT the Grebenkina pairwise-over-distances measure."),
+    _spec("cnfa.geometry.contour_angularity", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "V1 (AMBER per Fable F8): whole-image contour curve/corner statistic; NOT validated "
+          "architectural valence (foliage/textiles/people counted). Dead lens-bow flag removed."),
+    _spec("cnfa.fluency.grayscale_gabor_entropy_proxy", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "V6 (AMBER + RENAMED per Fable F3): grayscale Gabor-magnitude entropy PROXY. NOT the "
+          "published Rosenholtz Subband Entropy (no CIELab, no steerable pyramid, invented divisor). "
+          "Clutter family - not a validated replacement (Decision D2)."),
+    _spec("cnfa.fluency.local_congestion_proxy", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "V7 (AMBER + RENAMED per Fable F4): local-variance colour/contrast/orientation PROXY "
+          "with declared arbitrary weights. NOT the published Feature Congestion. Clutter family."),
     _spec("glare-risk",                            "image_attr", IMAGE_ONLY, "replayable", "GREEN"),
     _spec("cnfa.light.warm_vs_cool_ratio",         "image_attr", IMAGE_ONLY, "replayable", "GREEN"),
     _spec("cnfa.cognitive.landmark_salience",      "image_attr", IMAGE_ONLY, "replayable", "GREEN"),
@@ -78,6 +82,32 @@ PREDICATES: List[Dict] = [
     _spec("acoustic_absorption_proxy",             "image_attr", IMAGE_ONLY, "replayable", "AMBER",
           "material table over heuristic planes"),
     _spec("cnfa.light.vertical_illuminance_proxy", "image_attr", IMAGE_ONLY, "replayable", "AMBER"),
+
+    # ---- Wave-1 classical-CV operators (Sprint COMP-CORRECT S2, 2026-07-19; Codex Section-D
+    # keeps). ALL AMBER: computationally verified on fixtures + 9-interior smoke; construct
+    # validation corpus-blocked. Constants declared in each result's extras.
+    _spec("cnfa.light.luminance_gradient_contrast", "image_attr", IMAGE_ONLY, "replayable", "AMBER",
+          "large-scale light architecture (sigma=diag/64); fullscale=60 calibrated on 9-interior smoke"),
+    _spec("cnfa.light.shadow_softness", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "penumbra 10-90% width over chromaticity-stable edges; hard flag in px; abstains <25 edges"),
+    _spec("cnfa.light.sun_patch_geometry", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "bright warm straight-boundary patch GEOMETRY — candidate, cannot prove sun"),
+    _spec("cnfa.light.evening_ambience", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "McCamy CCT proxy + dimness + skew; AWB confound declared"),
+    _spec("cnfa.light.temperature_mismatch", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "max weighted mired gap between chromaticity clusters; abstains on low saturation"),
+    _spec("cnfa.light.spotlight_pool_geometry", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "top-hat pool geometry ONLY; social-exposure claim deferred to seat-input compound"),
+    _spec("cnfa.light.dark_zone_map", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "dark zones map, NOT 'safety'; abstains on globally-dark input"),
+    _spec("cnfa.material.texture_density", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "micro-texture after structure removal; abstains when <20% survives the structure mask"),
+    _spec("cnfa.geometry.orderliness_alignment", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "LSD segment orientation order (segment-scale; V13 stays pixel-scale); abstains <20 segments"),
+    # street-noise acoustic operator (declared-input; docs/STREET_NOISE_ACOUSTIC_OPERATOR_SPEC)
+    _spec("cnfa.acoustic.street_noise_intrusion", "plan_metric",
+          frozenset({"outdoor_leq", "facade_spec"}), "replayable_tol", "AMBER",
+          "facade-transmission energy model x ISO3382-3 masking; ABSTAINS without Leq_out + R'"),
 
     # ---- plan metrics computable from the INFERRED plan alone (Tier B chain) ----
     _spec("C1.visual_integration",  "plan_metric", PLAN, "replayable_tol", "AMBER",
