@@ -38,3 +38,11 @@ also record the expected path in the conversation so the assigning session can p
 - The Cowork sandbox cannot delete git lock files — if a commit fails on a stale `.git/*.lock`
   with no live git process, move it aside (`mv` to `_to_delete/`) or delete from a Mac terminal.
 - Tests are run per-file (`PYTHONPATH=. python3 annotation_socket/tests/test_*.py`); pytest may be absent.
+
+## Sandbox git commits WORK (discovered 2026-07-19)
+The Cowork sandbox mount blocks `unlink` but permits `rename`. Therefore git commits FROM THE
+SANDBOX SUCCEED: (1) `mv` any stale `.git/*.lock` into `_to_delete/` first; (2) run git with
+`--no-optional-locks`; (3) after the commit, `mv` the leftover `HEAD.lock` / `objects/*/tmp_obj_*`
+into `_to_delete/` so the next operation isn't blocked. `git status` itself leaves an index.lock
+behind — always use `git --no-optional-locks status`. Never force-delete locks without checking
+they are zero-byte and no live git process holds them.
