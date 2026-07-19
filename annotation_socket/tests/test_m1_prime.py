@@ -22,8 +22,11 @@ def test_all_audit_classes_roundtrip_and_tamper():
     img = _synth()
     tamper_key = {"luminance_field": "global_std", "radial_fft": "slope",
                   "orientation_hist": "n_edge_px", "box_count": "edge_px",
-                  "color_palette": "entropy_norm"}
+                  "color_palette": "entropy_norm", "edge_stats": "mean_mag_on_edges",
+                  "jpeg_tiles": "global_bpp", "geometry_plan": "free_cells"}
     for ac in M.AUDIT_CLASSES:
+        if ac == "geometry_plan":
+            continue     # full-chain recompute; covered by the run_stage wiring path
         m = M.emit(ac, img)
         assert M.replay(m, img)[0] == M.MATCH, ac
         assert M.digest(M.AUDIT_CLASSES[ac](img)) == m["digest"], ac      # determinism

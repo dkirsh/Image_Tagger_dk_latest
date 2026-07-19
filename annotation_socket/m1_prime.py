@@ -253,12 +253,79 @@ def stats_color_palette(img, k: int = 8) -> Dict:
             "shape": [int(a.shape[0]), int(a.shape[1])]}
 
 
+def stats_edge_stats(img, canny_lo: int = 60, canny_hi: int = 160) -> Dict:
+    """Sufficient stats for edge_clarity_mean — mirrors attributes.edge_clarity EXACTLY
+    (Sobel k=3 magnitude on gray01, Canny(60,160) support, mean magnitude on edges)."""
+    import cv2
+    a = np.asarray(img)
+    g = (_to_gray(a[..., ::-1] if a.ndim == 3 else a) / 255.0).astype(np.float32)
+    gx = cv2.Sobel(g, cv2.CV_32F, 1, 0, ksize=3)
+    gy = cv2.Sobel(g, cv2.CV_32F, 0, 1, ksize=3)
+    mag = cv2.magnitude(gx, gy)
+    edges = cv2.Canny((g * 255).astype(np.uint8), canny_lo, canny_hi) > 0
+    n_edge = int(edges.sum())
+    return {"audit_class": "edge_stats", "conversion": "BT601-on-RGB/255",
+            "canny": [int(canny_lo), int(canny_hi)], "n_edge_px": n_edge,
+            "mean_mag_on_edges": float(mag[edges].mean()) if n_edge else 0.0,
+            "mag_q": {"p50": float(np.percentile(mag, 50)), "p95": float(np.percentile(mag, 95))},
+            "shape": [int(g.shape[0]), int(g.shape[1])]}
+
+
+def stats_jpeg_tiles(img, quality: int = 75, tile: int = 32) -> Dict:
+    """Sufficient stats for processing_load_proxy — mirrors attributes.processing_load (global
+    bytes/pixel at JPEG Q75 + 32px tile map; the tile map is digested via its quantiles)."""
+    import cv2
+    a = np.asarray(img).astype(np.uint8)
+    ok, buf = cv2.imencode(".jpg", a, [cv2.IMWRITE_JPEG_QUALITY, quality])
+    bpp = len(buf) / (a.shape[0] * a.shape[1])
+    tiles = []
+    for i in range(0, a.shape[0], tile):
+        for j in range(0, a.shape[1], tile):
+            t = a[i:i + tile, j:j + tile]
+            ok, b = cv2.imencode(".jpg", t, [cv2.IMWRITE_JPEG_QUALITY, quality])
+            tiles.append(len(b) / max(t.size, 1))
+    tiles = np.array(tiles)
+    return {"audit_class": "jpeg_tiles", "quality": int(quality), "tile": int(tile),
+            "global_bpp": float(bpp), "n_tiles": int(len(tiles)),
+            "tile_bpp_q": {"p5": float(np.percentile(tiles, 5)), "p50": float(np.percentile(tiles, 50)),
+                           "p95": float(np.percentile(tiles, 95))},
+            "shape": [int(a.shape[0]), int(a.shape[1])]}
+
+
+def stats_geometry_plan(img) -> Dict:
+    """Sufficient stats for the SHARED Tier-B geometry chain (C1-C4/C13/C24/C01/C29 all ride it):
+    re-runs vanishing->planes->depth->plan->VGA deterministically and digests the results. A plan
+    metric whose grid_hash or VGA quantiles differ from this recompute was not produced by the
+    declared chain. EXPENSIVE (full geometry recompute) — bound to ONE representative predicate."""
+    import cnfa_algs as ca
+    from cnfa_algs.plan import infer_plan_from_image, FREE as _FREE
+    from cnfa_algs import space_syntax as ss
+    from annotation_socket import derivation as _D
+    a = np.asarray(img)
+    vx, vy, vconf = ca.estimate_vanishing_point(a)
+    planes, pconf = ca.segment_planes(a, (vx, vy))
+    Z, _, dconf = ca.DepthProvider()(a, planes, (vx, vy))
+    pg = infer_plan_from_image(a, planes, Z)
+    vga = ss.vga_metrics(pg, stride=3)
+    return {"audit_class": "geometry_plan",
+            "vanishing_point": [round(float(vx), 1), round(float(vy), 1)],
+            "grid_hash": _D.grid_hash(pg.grid),
+            "free_cells": int((pg.grid == _FREE).sum()),
+            "cell_m": round(float(pg.cell_m), 4),
+            "integration_norm": float(vga["extras"]["integration_norm"]),
+            "connectivity_norm": float(vga["extras"]["connectivity_norm"]),
+            "shape": [int(a.shape[0]), int(a.shape[1])]}
+
+
 AUDIT_CLASSES = {
     "luminance_field": stats_luminance_field,
     "radial_fft": stats_radial_fft,
     "orientation_hist": stats_orientation_hist,
     "box_count": stats_box_count,
     "color_palette": stats_color_palette,
+    "edge_stats": stats_edge_stats,
+    "jpeg_tiles": stats_jpeg_tiles,
+    "geometry_plan": stats_geometry_plan,
 }
 
 # predicate -> (audit_class, image_prep) producer/checker binding. image_prep names the array the
@@ -270,6 +337,11 @@ M1P_BINDINGS = {
     "cnfa.fluency.edge_orientation_entropy": ("orientation_hist", {}),
     "cnfa.fractal_dimension":                ("box_count", {}),
     "cnfa.fluency.color_palette_entropy":    ("color_palette", {}),
+    "cnfa.fluency.edge_clarity_mean":        ("edge_stats", {}),
+    "cnfa.fluency.processing_load_proxy":    ("jpeg_tiles", {}),
+    # geometry chain digested ONCE, bound to C1 (the chain's first consumer); every other plan
+    # metric shares the same upstream, so one binding audits the substrate without 8x recompute
+    "C1.visual_integration":                 ("geometry_plan", {}),
 }
 
 
