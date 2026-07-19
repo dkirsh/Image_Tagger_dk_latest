@@ -137,12 +137,14 @@ def build_sidecar(image_path: str, out_dir: str,
 
     tables = sink.pop("_tables", {})
     extras = sink.pop("_extras", {})
+    meta = sink.pop("_meta", {})
     plan = sink.pop("_plan", None)
     arrays = {k: np.asarray(v, np.float32) for k, v in sink.items()}
     if plan is not None:
         arrays["_plan.grid"] = plan["grid"].astype(np.float32)
     tables = _sanitize(tables, arrays, "_tables")
     extras = _sanitize(extras, arrays, "_extras")
+    meta = _sanitize(meta, arrays, "_meta")
 
     np.savez_compressed(root / f"{u}.npz", **arrays)
 
@@ -174,11 +176,13 @@ def build_sidecar(image_path: str, out_dir: str,
                    for k, a in sorted(arrays.items())},
         "tables": tables,                    # zone table (class/D/hypothesis per zone)
         "extras": extras,                    # ALL declared operator params — VIEW-2 feed
+        "meta": meta,                        # method/scalar/confidence/failure_modes per predicate
+        "sidecar_version_note": "meta added VIEW-2 2026-07-19",
         "plan_meta": ({"cell_m": plan["cell_m"], "grid_hash": plan["grid_hash"]}
                       if plan else None),
         "renders": renders,
         "coverage": rec["coverage"],
-        "sidecar_version": 1,
+        "sidecar_version": 2,
     }
     man_path.write_text(json.dumps(manifest, indent=1, sort_keys=True))
     return manifest

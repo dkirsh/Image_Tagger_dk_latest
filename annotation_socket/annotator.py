@@ -106,6 +106,7 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset(),
     if fields_sink is not None:
         fields_sink.setdefault("_tables", {})
         fields_sink.setdefault("_extras", {})
+        fields_sink.setdefault("_meta", {})     # per-predicate method/scalar/conf/failure_modes
         fields_sink["_plan"] = {"grid": np.asarray(pg.grid, np.int16),
                                 "cell_m": float(pg.cell_m), "grid_hash": gh}
 
@@ -121,6 +122,12 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset(),
             fields_sink["_extras"][pid] = ex
             if "zones" in ex:                      # complexity_partition zone table
                 fields_sink["_tables"][pid] = ex["zones"]
+        sc = getattr(res, "scalar", None)
+        fields_sink["_meta"][pid] = {
+            "method": getattr(res, "method", None),
+            "scalar": (None if sc is None else float(sc)),
+            "confidence": float(getattr(res, "confidence", 0.0) or 0.0),
+            "failure_modes": list(getattr(res, "failure_modes", None) or [])}
 
     # ---- Tier-A attributes ----
     attr_fns = {
@@ -255,8 +262,21 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset(),
             elif pid in plan_fns:
                 val, signal, conf = plan_fns[pid]()
                 scores.append(D.scored(pid, val, plan_ev(signal, conf), spec["tier_hint"], (H, W)))
+                if fields_sink is not None:
+                    fields_sink["_meta"][pid] = {"method": f"plan-chain: {signal}",
+                                                 "scalar": float(val),
+                                                 "confidence": float(min(conf, geom_conf)),
+                                                 "failure_modes": ["inherits geometry-chain "
+                                                                   "instability (L5: 13% cell_m)"]}
             elif pid in compound_fns:
-                scores.append(compound_fns[pid]())      # full scored/zero/unknown record
+                crec = compound_fns[pid]()              # full scored/zero/unknown record
+                scores.append(crec)
+                if fields_sink is not None:
+                    fields_sink["_meta"][pid] = {
+                        "method": (crec.get("evidence") or {}).get("signal", crec.get("status")),
+                        "scalar": crec.get("value"),
+                        "confidence": float((crec.get("evidence") or {}).get("confidence", 0) or 0),
+                        "failure_modes": [f"status={crec.get('status')}"]}
             else:
                 # applicable per requirements but no binding on an image-only unit path
                 scores.append(D.unknown(pid, "no_binding_for_supplied_inputs"))
