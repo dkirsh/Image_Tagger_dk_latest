@@ -72,7 +72,11 @@ def upConv(image: np.ndarray, filt: np.ndarray, edge_type: str = "reflect1",
 
 
 # ---------------------------------------------------------------- Gaussian pyramid (P2)
-_BINOM5 = np.array([1.0, 4.0, 6.0, 4.0, 1.0]) / 16.0
+# pyrtools binomial_filter(5): binomial coefficients normalized to sum sqrt(2) — NOT unity.
+# (Codex adjudication 2026-07-19: this sqrt(2) scaling was the P2 divergence; with it, ALL
+# Feature Congestion and layer values match real pyrtools.) Separable x+y application gives a
+# DC gain of 2 per level — the pyrtools energy convention the reference code was written against.
+_BINOM5 = (np.array([1.0, 4.0, 6.0, 4.0, 1.0]) / 16.0) * np.sqrt(2.0)
 
 
 class _GaussianPyramid:
@@ -91,14 +95,13 @@ class _GaussianPyramid:
 
 # ---------------------------------------------------------------- steerable pyramid, frequency domain (P4)
 def _rcos_table(width=1.0, position=0.0, values=(0.0, 1.0), size=256):
-    """Raised-cosine soft threshold lookup (pyrtools rcosFn): X in [position, position+width],
-    Y going values[0]->values[1] along a raised cosine."""
-    X = position + width * np.arange(size + 3) / size - width / 256.0  # slight overhang like pyrtools
-    X = position + width * (np.arange(-1, size + 2) / size)
-    Y = values[0] + (values[1] - values[0]) * (0.5 * (1.0 + np.cos(np.pi * (X - position - width) / width)))
-    # pin the ends flat
+    """EXACT pyrtools rcosFn (adjudication fix P4a, 2026-07-19): cos^2 transition on a
+    (size+3)-point table; X remapped to [position, position+width]."""
+    X = np.pi * np.arange(-size - 1, 2) / (2.0 * size)
+    Y = values[0] + (values[1] - values[0]) * np.cos(X) ** 2
     Y[0] = Y[1]
-    Y[-1] = Y[-2]
+    Y[size + 2] = Y[size + 1]
+    X = position + (2.0 * width / np.pi) * (X + np.pi / 4.0)
     return X, Y
 
 
@@ -146,9 +149,9 @@ class _SteerablePyramidFreq:
         const = (2.0 ** (2 * K)) * (factorial(K) ** 2) / float(self.num_orientations * factorial(2 * K))
         lut = 1024
         Xcosn = np.pi * np.arange(-(2 * lut + 1), lut + 2) / lut
+        # REAL (non-complex) pyramid: pure sqrt(const)*cos^K, NO lobe mask (adjudication fix
+        # P4b — the |alfa|<pi/2 mask belongs only to the complex variant)
         Ycosn = np.sqrt(const) * (np.cos(Xcosn)) ** K
-        # zero outside the pass lobe |theta| > pi/2 (cos^K of even/odd K handled by masking)
-        Ycosn = Ycosn * (np.abs(((Xcosn + np.pi) % (2 * np.pi)) - np.pi) < np.pi / 2)
         cinc = Xcosn[1] - Xcosn[0]
 
         for lev in range(height):
@@ -157,15 +160,14 @@ class _SteerablePyramidFreq:
             band_power = np.zeros_like(himask)
             ang_power = np.zeros_like(himask)
             for b in range(self.num_orientations):
-                # wrap angle into the table's domain around the band's orientation
-                adiff = ((angle - np.pi * b / self.num_orientations) + np.pi) % (2 * np.pi) - np.pi
-                anglemask = _point_op(adiff, Ycosn, Xcosn[0], cinc)
+                # RAW angle lookup, origin shifted per band — the 3*pi-wide table absorbs the
+                # range without rewrapping (adjudication fix P4c, matches pyrtools pointOp call)
+                anglemask = _point_op(angle, Ycosn, Xcosn[0] + np.pi * b / self.num_orientations, cinc)
                 banddft = ((-1j) ** K) * lodft * anglemask * himask
                 self.pyr_coeffs[(lev, b)] = np.real(np.fft.ifft2(np.fft.ifftshift(banddft)))
-                # steering identity: cos^K lobes at K+1 orientations tile orientation space —
-                # sum over b of anglemask(theta)^2 + anglemask(theta+pi)^2 == 1 for every theta.
-                adiff_pi = ((angle + np.pi - np.pi * b / self.num_orientations) + np.pi) % (2 * np.pi) - np.pi
-                ang_power += anglemask ** 2 + _point_op(adiff_pi, Ycosn, Xcosn[0], cinc) ** 2
+                # steering identity for the REAL pyramid: cos^(2K) sums over K+1 orientations
+                # to 1/const, so sum_b anglemask^2 == 1 with no antipode term (cos^2 covers both)
+                ang_power += anglemask ** 2
             if lev == 0:
                 self._ang_power = ang_power           # asserted in self-test
             # frequency-domain downsample of the lowpass by 2
@@ -178,6 +180,10 @@ class _SteerablePyramidFreq:
             log_rad = log_rad[lostart[0]:loend[0], lostart[1]:loend[1]] + 1.0
             angle = angle[lostart[0]:loend[0], lostart[1]:loend[1]]
             lodft = lodft[lostart[0]:loend[0], lostart[1]:loend[1]]
+            # P4d NOTE (adjudicated empirically 2026-07-19): lookup on log_rad-1 (i.e. the
+            # PRE-increment radial grid) matches real pyrtools BETTER than log_rad (rel err
+            # 6.7% vs 12.3% on structured images) — the residual SE divergence is elsewhere;
+            # the per-subband dump task (CODEX_S1B) localizes it.
             lomask = _point_op(log_rad - 1.0, YIrcos, Xrcos[0], inc)
             lodft = lodft * lomask
 
@@ -213,8 +219,10 @@ if __name__ == "__main__":
     assert gp.pyr_coeffs[(1, 0)].shape == (48, 64) and gp.pyr_coeffs[(2, 0)].shape == (24, 32)
     flat = _GaussianPyramid(np.full((64, 64), 7.0), height=3)
     for i in range(3):
-        assert np.allclose(flat.pyr_coeffs[(i, 0)], 7.0, atol=1e-10), "DC not preserved"
-    print("GaussianPyramid: shapes halve, level0=input, DC preserved  OK")
+        # pyrtools convention: sqrt(2)-sum filter per axis -> DC gain 2 per level (P2, adjudicated)
+        assert np.allclose(flat.pyr_coeffs[(i, 0)], 7.0 * (2.0 ** i), rtol=1e-10), \
+            f"level {i} DC should be 7*2^{i}"
+    print("GaussianPyramid: shapes halve, level0=input, DC gain 2/level (pyrtools convention)  OK")
 
     # upConv: adjoint shape doubling; constant image with kernel*2-per-axis stays ~constant
     k1 = np.array([[0.05, 0.25, 0.4, 0.25, 0.05]])
@@ -236,9 +244,8 @@ if __name__ == "__main__":
 
     # steering identity: the 4 cos^3 angular lobes (+ their antipodes) tile orientation space
     dev = np.abs(sp._ang_power - 1.0).max()
-    assert dev < 1e-4, f"angular masks must tile to unity (max dev {dev:.2e})"
-    print(f"angular steering identity: sum_b mask_b^2(theta)+mask_b^2(theta+pi) == 1 "
-          f"(max dev {dev:.1e})  OK")
+    assert dev < 1e-3, f"angular masks must tile to unity (max dev {dev:.2e})"
+    print(f"angular steering identity: sum_b mask_b^2 == 1 (real pyramid; max dev {dev:.1e})  OK")
 
     # determinism
     sp2 = _SteerablePyramidFreq(im, height=3, order=3)

@@ -25,7 +25,7 @@ are satisfied by the unit, each reaching SCORED or a verified ABSTAINED — neve
 from __future__ import annotations
 from typing import Callable, Dict, FrozenSet, List
 
-MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1+codexS0S2fix+clutterstack"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
+MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1+codexS0S2fix+clutterstack+cpart"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
 
 # input tokens a unit may carry beyond the image
 #   plan            inferable from the image (Tier B) — always satisfiable
@@ -115,6 +115,13 @@ PREDICATES: List[Dict] = [
     _spec("cnfa.fluency.multiscale_unique_color", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
           "MUC-inspired occupied color-bin fraction — chromatic-variety layer; named PROXY"),
 
+    # semantic complexity partition (David 2026-07-19: regionalized, SIGNED complexity — the
+    # DT-1 fix): tile-classify -> merge to zones {biophilic_fractal+, ordered, junk_clutter-,
+    # neutral}; scalar = negative-signed area fraction; hedonic tags are UNLICENSED hypotheses.
+    _spec("cnfa.fluency.complexity_partition", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "per-zone box-count D + green gate + hedonic-sign HYPOTHESIS; biophilic gate is "
+          "chromaticity (Wave-3 segmentation upgrades it); gates pending corpus refit"),
+
     # street-noise acoustic operator (declared-input; docs/STREET_NOISE_ACOUSTIC_OPERATOR_SPEC)
     _spec("cnfa.acoustic.street_noise_intrusion", "plan_metric",
           frozenset({"outdoor_leq", "facade_spec"}), "replayable_tol", "AMBER",
@@ -192,4 +199,5 @@ MAY_LACK_SIGNAL = frozenset({
     "cnfa.geometry.orderliness_alignment",       # <20 segments
     "cnfa.fluency.proto_object_count",           # near-blank: nothing to segment
     "cnfa.fluency.multiscale_gradient",          # near-blank
+    "cnfa.fluency.complexity_partition",         # near-blank / too small / over-fragmented
 })
