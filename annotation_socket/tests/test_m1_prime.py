@@ -23,10 +23,13 @@ def test_all_audit_classes_roundtrip_and_tamper():
     tamper_key = {"luminance_field": "global_std", "radial_fft": "slope",
                   "orientation_hist": "n_edge_px", "box_count": "edge_px",
                   "color_palette": "entropy_norm", "edge_stats": "mean_mag_on_edges",
-                  "jpeg_tiles": "global_bpp", "geometry_plan": "free_cells"}
+                  "jpeg_tiles": "global_bpp", "geometry_plan": "free_cells",
+                  "ssim_map": "diff_mean"}
     for ac in M.AUDIT_CLASSES:
         if ac == "geometry_plan":
             continue     # full-chain recompute; covered by the run_stage wiring path
+        if ac == "operator_extract":
+            continue     # parameterized (needs op=); covered by test_cc2_operator_extract
         m = M.emit(ac, img)
         assert M.replay(m, img)[0] == M.MATCH, ac
         assert M.digest(M.AUDIT_CLASSES[ac](img)) == m["digest"], ac      # determinism
@@ -53,6 +56,30 @@ def test_bindings_point_at_registry():
     print(f"  {len(M.M1P_BINDINGS)} bindings all point at registered predicates  OK")
 
 
+def test_cc2_operator_extract():
+    """CC-2 (2026-07-19): the 7 owed bindings — clean MATCH, tamper RED, diff-image RED.
+    Uses the synth fixture; operators that abstain on it exercise the abstained-digest path,
+    which must ALSO tamper-catch (a claim of abstention is a claim like any other)."""
+    img = _synth()
+    new = [pid for pid, (ac, _) in M.M1P_BINDINGS.items()
+           if ac in ("ssim_map", "operator_extract")]
+    assert len(new) == 7, f"expected 7 CC-2 bindings, found {len(new)}"
+    for pid in new:
+        ac, params = M.M1P_BINDINGS[pid]
+        m = M.emit(ac, img, **params)
+        assert M.replay(m, img, **params)[0] == M.MATCH, pid
+        t = json.loads(json.dumps(m))
+        t["digest"] = "sha256:" + "0" * 64
+        assert M.replay(t, img, **params)[0] == M.STATS_MISMATCH, pid
+        if not m["stats"].get("abstained"):
+            assert M.replay(m, np.roll(img, 9, axis=1), **params)[0] == M.STATS_MISMATCH, \
+                f"{pid}: diff image not caught"
+    n_abst = sum(1 for pid in new
+                 if M.emit(*[M.M1P_BINDINGS[pid][0]], img,
+                           **M.M1P_BINDINGS[pid][1])["stats"].get("abstained"))
+    print(f"  CC-2: 7 owed bindings roundtrip+tamper ({n_abst} abstained on synth)  OK")
+
+
 def test_abstention_path():
     blank = np.full((64, 64, 3), 128, np.uint8)
     b = M.emit("orientation_hist", blank)
@@ -71,6 +98,7 @@ def test_scalar_vs_stats_verdicts():
 
 if __name__ == "__main__":
     for fn in [test_all_audit_classes_roundtrip_and_tamper, test_canon_boundary,
-               test_bindings_point_at_registry, test_abstention_path, test_scalar_vs_stats_verdicts]:
+               test_bindings_point_at_registry, test_abstention_path,
+               test_scalar_vs_stats_verdicts, test_cc2_operator_extract]:
         print(fn.__name__); fn()
     print("\nM1' TESTS PASSED")

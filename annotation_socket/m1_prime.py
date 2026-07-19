@@ -317,6 +317,70 @@ def stats_geometry_plan(img) -> Dict:
             "shape": [int(a.shape[0]), int(a.shape[1])]}
 
 
+# ------------------------------------------------------------------ CC-2 additions (2026-07-19)
+def stats_ssim_map(img, tile: int = 2) -> Dict:
+    """Sufficient stats for symmetry_score_horizontal: |g - fliplr(g)| asymmetry map digested as
+    global mean/std + a tile-grid of means. Computed DIRECTLY (no operator import) — the mirror
+    diff is the method's core, so this is an independent recomputation of its pre-scalar stage."""
+    a = np.asarray(img)
+    g = _to_gray(a[..., ::-1] if a.ndim == 3 else a)
+    d = np.abs(g - g[:, ::-1])
+    H, W = d.shape
+    ty, tx = max(1, H // (H // (tile + 1) + 1)), 0  # noqa — grid below
+    grid = [[round(float(d[i * H // 2:(i + 1) * H // 2, j * W // 2:(j + 1) * W // 2].mean()), 6)
+             for j in range(2)] for i in range(2)]
+    return {"audit_class": "ssim_map", "diff_mean": round(float(d.mean()), 6),
+            "diff_std": round(float(d.std()), 6), "quadrant_means": grid,
+            "shape": [int(H), int(W)]}
+
+
+# Operator-extract audit classes: the sufficient statistic IS the operator's own declared
+# pre-scalar signature (scalar + selected extras), recomputed from image bytes at replay.
+# BOUNDARY (stated per RULE 0 discipline): this catches TAMPERED, STALE, or WRONG-PIPELINE
+# scores — it can NOT catch an algorithmic bug, because producer and checker share the operator
+# code. Algorithm correctness is the adversarial (Codex/panel) layer's job, not M1's.
+_OPX = {
+    # op name -> (import path, callable, extras keys kept in the digest, zone condenser?)
+    "feature_congestion": ("cnfa_algs.faithful_clutter", "feature_congestion_faithful",
+                           ["fc_raw", "layer_means", "combination", "params"], None),
+    "subband_entropy":    ("cnfa_algs.faithful_clutter", "subband_entropy_faithful",
+                           ["se_raw_nats", "params"], None),
+    "complexity_partition": ("cnfa_algs.complexity_partition", "complexity_partition",
+                             ["n_zones", "area_fracs", "tile_px"], "zones"),
+    "texture_density":    ("cnfa_algs.wave1_ops", "texture_density",
+                           ["raw_mean_range", "structure_frac", "fullscale"], None),
+    "contour_angularity": ("cnfa_algs.reliable_attrs", "contour_angularity_index",
+                           ["corner_density", "curve_fraction"], None),
+    "shadow_softness":    ("cnfa_algs.wave1_ops", "shadow_softness",
+                           ["penumbra_px", "penumbra_frac_diag", "n_edges",
+                            "n_rejected_material"], None),
+}
+
+
+def stats_operator_extract(img, op: str = "") -> Dict:
+    """Generic CC-2 computer: run the named operator on the (already loader-normalized) image and
+    digest scalar + declared extras keys. Abstention digests as {'abstained': True} — a record
+    claiming SCORED whose replay abstains is RED, and vice versa."""
+    import importlib
+    mod_path, fn_name, keys, condense = _OPX[op]
+    fn = getattr(importlib.import_module(mod_path), fn_name)
+    r = fn(np.asarray(img))
+    if r.scalar is None:
+        return {"audit_class": f"opx:{op}", "abstained": True,
+                "method_head": (r.method or "")[:80]}
+    ex = getattr(r, "extras", None) or {}
+    st: Dict = {"audit_class": f"opx:{op}", "scalar": round(float(r.scalar), 6)}
+    for k in keys:
+        if k in ex:
+            st[k] = ex[k]
+    if condense == "zones":
+        st["zones_condensed"] = [[z["class"],
+                                  None if z.get("D") is None else round(float(z["D"]), 4),
+                                  round(float(z["area_frac"]), 4)]
+                                 for z in ex.get("zones", [])]
+    return st
+
+
 AUDIT_CLASSES = {
     "luminance_field": stats_luminance_field,
     "radial_fft": stats_radial_fft,
@@ -326,6 +390,8 @@ AUDIT_CLASSES = {
     "edge_stats": stats_edge_stats,
     "jpeg_tiles": stats_jpeg_tiles,
     "geometry_plan": stats_geometry_plan,
+    "ssim_map": stats_ssim_map,
+    "operator_extract": stats_operator_extract,
 }
 
 # predicate -> (audit_class, image_prep) producer/checker binding. image_prep names the array the
@@ -342,6 +408,15 @@ M1P_BINDINGS = {
     # geometry chain digested ONCE, bound to C1 (the chain's first consumer); every other plan
     # metric shares the same upstream, so one binding audits the substrate without 8x recompute
     "C1.visual_integration":                 ("geometry_plan", {}),
+    # CC-2 (2026-07-19): owed classes. operator_extract digests the operator's own pre-scalar
+    # signature (tamper/staleness audit; algorithm correctness stays with the adversarial layer)
+    "cnfa.fluency.symmetry_score_horizontal": ("ssim_map", {}),
+    "cnfa.fluency.feature_congestion":       ("operator_extract", {"op": "feature_congestion"}),
+    "cnfa.fluency.subband_entropy":          ("operator_extract", {"op": "subband_entropy"}),
+    "cnfa.fluency.complexity_partition":     ("operator_extract", {"op": "complexity_partition"}),
+    "cnfa.material.texture_density":         ("operator_extract", {"op": "texture_density"}),
+    "cnfa.geometry.contour_angularity":      ("operator_extract", {"op": "contour_angularity"}),
+    "cnfa.light.shadow_softness":            ("operator_extract", {"op": "shadow_softness"}),
 }
 
 
