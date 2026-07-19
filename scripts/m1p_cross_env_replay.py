@@ -95,14 +95,69 @@ def compare(a_path: str, b_path: str) -> int:
     return bad
 
 
+# Per-stat cross-environment tolerances (set 2026-07-19 from the MEASURED Mac-arm64 vs sandbox-x86
+# deltas on byte-identical decodes: entropy ~1e-4, D ~2e-4, R2 ~3e-5, edge counts <=0.15% rel).
+# STRICT digest equality remains the same-machine rule (verify.py); these apply ONLY to
+# cross-machine L5 comparison. A stat outside its tolerance = genuine environment sensitivity.
+CROSS_ENV_TOL = {
+    "entropy_norm": 0.005, "D": 0.005, "R2": 0.002, "slope": 0.005, "intercept": 0.01,
+    "r2": 0.002, "mean_mag_on_edges": 0.002, "global_bpp": 0.001, "global_mean": 0.01,
+    "global_std": 0.01, "bright_fraction": 0.001, "integration_norm": 0.02,
+    "connectivity_norm": 0.02, "cell_m": 0.005, "mismatch_rel_count": 0.005,  # 0.5% for counts
+}
+COUNT_KEYS = {"n_edge_px", "edge_px", "free_cells", "n_tiles"}
+
+
+def compare_tolerant(a_path: str, b_path: str) -> int:
+    """Cross-machine verdict: strict-digest pass OR every differing numeric stat within its
+    declared tolerance -> WITHIN_TOL; anything beyond -> EXCEEDS (a real sensitivity)."""
+    A, B = json.loads(Path(a_path).read_text()), json.loads(Path(b_path).read_text())
+    exceeds = 0
+    for rel in sorted(set(A["images"]) & set(B["images"])):
+        ia, ib = A["images"][rel], B["images"][rel]
+        if ia.get("image_sha256") != ib.get("image_sha256"):
+            print(f"BYTES DIFFER: {rel}"); exceeds += 1; continue
+        decode_ok = ia.get("decoded_sha256") == ib.get("decoded_sha256")
+        for pid in sorted(set(ia.get("digests", {})) & set(ib.get("digests", {}))):
+            if ia["digests"][pid] == ib["digests"][pid]:
+                continue
+            sa, sb = ia.get("stats", {}).get(pid), ib.get("stats", {}).get(pid)
+            if not (sa and sb):
+                print(f"EXCEEDS (no stats to compare): {rel} :: {pid}"); exceeds += 1; continue
+            over = []
+            for k in sa:
+                va, vb = sa.get(k), sb.get(k)
+                if not (isinstance(va, (int, float)) and isinstance(vb, (int, float))):
+                    continue
+                if k in COUNT_KEYS:
+                    rel_d = abs(va - vb) / max(abs(va), 1)
+                    if rel_d > CROSS_ENV_TOL["mismatch_rel_count"]:
+                        over.append(f"{k}: {va} vs {vb} (rel {rel_d:.4f})")
+                elif k in CROSS_ENV_TOL:
+                    if abs(va - vb) > CROSS_ENV_TOL[k]:
+                        over.append(f"{k}: {va} vs {vb} (|d|={abs(va-vb):.5g} > {CROSS_ENV_TOL[k]})")
+            tag = " [decode-differs]" if not decode_ok else ""
+            if over:
+                exceeds += 1
+                print(f"EXCEEDS TOL{tag}: {rel} :: {pid}\n    " + "; ".join(over[:4]))
+            else:
+                print(f"within tol{tag}: {rel} :: {pid}")
+    print("L5 TOLERANT RESULT:", f"{exceeds} genuine sensitivities" if exceeds
+          else "PASS — all cross-env deltas within declared tolerances")
+    return exceeds
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--env", default=None)
     ap.add_argument("--out", default=None)
     ap.add_argument("--compare", nargs=2, metavar=("A", "B"))
+    ap.add_argument("--compare-tol", nargs=2, metavar=("A", "B"))
     args = ap.parse_args()
     if args.compare:
         sys.exit(1 if compare(*args.compare) else 0)
+    if args.compare_tol:
+        sys.exit(1 if compare_tolerant(*args.compare_tol) else 0)
     if not (args.env and args.out):
         ap.error("need --env and --out (or --compare A B)")
     emit_all(args.env, args.out)
