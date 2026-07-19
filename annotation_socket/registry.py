@@ -25,7 +25,7 @@ are satisfied by the unit, each reaching SCORED or a verified ABSTAINED — neve
 from __future__ import annotations
 from typing import Callable, Dict, FrozenSet, List
 
-MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1+codexS0S2fix+clutterstack+cpart+faithfulV6V7"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
+MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1+codexS0S2fix+clutterstack+cpart+faithfulV6V7+tax2"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
 
 # input tokens a unit may carry beyond the image
 #   plan            inferable from the image (Tier B) — always satisfiable
@@ -128,8 +128,9 @@ PREDICATES: List[Dict] = [
     # DT-1 fix): tile-classify -> merge to zones {biophilic_fractal+, ordered, junk_clutter-,
     # neutral}; scalar = negative-signed area fraction; hedonic tags are UNLICENSED hypotheses.
     _spec("cnfa.fluency.complexity_partition", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
-          "per-zone box-count D + green gate + hedonic-sign HYPOTHESIS; biophilic gate is "
-          "chromaticity (Wave-3 segmentation upgrades it); gates pending corpus refit"),
+          "11-class Kellert/Terrapin taxonomy (vegetation/material/water/fire/sky/collection/"
+          "ornament/art/ordered/junk/neutral) + hedonic HYPOTHESES; chromaticity gates -> Wave-3 "
+          "segmentation upgrade; material-gate absorbency is the first corpus calibration target"),
 
     # street-noise acoustic operator (declared-input; docs/STREET_NOISE_ACOUSTIC_OPERATOR_SPEC)
     _spec("cnfa.acoustic.street_noise_intrusion", "plan_metric",
