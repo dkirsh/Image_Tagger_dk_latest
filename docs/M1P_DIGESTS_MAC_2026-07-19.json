@@ -1,0 +1,97 @@
+{
+ "env": "mac",
+ "images": {
+  "Example Images/50-day-street-offices-norwalk-1200x1165-compact.jpg": {
+   "digests": {
+    "C1.visual_integration": "sha256:f13d873384348f42712d66326b23f55c201c9b18a98044b9a20b6117930af8d9",
+    "cnfa.fluency.color_palette_entropy": "sha256:c5388a8f2b6ed3745cb65ff93a7ae38c59f96761a33610300f3bb67b5a994362",
+    "cnfa.fluency.edge_clarity_mean": "sha256:5c0ce0e3b84b4c7754a7ff108fc5e7ee5cc2e2d4558241e4b1e19891f686889a",
+    "cnfa.fluency.edge_orientation_entropy": "sha256:b9313dc3a898df8d0eda592bb7a8b447b70bc2274c70de5d650f9eb13009253d",
+    "cnfa.fluency.processing_load_proxy": "sha256:f634ee2ae1825f4f45a9401227bcc252e423bef5ee49de1cd9281a67d4269d54",
+    "cnfa.fluency.spectral_slope_deviation": "sha256:8e7f06b3e429b5738c56634ae1d705d4a8de25181f1aba05f50e609f5fa746c3",
+    "cnfa.fractal_dimension": "sha256:e749b242eb2c56dadf7a16ba4f75f944b607c712c71218d68d5e3e9b83e8501e",
+    "cnfa.light.brightness_variance": "sha256:8f4d1b601fc960dd2e42932255adecd07e3e6ddb3e1e0298410f53f42aa97bf5"
+   },
+   "image_sha256": "9788c3055316e073f6d55090f820ac2887ec6c39032c4b2a3e206e5db88eb839"
+  },
+  "Example Images/Industrial-open-concept-office-project-by-Decorilla-1024x819.jpeg": {
+   "digests": {
+    "C1.visual_integration": "sha256:23e3a50b076d8e6f531e865d3092cb9c5b58ac73645600081bce1a15f75229c6",
+    "cnfa.fluency.color_palette_entropy": "sha256:d74a08b42672101d53f27b9c7049da5daead45524bb867a8a33a81d74553b782",
+    "cnfa.fluency.edge_clarity_mean": "sha256:39b354fff47373cd976940f93c1678b4ea1c5f006d21b7306afe273116888200",
+    "cnfa.fluency.edge_orientation_entropy": "sha256:7ca5f77eba7472c67e8b88a85d51a05118939cebe694ab18102998804e2ea465",
+    "cnfa.fluency.processing_load_proxy": "sha256:a4905cb46237f03d748b5967c54606bbc3ce84338708b8a6a48c55a30d05f897",
+    "cnfa.fluency.spectral_slope_deviation": "sha256:038edcd9a21e27f45887bee10d6e7106f0c7563b45667b78e43d1314635127ac",
+    "cnfa.fractal_dimension": "sha256:0a106342cf19d8dca43e03f8451cc41b0328dbf4e1450238ed19d5255c808e5d",
+    "cnfa.light.brightness_variance": "sha256:8a97944c10ec684263ae5ec6ecbe8ee2abcd5f8e73a892a3a43ab20e4c0243b1"
+   },
+   "image_sha256": "f5b84804e3a3cc030d2667841f506aef8e8801e42a1cb2697fa1ba1800c668d9"
+  },
+  "Example Images/Office-Grade-1-1536x838.jpg": {
+   "digests": {
+    "C1.visual_integration": "sha256:aa288167f74bf68b33a5d068aa42c46193139ea7851a93c445452557772cb40b",
+    "cnfa.fluency.color_palette_entropy": "sha256:cc8c95c1961ac3727f39fe8f2c5e30fd34c40e90784edfda41bfe5778b65f8fc",
+    "cnfa.fluency.edge_clarity_mean": "sha256:beccf22e6f21228fc6818926a00bda2bda3ec20f93781fe649eefa56850f3fee",
+    "cnfa.fluency.edge_orientation_entropy": "sha256:d69473cbf605c814789ae0b35fe42be553b98fc99e73207b1945df8cb64b263a",
+    "cnfa.fluency.processing_load_proxy": "sha256:1b8ca4527ed57bf3d40804680531d5c828134ea6285d3dc42e8a6f9fb0f168e2",
+    "cnfa.fluency.spectral_slope_deviation": "sha256:9faed117eb1641f1e7e8ca29c7e35ad60dd9279f7efec234c7a44ac7435c4fd5",
+    "cnfa.fractal_dimension": "sha256:90e89fdf2fe9e0c791d484ba1cff60a62397e0fd4f0db706f82f6dad428cb4bb",
+    "cnfa.light.brightness_variance": "sha256:f9512c82d0287647354579e11f4f757b36e17f4e6d9bc1e578d360da78d1939a"
+   },
+   "image_sha256": "3f85aa9b5736d3f966de735e1a124de80ddfb3260d79ea7286f96e6d391baf52"
+  },
+  "Example Images/UPCycle-Gensler-5-889x592-1.jpg": {
+   "digests": {
+    "C1.visual_integration": "sha256:345894febc672ef3c0c4607cedaa15d410ebd385b3e7cd413e564e090f4a9099",
+    "cnfa.fluency.color_palette_entropy": "sha256:17d636bdc093bb33f7a0f1a5818085baa1430359238466d20f6683f79255613f",
+    "cnfa.fluency.edge_clarity_mean": "sha256:973fd781e027a2a75f4487b5370394da46fda6a5c3a2c0448f5989ca9e14fe03",
+    "cnfa.fluency.edge_orientation_entropy": "sha256:51d759de157cdeab3c96767114da94ed8ecbe57e4ffa462e241c89a1cdc98ff6",
+    "cnfa.fluency.processing_load_proxy": "sha256:258e9f859d816c34a267e90df65fd540b642ccbde81709b34c99a68db495b4fb",
+    "cnfa.fluency.spectral_slope_deviation": "sha256:cf5ebc19f82285118c38a4f8439ef1871589519bbac90a2b32d3b7d3f4c3d520",
+    "cnfa.fractal_dimension": "sha256:920dc8a875bbb3ca1c072ba248c84f3c4561d364b8a03a3d3bf727fe802d3272",
+    "cnfa.light.brightness_variance": "sha256:5c4751f1183d76ea6ca101d568093ca5e15927bfbcb101c83a3249e67fab2974"
+   },
+   "image_sha256": "54202b802858eec3c5d4287734402aaa308b38aef68c1547a7981bfb6b28841b"
+  },
+  "Example Images/bede-offices-sofia-6-1200x800-compact.jpg": {
+   "digests": {
+    "C1.visual_integration": "sha256:bb40ca3e71afa4ee7fb7ced2eafea006690995ade4ceea8fd4b4fe35c6ca3602",
+    "cnfa.fluency.color_palette_entropy": "sha256:04dfe88b14d4bd46e17f3874ff709d95bd86f17a09ea0a08aa4950dd0553306d",
+    "cnfa.fluency.edge_clarity_mean": "sha256:880e13ee17d59f40d820a8c55632e549e949274a9dce4c7cdd84f487d94e643a",
+    "cnfa.fluency.edge_orientation_entropy": "sha256:59ac075780301c07f7250f519ff5e97899cec9c91bc97afa31f0984d71a23fee",
+    "cnfa.fluency.processing_load_proxy": "sha256:2ab9b1c9b19025e1ec5f73eb8ebbad65f80418675997c991fcdbae0e3f743e49",
+    "cnfa.fluency.spectral_slope_deviation": "sha256:52bef88cbc7c0a833e1618fe5d34954c5f109a4627acc335c36b0319f4976174",
+    "cnfa.fractal_dimension": "sha256:952e168cd378d96decb1c1e74ca850e9777dac48659af17b5b31193f9e059070",
+    "cnfa.light.brightness_variance": "sha256:86dbd05b7a92d9e3cfb3434e39b3c559de42d315f5a6749b3338bad0847a8e46"
+   },
+   "image_sha256": "bc19e459e75442152bda8d7b0e88cea1437245493b1097d9caea383875b7e8ff"
+  },
+  "Example Images/heb-digital-and-favor-delivery-eastside-tech-hub-austin-6.jpg": {
+   "digests": {
+    "C1.visual_integration": "sha256:096b6cc1a2beb693d75edac3a10e53dc4bd0b238d9a54d5f31b027d03f948241",
+    "cnfa.fluency.color_palette_entropy": "sha256:d1c633cac8f741d56f01dab9fe5602268e89517e6c5aa28028d896bdcf40a3b4",
+    "cnfa.fluency.edge_clarity_mean": "sha256:f1b3960b7e46a14766a445b100ebd473c540c6f240c0d0702333be94269fefbd",
+    "cnfa.fluency.edge_orientation_entropy": "sha256:110d2cc81fb3f90826e882776668afc7312af5a0fce8369332a816fc99642a61",
+    "cnfa.fluency.processing_load_proxy": "sha256:f37df22d8b4336fc0a8fc5218dae1b9933f32020366c72d72ebf43efdbc0521d",
+    "cnfa.fluency.spectral_slope_deviation": "sha256:652f54306aadfef6d69e6510b0bbc5ef205fb46eb0e636f27819d89ba8fcc8f3",
+    "cnfa.fractal_dimension": "sha256:ba982bb1ec2ff9c1e0f85edefbc38b6ed00af334b4c8b1a5c57a04760ecfb09d",
+    "cnfa.light.brightness_variance": "sha256:c3569e61d8191f62e031033ca0dda03f93f5fc5e59be004d0acd72d8aa0dcabc"
+   },
+   "image_sha256": "96970996d66fe8406cefe28e4e91a36909a3062220a59d331aec0b6a93fc91d8"
+  },
+  "Example Images/korridor.jpg": {
+   "digests": {
+    "C1.visual_integration": "sha256:eb848c85058983667aa8c23d5ddd2e02cee227fb5acabc6c5ef67a624b43ac5d",
+    "cnfa.fluency.color_palette_entropy": "sha256:d976dee172e0783e425c8b1781ef586f916da33cc3fbff55a306b685c6245c93",
+    "cnfa.fluency.edge_clarity_mean": "sha256:33d44cad9439f5ee760ec4ded4dfce99ddd1da32349d5e6727a993bc7d3b7ada",
+    "cnfa.fluency.edge_orientation_entropy": "sha256:1566e6767853c92781299e5f4dba65eeafccb55c47d49df8802b63a9ca4b7456",
+    "cnfa.fluency.processing_load_proxy": "sha256:32e76713f3af9b523bcee1886e951be8056af921c1199b0848d06f7db0f3cf63",
+    "cnfa.fluency.spectral_slope_deviation": "sha256:ae8026de4affd5b66ed70be222df51a2cb6047a02982596f9d84085da91f1039",
+    "cnfa.fractal_dimension": "sha256:0fb86851dea4235b78269b1f4bd477a90a9aad1afd5d3b14da82639945fba84d",
+    "cnfa.light.brightness_variance": "sha256:598ea26421244ef69fd1ed4d598631cb177662c5197e8ef53f6c25250fb2bb03"
+   },
+   "image_sha256": "7f46493a6efdfbf6dd108d6b009b3fb821017cf3638d5f9e763d5aabddcd0da1"
+  }
+ },
+ "stats_version": "cnfa-m1p-2026-07-19"
+}
