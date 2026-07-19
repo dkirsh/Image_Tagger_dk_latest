@@ -177,14 +177,14 @@ class _SteerablePyramidFreq:
             ctr = np.ceil((dims + 0.5) / 2.0).astype(int)
             lostart = ctr - loctr
             loend = lostart + lodims
-            log_rad = log_rad[lostart[0]:loend[0], lostart[1]:loend[1]] + 1.0
+            # S1B-ADJUDICATED (Codex, real-pyrtools source, 2026-07-19): log_rad is cropped
+            # but NEVER incremented — scale progression is represented SOLELY by the Xrcos
+            # shift at each level's start. The former "+1.0 then -1.0" bookkeeping double-
+            # shifted deeper levels by an extra octave each.
+            log_rad = log_rad[lostart[0]:loend[0], lostart[1]:loend[1]]
             angle = angle[lostart[0]:loend[0], lostart[1]:loend[1]]
             lodft = lodft[lostart[0]:loend[0], lostart[1]:loend[1]]
-            # P4d NOTE (adjudicated empirically 2026-07-19): lookup on log_rad-1 (i.e. the
-            # PRE-increment radial grid) matches real pyrtools BETTER than log_rad (rel err
-            # 6.7% vs 12.3% on structured images) — the residual SE divergence is elsewhere;
-            # the per-subband dump task (CODEX_S1B) localizes it.
-            lomask = _point_op(log_rad - 1.0, YIrcos, Xrcos[0], inc)
+            lomask = _point_op(log_rad, YIrcos, Xrcos[0], inc)
             lodft = lodft * lomask
 
         self.pyr_coeffs["residual_lowpass"] = np.real(np.fft.ifft2(np.fft.ifftshift(lodft)))

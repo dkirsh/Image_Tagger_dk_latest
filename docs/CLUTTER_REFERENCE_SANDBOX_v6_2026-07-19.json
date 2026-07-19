@@ -1,0 +1,86 @@
+{
+ "backend": "shim",
+ "env": "sandbox",
+ "images": {
+  "Example Images/50-day-street-offices-norwalk-1200x1165-compact.jpg": {
+   "decoded_sha256": "74a612e59f7ad6fd3eac0de4b466bcbe3b7ca8ca3a25446eb13b2a08a7568896",
+   "fc_raw": 5.364227,
+   "image_sha256": "9788c3055316e073f6d55090f820ac2887ec6c39032c4b2a3e206e5db88eb839",
+   "layers": {
+    "color": 0.287111,
+    "contrast": 0.093913,
+    "orientation": 0.069032
+   },
+   "se_raw": 3.621661
+  },
+  "Example Images/Industrial-open-concept-office-project-by-Decorilla-1024x819.jpeg": {
+   "decoded_sha256": "da7d318326d5643a79e9acc59e60e4054a067a7fca66f02665bda1169822aa40",
+   "fc_raw": 4.466692,
+   "image_sha256": "f5b84804e3a3cc030d2667841f506aef8e8801e42a1cb2697fa1ba1800c668d9",
+   "layers": {
+    "color": 0.198263,
+    "contrast": 0.077065,
+    "orientation": 0.063202
+   },
+   "se_raw": 3.285035
+  },
+  "Example Images/Ludwig_Mies_van_der_Rohe__Farnsworth_House__1945-1951_2.jpg": {
+   "decoded_sha256": "049930026ad052de4625a491c449e1e2ad81f13cc8a3b4b4515a457611778736",
+   "fc_raw": 4.692364,
+   "image_sha256": "e010632cfa180c1e8d89d7f2fa1a54d04c4c592aaeb23b0e5b1cdb036ac20215",
+   "layers": {
+    "color": 0.261619,
+    "contrast": 0.079663,
+    "orientation": 0.060051
+   },
+   "se_raw": 3.45455
+  },
+  "Example Images/Office-Grade-1-1536x838.jpg": {
+   "decoded_sha256": "844c060a2658b6ee7f8d4ad7b8810a3ed8063e205676c01f579b2dabea6c3a92",
+   "fc_raw": 4.738474,
+   "image_sha256": "3f85aa9b5736d3f966de735e1a124de80ddfb3260d79ea7286f96e6d391baf52",
+   "layers": {
+    "color": 0.233452,
+    "contrast": 0.083991,
+    "orientation": 0.063156
+   },
+   "se_raw": 3.535777
+  },
+  "fixture:blank": {
+   "fc_raw": 1.248283,
+   "layers": {
+    "color": 0.015183,
+    "contrast": 0.0,
+    "orientation": 0.031623
+   },
+   "se_raw": 0.528701
+  },
+  "fixture:clutter": {
+   "fc_raw": 5.409659,
+   "layers": {
+    "color": 0.29807,
+    "contrast": 0.081195,
+    "orientation": 0.074026
+   },
+   "se_raw": 2.295044
+  },
+  "fixture:gradient": {
+   "fc_raw": 1.566919,
+   "layers": {
+    "color": 0.075382,
+    "contrast": 0.001997,
+    "orientation": 0.031625
+   },
+   "se_raw": 1.787682
+  },
+  "fixture:texture": {
+   "fc_raw": 4.065785,
+   "layers": {
+    "color": 0.170748,
+    "contrast": 0.131872,
+    "orientation": 0.033624
+   },
+   "se_raw": 3.187207
+  }
+ }
+}

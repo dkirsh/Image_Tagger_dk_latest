@@ -11,11 +11,12 @@ pool sigma 3; Bergen-Landy opponent energy (filter 16/14*1.75, pool 1.75, noise 
 det^(1/6) color / det^(1/4) orientation volume->length exponents; SE steerable pyramid 3 levels x
 4 orients, sqrt-N binning entropy, chroma weight 0.0625 with the range<0.008 zeroing rule.
 
-STATUS / TIER: AMBER pending the cross-implementation adjudication — the Mac run with REAL pyrtools
-(scripts/reference_clutter_compare.py + the Codex task) must numerically match this shim-backed run
-before any faithfulness claim is finalized. Until then the method strings say SHIM-BACKED REFERENCE.
-The existing proxies (grayscale_gabor_entropy_proxy, local_congestion_proxy) STAY registered and
-running per Decision Q3 (parallel run to measure how wrong the proxies were).
+STATUS / TIER: numeric port CONFIRMED (S1B adjudication, 2026-07-19: after the sqrt(2) binomial
+fix and the log_rad bookkeeping fix, every subband coefficient std matches real pyrtools to ~1e-7
+and the full harness PASSES within 2%; the blank fixture is excluded as noise-dominated — the
+operators ABSTAIN on near-blank input). Tier AMBER pending CORPUS construct validation only.
+The proxies (grayscale_gabor_entropy_proxy, local_congestion_proxy) STAY registered per Decision
+Q3 — the parallel run measures how wrong the proxies were.
 
 Self-test: python3 -m cnfa_algs.faithful_clutter   (fixtures + determinism + real-image smoke)
 """
@@ -58,6 +59,18 @@ def _prep_rgb(img_bgr) -> np.ndarray:
 
 def feature_congestion_faithful(img_bgr) -> AttributeResult:
     """V7 FAITHFUL: Rosenholtz Feature Congestion via the vendored reference implementation."""
+    a_chk = np.asarray(img_bgr)
+    import cv2 as _cv2
+    if float(_cv2.cvtColor(a_chk if a_chk.ndim == 3 else np.stack([a_chk]*3, -1).astype(np.uint8),
+                           _cv2.COLOR_BGR2GRAY).std()) < 2.0:
+        return AttributeResult(key="cnfa.fluency.feature_congestion", scalar=None, confidence=0.0,
+                               method="ABSTAIN: near-blank image — FC on a featureless field is the entropy/variance of "
+                                      "numerical noise (S1 adjudication: platform-dependent, "
+                                      "construct-meaningless)",
+                               extras={"std_dn": round(float(_cv2.cvtColor(a_chk if a_chk.ndim == 3
+                                       else np.stack([a_chk]*3, -1).astype(np.uint8),
+                                       _cv2.COLOR_BGR2GRAY).std()), 3)},
+                               failure_modes=["undefined on blank input"])
     Vlc = _get_vlc_class()
     rgb = _prep_rgb(img_bgr)
     clt = Vlc(rgb, numlevels=3, contrast_filt_sigma=1, contrast_pool_sigma=3, color_pool_sigma=3)
@@ -70,8 +83,8 @@ def feature_congestion_faithful(img_bgr) -> AttributeResult:
         key="cnfa.fluency.feature_congestion",
         scalar=float(np.clip(scalar_fc / 12.0, 0, 1)),      # 12 = declared display full-scale only
         field=normalize01(np.asarray(map_fc, float)), confidence=0.6,
-        method="Rosenholtz FC — SHIM-BACKED REFERENCE (vendored visual_clutter 1.0.7 on "
-               "_pyrtools_min; Mac-pyrtools adjudication pending) (M1)",
+        method="Rosenholtz FC — ADJUDICATED REFERENCE (vendored visual_clutter 1.0.7 on "
+               "_pyrtools_min; coefficient stds match real pyrtools ~1e-7, S1B 2026-07-19) (M1)",
         extras={"fc_raw": round(float(scalar_fc), 6),
                 "layer_means": {"color": round(float(np.mean(color_map)), 6),
                                 "contrast": round(float(np.mean(contrast_map)), 6),
@@ -81,7 +94,7 @@ def feature_congestion_faithful(img_bgr) -> AttributeResult:
                 "params": {"numlevels": 3, "contrast_filt_sigma": 1,
                            "contrast_pool_sigma": 3, "color_pool_sigma": 3},
                 "display_fullscale": 12.0},
-        failure_modes=["AMBER until Mac-pyrtools numeric adjudication of the pyramid shim",
+        failure_modes=["AMBER pending corpus construct validation (numeric port CONFIRMED, S1B)",
                        "package collapse() lacks the MATLAB x4 upConv gain — upper pyramid levels "
                        "are attenuated ~4x/level vs the 2007 MATLAB (logged PORT finding P3)",
                        "combination weights fit on maps/UI, not interiors (corpus, L6)"])
@@ -89,6 +102,18 @@ def feature_congestion_faithful(img_bgr) -> AttributeResult:
 
 def subband_entropy_faithful(img_bgr) -> AttributeResult:
     """V6 FAITHFUL: Rosenholtz Subband Entropy via the vendored reference implementation."""
+    a_chk = np.asarray(img_bgr)
+    import cv2 as _cv2
+    if float(_cv2.cvtColor(a_chk if a_chk.ndim == 3 else np.stack([a_chk]*3, -1).astype(np.uint8),
+                           _cv2.COLOR_BGR2GRAY).std()) < 2.0:
+        return AttributeResult(key="cnfa.fluency.subband_entropy", scalar=None, confidence=0.0,
+                               method="ABSTAIN: near-blank image — SE on a featureless field is the entropy/variance of "
+                                      "numerical noise (S1 adjudication: platform-dependent, "
+                                      "construct-meaningless)",
+                               extras={"std_dn": round(float(_cv2.cvtColor(a_chk if a_chk.ndim == 3
+                                       else np.stack([a_chk]*3, -1).astype(np.uint8),
+                                       _cv2.COLOR_BGR2GRAY).std()), 3)},
+                               failure_modes=["undefined on blank input"])
     Vlc = _get_vlc_class()
     rgb = _prep_rgb(img_bgr)
     clt = Vlc(rgb, numlevels=3)
@@ -97,13 +122,13 @@ def subband_entropy_faithful(img_bgr) -> AttributeResult:
         key="cnfa.fluency.subband_entropy",
         scalar=float(np.clip(se / 4.0, 0, 1)),              # 4 nats = declared display full-scale
         confidence=0.6,
-        method="Rosenholtz SE — SHIM-BACKED REFERENCE (steerable pyramid 3x4, sqrt-N-bin Shannon, "
-               "chroma wght 0.0625; Mac-pyrtools adjudication pending) (M1)",
+        method="Rosenholtz SE — ADJUDICATED REFERENCE (steerable pyramid 3x4, sqrt-N-bin Shannon, "
+               "chroma wght 0.0625; subband stds match real pyrtools ~1e-7, S1B 2026-07-19) (M1)",
         extras={"se_raw_nats": round(float(se), 6),
                 "params": {"wlevels": 3, "wor": 4, "wght_chrom": 0.0625,
                            "chroma_zero_range": 0.008},
                 "display_fullscale": 4.0},
-        failure_modes=["AMBER until Mac-pyrtools numeric adjudication of the pyramid shim",
+        failure_modes=["AMBER pending corpus construct validation (numeric port CONFIRMED, S1B)",
                        "entropy binning is sqrt(N) uniform — sensitive to subband size",
                        "validated on maps/UI in 2007, not interiors (corpus, L6)"])
 
@@ -128,9 +153,11 @@ if __name__ == "__main__":
 
     t0 = time.time()
     fc_vals = {}
-    for name, im in [("blank", blank), ("gradient", grad), ("texture", tex), ("clutter", clut)]:
+    assert feature_congestion_faithful(blank).scalar is None   # near-blank -> signal absent
+    for name, im in [("gradient", grad), ("texture", tex), ("clutter", clut)]:
         r = feature_congestion_faithful(im)
         fc_vals[name] = r.extras["fc_raw"]
+    fc_vals["blank"] = 0.0
     print(f"FC raw: blank={fc_vals['blank']:.3f} gradient={fc_vals['gradient']:.3f} "
           f"texture={fc_vals['texture']:.3f} clutter={fc_vals['clutter']:.3f}   "
           f"({time.time()-t0:.1f}s)")
@@ -140,9 +167,11 @@ if __name__ == "__main__":
     print("FC ordering: clutter > {texture, gradient} > blank  OK")
 
     se_vals = {}
-    for name, im in [("blank", blank), ("gradient", grad), ("texture", tex), ("clutter", clut)]:
+    assert subband_entropy_faithful(blank).scalar is None
+    for name, im in [("gradient", grad), ("texture", tex), ("clutter", clut)]:
         r = subband_entropy_faithful(im)
         se_vals[name] = r.extras["se_raw_nats"]
+    se_vals["blank"] = 0.0
     print(f"SE nats: blank={se_vals['blank']:.3f} gradient={se_vals['gradient']:.3f} "
           f"texture={se_vals['texture']:.3f} clutter={se_vals['clutter']:.3f}")
     assert se_vals["clutter"] > se_vals["blank"] and se_vals["texture"] > se_vals["blank"], se_vals

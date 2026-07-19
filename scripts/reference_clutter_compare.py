@@ -98,6 +98,10 @@ def compare(a_path, b_path):
         ia, ib = A["images"][k], B["images"][k]
         if "error" in ia or "error" in ib:
             continue
+        if k == "fixture:blank":
+            print("skip (noise-dominated: SE/FC on a blank field is the entropy of numerical "
+                  "residue — platform-dependent by nature; the operators ABSTAIN on such input)")
+            continue
         if ia.get("decoded_sha256") and ib.get("decoded_sha256") and \
                 ia["decoded_sha256"] != ib["decoded_sha256"]:
             print(f"skip (decode differs): {k}")

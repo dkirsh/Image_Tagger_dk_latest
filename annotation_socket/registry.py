@@ -25,7 +25,7 @@ are satisfied by the unit, each reaching SCORED or a verified ABSTAINED — neve
 from __future__ import annotations
 from typing import Callable, Dict, FrozenSet, List
 
-MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1+codexS0S2fix+clutterstack+cpart"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
+MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1+codexS0S2fix+clutterstack+cpart+faithfulV6V7"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
 
 # input tokens a unit may carry beyond the image
 #   plan            inferable from the image (Tier B) — always satisfiable
@@ -115,6 +115,15 @@ PREDICATES: List[Dict] = [
     _spec("cnfa.fluency.multiscale_unique_color", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
           "MUC-inspired occupied color-bin fraction — chromatic-variety layer; named PROXY"),
 
+    # FAITHFUL V6/V7 (Sprint S1 COMPLETE, 2026-07-19): the vendored Rosenholtz reference on the
+    # adjudicated pyramid shim (subband stds match real pyrtools ~1e-7). AMBER pending CORPUS
+    # construct validation only. Proxies stay registered (Q3 parallel run).
+    _spec("cnfa.fluency.feature_congestion", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "Rosenholtz FC, ADJUDICATED reference port; weights fit on maps/UI — corpus must "
+          "validate for interiors (see DT-1: foliage reads as clutter)"),
+    _spec("cnfa.fluency.subband_entropy", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "Rosenholtz SE, ADJUDICATED reference port; same corpus caveat + DT-1"),
+
     # semantic complexity partition (David 2026-07-19: regionalized, SIGNED complexity — the
     # DT-1 fix): tile-classify -> merge to zones {biophilic_fractal+, ordered, junk_clutter-,
     # neutral}; scalar = negative-signed area fraction; hedonic tags are UNLICENSED hypotheses.
@@ -200,4 +209,6 @@ MAY_LACK_SIGNAL = frozenset({
     "cnfa.fluency.proto_object_count",           # near-blank: nothing to segment
     "cnfa.fluency.multiscale_gradient",          # near-blank
     "cnfa.fluency.complexity_partition",         # near-blank / too small / over-fragmented
+    "cnfa.fluency.feature_congestion",           # near-blank: FC of numerical noise
+    "cnfa.fluency.subband_entropy",              # near-blank: SE of numerical noise
 })
