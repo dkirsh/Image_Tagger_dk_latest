@@ -49,10 +49,17 @@ def _field_argmax_bbox(field, img_shape, tile: int = 3):
 
 
 def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset(),
-                   input_values: Dict | None = None) -> Dict:
+                   input_values: Dict | None = None,
+                   fields_sink: Dict | None = None) -> Dict:
     """Compute the annotation record for one image: geometry once, then every APPLICABLE
     predicate through the chokepoint; every inapplicable one ABSTAINED with the named
-    missing inputs. Returns the quarantine-ready record."""
+    missing inputs. Returns the quarantine-ready record.
+
+    fields_sink (VIEW-0, 2026-07-19): optional dict this SAME computation pass deposits its
+    field arrays / zone tables / operator extras into, so the viewer sidecar is written from
+    the run of record and NEVER recomputed. Keys: predicate id -> float32 array; "_tables" ->
+    {pid: json-able table}; "_extras" -> {pid: extras dict}; "_plan" -> grid + cell_m.
+    Passing None (the default) changes nothing."""
     import cv2, numpy as np
     import cnfa_algs as ca
     from cnfa_algs import attributes as A
@@ -94,6 +101,26 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset(),
 
     scores: List[Dict] = []
     have = frozenset(unit_inputs)
+
+    # VIEW-0 sink bookkeeping (no-op when fields_sink is None)
+    if fields_sink is not None:
+        fields_sink.setdefault("_tables", {})
+        fields_sink.setdefault("_extras", {})
+        fields_sink["_plan"] = {"grid": np.asarray(pg.grid, np.int16),
+                                "cell_m": float(pg.cell_m), "grid_hash": gh}
+
+    def _deposit(pid: str, res) -> None:
+        """Harvest field/extras/tables from the result JUST computed — same pass, no recompute."""
+        if fields_sink is None:
+            return
+        f = getattr(res, "field", None)
+        if f is not None:
+            fields_sink[pid] = np.asarray(f, np.float32)
+        ex = getattr(res, "extras", None)
+        if ex:
+            fields_sink["_extras"][pid] = ex
+            if "zones" in ex:                      # complexity_partition zone table
+                fields_sink["_tables"][pid] = ex["zones"]
 
     # ---- Tier-A attributes ----
     attr_fns = {
@@ -197,6 +224,11 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset(),
         ev = plan_ev(r["method"], r["confidence"])
         rec = D.scored("cnfa.acoustic.street_noise_intrusion", r["scalar"], ev, "AMBER", (H, W))
         rec["extras"] = r["extras"]          # declared constants + cell landmarks for audit
+        if fields_sink is not None:          # VIEW-0: plan-space SPL + huddle fields
+            for fname, arr in r["fields"].items():
+                fields_sink[f"cnfa.acoustic.street_noise_intrusion:{fname}"] = \
+                    np.asarray(arr, np.float32)
+            fields_sink["_extras"]["cnfa.acoustic.street_noise_intrusion"] = r["extras"]
         return rec
     compound_fns["cnfa.acoustic.street_noise_intrusion"] = _street_noise
 
@@ -208,6 +240,7 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset(),
         try:
             if pid in attr_fns:
                 res = attr_fns[pid]()
+                _deposit(pid, res)
                 if res.scalar is None:
                     # signal ABSENT on this image (Codex S0S2 HIGH-2): applicable + worker ran,
                     # but the measured signal does not exist here. Registry-gated abstention
