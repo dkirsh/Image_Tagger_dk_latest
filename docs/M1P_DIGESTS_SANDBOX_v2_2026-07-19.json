@@ -1,0 +1,1861 @@
+{
+ "env": "sandbox",
+ "images": {
+  "Example Images/50-day-street-offices-norwalk-1200x1165-compact.jpg": {
+   "decoded_sha256": "0556ebdec971e33a06c51a815a3839d89e64f87d623316818846660251692f07",
+   "digests": {
+    "C1.visual_integration": "sha256:f13d873384348f42712d66326b23f55c201c9b18a98044b9a20b6117930af8d9",
+    "cnfa.fluency.color_palette_entropy": "sha256:c5388a8f2b6ed3745cb65ff93a7ae38c59f96761a33610300f3bb67b5a994362",
+    "cnfa.fluency.edge_clarity_mean": "sha256:5c0ce0e3b84b4c7754a7ff108fc5e7ee5cc2e2d4558241e4b1e19891f686889a",
+    "cnfa.fluency.edge_orientation_entropy": "sha256:25abc4e7bac9636467e7fe7f636f80c98850b085149b23a26c7efeffb8620ca2",
+    "cnfa.fluency.processing_load_proxy": "sha256:f634ee2ae1825f4f45a9401227bcc252e423bef5ee49de1cd9281a67d4269d54",
+    "cnfa.fluency.spectral_slope_deviation": "sha256:8e7f06b3e429b5738c56634ae1d705d4a8de25181f1aba05f50e609f5fa746c3",
+    "cnfa.fractal_dimension": "sha256:eac048b7e224d6a5f108d5a87c1b840b971177c0b398d9749adb1e4ce19ed5e3",
+    "cnfa.light.brightness_variance": "sha256:8f4d1b601fc960dd2e42932255adecd07e3e6ddb3e1e0298410f53f42aa97bf5"
+   },
+   "image_sha256": "9788c3055316e073f6d55090f820ac2887ec6c39032c4b2a3e206e5db88eb839",
+   "stats": {
+    "C1.visual_integration": {
+     "audit_class": "geometry_plan",
+     "cell_m": 0.0631,
+     "connectivity_norm": 0.244,
+     "free_cells": 4341,
+     "grid_hash": "c96dc9392b1f45ab",
+     "integration_norm": 0.988,
+     "shape": [
+      874,
+      900
+     ],
+     "vanishing_point": [
+      360.1,
+      420.7
+     ]
+    },
+    "cnfa.fluency.color_palette_entropy": {
+     "attempts": 2,
+     "audit_class": "color_palette",
+     "centers": [
+      [
+       34.7,
+       134.1,
+       135.7
+      ],
+      [
+       65.6,
+       135.9,
+       140.0
+      ],
+      [
+       97.4,
+       140.4,
+       150.7
+      ],
+      [
+       113.5,
+       125.9,
+       119.7
+      ],
+      [
+       138.9,
+       145.5,
+       162.4
+      ],
+      [
+       153.7,
+       129.7,
+       134.8
+      ],
+      [
+       192.3,
+       133.6,
+       150.9
+      ],
+      [
+       240.9,
+       127.8,
+       133.2
+      ]
+     ],
+     "colorspace": "cv2-BGR2LAB",
+     "entropy_norm": 0.9698,
+     "k": 8,
+     "proportions": [
+      0.137,
+      0.192,
+      0.155,
+      0.119,
+      0.132,
+      0.142,
+      0.072,
+      0.051
+     ],
+     "seed": 1234,
+     "shape": [
+      874,
+      900
+     ]
+    },
+    "cnfa.fluency.edge_clarity_mean": {
+     "audit_class": "edge_stats",
+     "canny": [
+      60,
+      160
+     ],
+     "conversion": "BT601-on-RGB/255",
+     "mag_q": {
+      "p50": 0.1644921749830246,
+      "p95": 1.2042208909988403
+     },
+     "mean_mag_on_edges": 0.8449862599372864,
+     "n_edge_px": 129050,
+     "shape": [
+      874,
+      900
+     ]
+    },
+    "cnfa.fluency.edge_orientation_entropy": {
+     "audit_class": "orientation_hist",
+     "conversion": "BT601-on-RGB/255",
+     "entropy_norm": 0.9619340962383592,
+     "hist": [
+      0.1235873851881019,
+      0.05131900339647965,
+      0.03924147839986089,
+      0.03301247564964969,
+      0.03144196405082341,
+      0.04441721554201746,
+      0.05904224929525151,
+      0.058405872512610084,
+      0.07698394478248893,
+      0.1053825782686761,
+      0.06089057281449241,
+      0.03858388602198513,
+      0.030140110243089754,
+      0.025008149648264397,
+      0.025716412991871246,
+      0.0492553855993458,
+      0.053626902388568744,
+      0.09394441320642291
+     ],
+     "mag_frac": 0.05,
+     "min_edge_px": 40,
+     "n_edge_px": 393176,
+     "nbins": 18,
+     "shape": [
+      874,
+      900
+     ]
+    },
+    "cnfa.fluency.processing_load_proxy": {
+     "audit_class": "jpeg_tiles",
+     "global_bpp": 0.194930078820239,
+     "n_tiles": 812,
+     "quality": 75,
+     "shape": [
+      874,
+      900
+     ],
+     "tile": 32,
+     "tile_bpp_q": {
+      "p5": 0.22692057291666667,
+      "p50": 0.26969401041666663,
+      "p95": 0.7502604166666663
+     }
+    },
+    "cnfa.fluency.spectral_slope_deviation": {
+     "audit_class": "radial_fft",
+     "conversion": "BT601",
+     "fit_band": [
+      0.1,
+      0.8
+     ],
+     "intercept": 13.827717083706176,
+     "n_bins": 32,
+     "r2": 0.9612300290041282,
+     "radial_logpower": [
+      25.834971704049256,
+      23.165530937454164,
+      22.140804043126256,
+      21.280660745394414,
+      20.990774123948352,
+      20.283314862138468,
+      19.85398228268035,
+      19.31595820829531,
+      19.073937597445248,
+      18.7134225664612,
+      18.373831994352855,
+      18.063257972048785,
+      17.755724616075767,
+      17.431021686530844,
+      17.152323307442092,
+      16.868438288548752,
+      16.61822392361724,
+      16.335492495057462,
+      16.047141371946363,
+      15.822268682484104,
+      15.47513352188104,
+      15.460229228506705,
+      15.195376938930277,
+      14.32005998255133,
+      14.004824813765872,
+      13.702133558885208,
+      13.452466255877988,
+      13.188980671100172,
+      13.004314834491508,
+      12.866978838701606,
+      12.85664989658647,
+      12.66500891946818
+     ],
+     "shape": [
+      874,
+      900
+     ],
+     "slope": -3.763205984239612,
+     "window_fn": "hann2d"
+    },
+    "cnfa.fractal_dimension": {
+     "D": 1.5894062590261147,
+     "R2": 0.9968197245963415,
+     "audit_class": "box_count",
+     "canny": [
+      60,
+      160
+     ],
+     "conversion": "BT601-on-RGB uint8",
+     "edge_px": 129043,
+     "series": [
+      [
+       2,
+       69663
+      ],
+      [
+       4,
+       26969
+      ],
+      [
+       8,
+       8769
+      ],
+      [
+       16,
+       2575
+      ]
+     ],
+     "shape": [
+      874,
+      900
+     ]
+    },
+    "cnfa.light.brightness_variance": {
+     "audit_class": "luminance_field",
+     "bright_fraction": 0.050894991100940756,
+     "conversion": "BT601",
+     "global_mean": 105.41171571065344,
+     "global_std": 53.879866414892895,
+     "local_sd_q": {
+      "p5": 5.040401077223014,
+      "p50": 30.288500021272082,
+      "p95": 60.88985730575591,
+      "p99": 70.83966776262719
+     },
+     "shape": [
+      874,
+      900
+     ],
+     "window": 31
+    }
+   }
+  },
+  "Example Images/Industrial-open-concept-office-project-by-Decorilla-1024x819.jpeg": {
+   "decoded_sha256": "f346f8ffd67473c88ad30c5bdb23118a06ef752e1078d6abd688af4d8f0a9900",
+   "digests": {
+    "C1.visual_integration": "sha256:23e3a50b076d8e6f531e865d3092cb9c5b58ac73645600081bce1a15f75229c6",
+    "cnfa.fluency.color_palette_entropy": "sha256:d74a08b42672101d53f27b9c7049da5daead45524bb867a8a33a81d74553b782",
+    "cnfa.fluency.edge_clarity_mean": "sha256:39b354fff47373cd976940f93c1678b4ea1c5f006d21b7306afe273116888200",
+    "cnfa.fluency.edge_orientation_entropy": "sha256:05bcc2fd376eaa23027928999cdd6cdea228f8bbf9333c9cd811019fc1de1e21",
+    "cnfa.fluency.processing_load_proxy": "sha256:a4905cb46237f03d748b5967c54606bbc3ce84338708b8a6a48c55a30d05f897",
+    "cnfa.fluency.spectral_slope_deviation": "sha256:038edcd9a21e27f45887bee10d6e7106f0c7563b45667b78e43d1314635127ac",
+    "cnfa.fractal_dimension": "sha256:80588c1339487085ecc7413bd9dd99b5756b9123a4dc792205547379a1c77d02",
+    "cnfa.light.brightness_variance": "sha256:8a97944c10ec684263ae5ec6ecbe8ee2abcd5f8e73a892a3a43ab20e4c0243b1"
+   },
+   "image_sha256": "f5b84804e3a3cc030d2667841f506aef8e8801e42a1cb2697fa1ba1800c668d9",
+   "stats": {
+    "C1.visual_integration": {
+     "audit_class": "geometry_plan",
+     "cell_m": 0.0388,
+     "connectivity_norm": 0.553,
+     "free_cells": 10024,
+     "grid_hash": "22ceaa8150fd2b78",
+     "integration_norm": 0.995,
+     "shape": [
+      720,
+      900
+     ],
+     "vanishing_point": [
+      401.5,
+      421.4
+     ]
+    },
+    "cnfa.fluency.color_palette_entropy": {
+     "attempts": 2,
+     "audit_class": "color_palette",
+     "centers": [
+      [
+       13.0,
+       128.3,
+       127.7
+      ],
+      [
+       44.1,
+       128.9,
+       127.8
+      ],
+      [
+       72.5,
+       129.3,
+       129.3
+      ],
+      [
+       100.5,
+       128.9,
+       130.2
+      ],
+      [
+       130.5,
+       128.8,
+       131.2
+      ],
+      [
+       163.5,
+       129.0,
+       131.9
+      ],
+      [
+       190.9,
+       128.3,
+       132.3
+      ],
+      [
+       228.9,
+       127.9,
+       128.2
+      ]
+     ],
+     "colorspace": "cv2-BGR2LAB",
+     "entropy_norm": 0.9896,
+     "k": 8,
+     "proportions": [
+      0.115,
+      0.146,
+      0.131,
+      0.127,
+      0.131,
+      0.155,
+      0.128,
+      0.068
+     ],
+     "seed": 1234,
+     "shape": [
+      720,
+      900
+     ]
+    },
+    "cnfa.fluency.edge_clarity_mean": {
+     "audit_class": "edge_stats",
+     "canny": [
+      60,
+      160
+     ],
+     "conversion": "BT601-on-RGB/255",
+     "mag_q": {
+      "p50": 0.08193716406822205,
+      "p95": 1.169265866279602
+     },
+     "mean_mag_on_edges": 0.9689226746559143,
+     "n_edge_px": 71218,
+     "shape": [
+      720,
+      900
+     ]
+    },
+    "cnfa.fluency.edge_orientation_entropy": {
+     "audit_class": "orientation_hist",
+     "conversion": "BT601-on-RGB/255",
+     "entropy_norm": 0.9296188205855596,
+     "hist": [
+      0.14884883114216804,
+      0.05018667353909454,
+      0.033694717854661285,
+      0.032326747622044086,
+      0.03389669107179372,
+      0.03306001750222939,
+      0.03608737572098897,
+      0.040181837568354035,
+      0.09000003939199361,
+      0.11297341583140738,
+      0.037505407762404845,
+      0.024486910301259483,
+      0.028061179573540644,
+      0.02920616130167385,
+      0.03306284809212031,
+      0.0399037466064787,
+      0.04875285369615019,
+      0.14776454542163692
+     ],
+     "mag_frac": 0.05,
+     "min_edge_px": 40,
+     "n_edge_px": 223198,
+     "nbins": 18,
+     "shape": [
+      720,
+      900
+     ]
+    },
+    "cnfa.fluency.processing_load_proxy": {
+     "audit_class": "jpeg_tiles",
+     "global_bpp": 0.15334413580246914,
+     "n_tiles": 667,
+     "quality": 75,
+     "shape": [
+      720,
+      900
+     ],
+     "tile": 32,
+     "tile_bpp_q": {
+      "p5": 0.21907552083333334,
+      "p50": 0.2571614583333333,
+      "p95": 0.423828125
+     }
+    },
+    "cnfa.fluency.spectral_slope_deviation": {
+     "audit_class": "radial_fft",
+     "conversion": "BT601",
+     "fit_band": [
+      0.1,
+      0.8
+     ],
+     "intercept": 13.834506346181803,
+     "n_bins": 32,
+     "r2": 0.9727960051518005,
+     "radial_logpower": [
+      26.024925182317148,
+      23.172670357685757,
+      21.986933532269177,
+      21.09810325928879,
+      20.352633824133374,
+      20.11181386203947,
+      19.56739027657294,
+      19.027828188642136,
+      18.78370868914623,
+      18.393047315801212,
+      18.06421893567304,
+      17.902722896286246,
+      17.447674617610335,
+      17.07357562983589,
+      16.927162351075008,
+      16.64010331727534,
+      16.29795069258091,
+      16.053487341018247,
+      15.854611291806936,
+      15.568515606708011,
+      15.258454477133277,
+      15.190862838488982,
+      15.012432357895952,
+      14.825129770328923,
+      14.748690381091427,
+      13.517076241166702,
+      12.846772755237664,
+      12.437883097648253,
+      11.99078645424407,
+      11.91539948259605,
+      11.618597294828907,
+      11.621752442904047
+     ],
+     "shape": [
+      720,
+      900
+     ],
+     "slope": -3.548196344090189,
+     "window_fn": "hann2d"
+    },
+    "cnfa.fractal_dimension": {
+     "D": 1.4731287166901263,
+     "R2": 0.9976261967860798,
+     "audit_class": "box_count",
+     "canny": [
+      60,
+      160
+     ],
+     "conversion": "BT601-on-RGB uint8",
+     "edge_px": 71295,
+     "series": [
+      [
+       2,
+       38217
+      ],
+      [
+       4,
+       15549
+      ],
+      [
+       8,
+       5508
+      ],
+      [
+       16,
+       1796
+      ]
+     ],
+     "shape": [
+      720,
+      900
+     ]
+    },
+    "cnfa.light.brightness_variance": {
+     "audit_class": "luminance_field",
+     "bright_fraction": 0.020739197530864197,
+     "conversion": "BT601",
+     "global_mean": 107.32739054166669,
+     "global_std": 63.11473768168273,
+     "local_sd_q": {
+      "p5": 3.987743211235965,
+      "p50": 27.80245829360743,
+      "p95": 63.43925486865401,
+      "p99": 75.7035811059607
+     },
+     "shape": [
+      720,
+      900
+     ],
+     "window": 31
+    }
+   }
+  },
+  "Example Images/Office-Grade-1-1536x838.jpg": {
+   "decoded_sha256": "69da82f4d5b5d1182a322e7304e15b407133c8bf350d7ea244914c85d7ea1e30",
+   "digests": {
+    "C1.visual_integration": "sha256:aa288167f74bf68b33a5d068aa42c46193139ea7851a93c445452557772cb40b",
+    "cnfa.fluency.color_palette_entropy": "sha256:cc8c95c1961ac3727f39fe8f2c5e30fd34c40e90784edfda41bfe5778b65f8fc",
+    "cnfa.fluency.edge_clarity_mean": "sha256:beccf22e6f21228fc6818926a00bda2bda3ec20f93781fe649eefa56850f3fee",
+    "cnfa.fluency.edge_orientation_entropy": "sha256:72d343db1d0172b9ebc8d56667475d1a33068d0c8255248da43c3c217c058a8d",
+    "cnfa.fluency.processing_load_proxy": "sha256:1b8ca4527ed57bf3d40804680531d5c828134ea6285d3dc42e8a6f9fb0f168e2",
+    "cnfa.fluency.spectral_slope_deviation": "sha256:9faed117eb1641f1e7e8ca29c7e35ad60dd9279f7efec234c7a44ac7435c4fd5",
+    "cnfa.fractal_dimension": "sha256:47ad892759716bf85d96c9438af044ea6d2c47f610bee4d7ce3abb8221ea7647",
+    "cnfa.light.brightness_variance": "sha256:f9512c82d0287647354579e11f4f757b36e17f4e6d9bc1e578d360da78d1939a"
+   },
+   "image_sha256": "3f85aa9b5736d3f966de735e1a124de80ddfb3260d79ea7286f96e6d391baf52",
+   "stats": {
+    "C1.visual_integration": {
+     "audit_class": "geometry_plan",
+     "cell_m": 0.4621,
+     "connectivity_norm": 0.427,
+     "free_cells": 5441,
+     "grid_hash": "6b7d18a6e63cc768",
+     "integration_norm": 0.992,
+     "shape": [
+      491,
+      900
+     ],
+     "vanishing_point": [
+      441.6,
+      302.3
+     ]
+    },
+    "cnfa.fluency.color_palette_entropy": {
+     "attempts": 2,
+     "audit_class": "color_palette",
+     "centers": [
+      [
+       13.5,
+       129.5,
+       131.9
+      ],
+      [
+       49.0,
+       135.6,
+       144.3
+      ],
+      [
+       76.3,
+       138.4,
+       148.9
+      ],
+      [
+       102.8,
+       135.7,
+       149.5
+      ],
+      [
+       130.3,
+       133.2,
+       146.0
+      ],
+      [
+       157.5,
+       133.2,
+       145.5
+      ],
+      [
+       183.4,
+       129.1,
+       137.7
+      ],
+      [
+       220.0,
+       127.6,
+       134.2
+      ]
+     ],
+     "colorspace": "cv2-BGR2LAB",
+     "entropy_norm": 0.9815,
+     "k": 8,
+     "proportions": [
+      0.071,
+      0.097,
+      0.122,
+      0.118,
+      0.144,
+      0.171,
+      0.177,
+      0.1
+     ],
+     "seed": 1234,
+     "shape": [
+      491,
+      900
+     ]
+    },
+    "cnfa.fluency.edge_clarity_mean": {
+     "audit_class": "edge_stats",
+     "canny": [
+      60,
+      160
+     ],
+     "conversion": "BT601-on-RGB/255",
+     "mag_q": {
+      "p50": 0.17098468542099,
+      "p95": 1.1816288232803345
+     },
+     "mean_mag_on_edges": 0.8563159704208374,
+     "n_edge_px": 78681,
+     "shape": [
+      491,
+      900
+     ]
+    },
+    "cnfa.fluency.edge_orientation_entropy": {
+     "audit_class": "orientation_hist",
+     "conversion": "BT601-on-RGB/255",
+     "entropy_norm": 0.8417089103669382,
+     "hist": [
+      0.24279590712589777,
+      0.03126731849629147,
+      0.02365174201955732,
+      0.02022833914989666,
+      0.024912249493770137,
+      0.03427050158599044,
+      0.029485021846035676,
+      0.03411772645022052,
+      0.05973034095707416,
+      0.059364748416205794,
+      0.0341183788835238,
+      0.03245593999750904,
+      0.026695143318805615,
+      0.023736423807512858,
+      0.02436511513582543,
+      0.02552999057585382,
+      0.03263898251610688,
+      0.2406361302239226
+     ],
+     "mag_frac": 0.05,
+     "min_edge_px": 40,
+     "n_edge_px": 239045,
+     "nbins": 18,
+     "shape": [
+      491,
+      900
+     ]
+    },
+    "cnfa.fluency.processing_load_proxy": {
+     "audit_class": "jpeg_tiles",
+     "global_bpp": 0.1744263408010862,
+     "n_tiles": 464,
+     "quality": 75,
+     "shape": [
+      491,
+      900
+     ],
+     "tile": 32,
+     "tile_bpp_q": {
+      "p5": 0.22726236979166667,
+      "p50": 0.26171875,
+      "p95": 0.6870265151515148
+     }
+    },
+    "cnfa.fluency.spectral_slope_deviation": {
+     "audit_class": "radial_fft",
+     "conversion": "BT601",
+     "fit_band": [
+      0.1,
+      0.8
+     ],
+     "intercept": 13.412201360577674,
+     "n_bins": 32,
+     "r2": 0.821137747592606,
+     "radial_logpower": [
+      24.98931806536695,
+      22.27338139595861,
+      20.926706119070634,
+      19.885588044464036,
+      19.35821728405175,
+      18.49801433760322,
+      18.097227144291214,
+      17.706023614685197,
+      17.536465193038488,
+      17.463350779198596,
+      19.715894638020227,
+      18.472442071947548,
+      17.310909739760344,
+      16.200434052679668,
+      15.445443134297458,
+      15.109378844727265,
+      14.702853918603617,
+      14.733820594674224,
+      14.76558412114599,
+      14.302551182877021,
+      14.63436126660111,
+      15.324545171106827,
+      14.690801889792732,
+      14.306530985624898,
+      14.256905678788565,
+      13.586887214078192,
+      13.674967992094873,
+      13.788654823001325,
+      12.351016694847436,
+      11.4430044412276,
+      11.196982650820313,
+      10.972322394539383
+     ],
+     "shape": [
+      491,
+      900
+     ],
+     "slope": -3.1770462938592696,
+     "window_fn": "hann2d"
+    },
+    "cnfa.fractal_dimension": {
+     "D": 1.656992836028406,
+     "R2": 0.9974333651053224,
+     "audit_class": "box_count",
+     "canny": [
+      60,
+      160
+     ],
+     "conversion": "BT601-on-RGB uint8",
+     "edge_px": 78683,
+     "series": [
+      [
+       2,
+       41364
+      ],
+      [
+       4,
+       15332
+      ],
+      [
+       8,
+       4646
+      ],
+      [
+       16,
+       1339
+      ]
+     ],
+     "shape": [
+      491,
+      900
+     ]
+    },
+    "cnfa.light.brightness_variance": {
+     "audit_class": "luminance_field",
+     "bright_fraction": 0.013960171984611903,
+     "conversion": "BT601",
+     "global_mean": 120.7666825277212,
+     "global_std": 58.3547427081764,
+     "local_sd_q": {
+      "p5": 5.644101722266904,
+      "p50": 27.397569234337432,
+      "p95": 59.930938537670954,
+      "p99": 69.75612122181182
+     },
+     "shape": [
+      491,
+      900
+     ],
+     "window": 31
+    }
+   }
+  },
+  "Example Images/UPCycle-Gensler-5-889x592-1.jpg": {
+   "decoded_sha256": "19b2f774d3b9a8db5b27cd30089caf90b09f3cda136e3c4b57559f551abad382",
+   "digests": {
+    "C1.visual_integration": "sha256:345894febc672ef3c0c4607cedaa15d410ebd385b3e7cd413e564e090f4a9099",
+    "cnfa.fluency.color_palette_entropy": "sha256:17d636bdc093bb33f7a0f1a5818085baa1430359238466d20f6683f79255613f",
+    "cnfa.fluency.edge_clarity_mean": "sha256:973fd781e027a2a75f4487b5370394da46fda6a5c3a2c0448f5989ca9e14fe03",
+    "cnfa.fluency.edge_orientation_entropy": "sha256:7a516599fb666c21eb0a6b400ef9ff140f5da2135fd2bb97e9a61a7165bb1e8c",
+    "cnfa.fluency.processing_load_proxy": "sha256:258e9f859d816c34a267e90df65fd540b642ccbde81709b34c99a68db495b4fb",
+    "cnfa.fluency.spectral_slope_deviation": "sha256:cf5ebc19f82285118c38a4f8439ef1871589519bbac90a2b32d3b7d3f4c3d520",
+    "cnfa.fractal_dimension": "sha256:651ecd74bec06e9529a9b8a0e2edcb463ef665de485c620744579f7346357afb",
+    "cnfa.light.brightness_variance": "sha256:5c4751f1183d76ea6ca101d568093ca5e15927bfbcb101c83a3249e67fab2974"
+   },
+   "image_sha256": "54202b802858eec3c5d4287734402aaa308b38aef68c1547a7981bfb6b28841b",
+   "stats": {
+    "C1.visual_integration": {
+     "audit_class": "geometry_plan",
+     "cell_m": 0.0439,
+     "connectivity_norm": 0.563,
+     "free_cells": 8433,
+     "grid_hash": "007503d33399cd07",
+     "integration_norm": 0.994,
+     "shape": [
+      592,
+      889
+     ],
+     "vanishing_point": [
+      423.0,
+      249.8
+     ]
+    },
+    "cnfa.fluency.color_palette_entropy": {
+     "attempts": 2,
+     "audit_class": "color_palette",
+     "centers": [
+      [
+       35.8,
+       135.9,
+       128.3
+      ],
+      [
+       79.4,
+       129.4,
+       126.6
+      ],
+      [
+       80.8,
+       158.9,
+       145.2
+      ],
+      [
+       117.5,
+       130.0,
+       130.0
+      ],
+      [
+       135.9,
+       174.0,
+       145.9
+      ],
+      [
+       152.8,
+       128.5,
+       137.7
+      ],
+      [
+       152.9,
+       147.5,
+       99.2
+      ],
+      [
+       201.4,
+       128.6,
+       132.6
+      ]
+     ],
+     "colorspace": "cv2-BGR2LAB",
+     "entropy_norm": 0.9456,
+     "k": 8,
+     "proportions": [
+      0.145,
+      0.15,
+      0.107,
+      0.182,
+      0.043,
+      0.206,
+      0.041,
+      0.127
+     ],
+     "seed": 1234,
+     "shape": [
+      592,
+      889
+     ]
+    },
+    "cnfa.fluency.edge_clarity_mean": {
+     "audit_class": "edge_stats",
+     "canny": [
+      60,
+      160
+     ],
+     "conversion": "BT601-on-RGB/255",
+     "mag_q": {
+      "p50": 0.18523967266082764,
+      "p95": 1.3151752948760986
+     },
+     "mean_mag_on_edges": 0.9434607028961182,
+     "n_edge_px": 91468,
+     "shape": [
+      592,
+      889
+     ]
+    },
+    "cnfa.fluency.edge_orientation_entropy": {
+     "audit_class": "orientation_hist",
+     "conversion": "BT601-on-RGB/255",
+     "entropy_norm": 0.9489767687359749,
+     "hist": [
+      0.13284935101141462,
+      0.04728430325360704,
+      0.035096013890976566,
+      0.02939683879715163,
+      0.028668936821761876,
+      0.03237713258659937,
+      0.04170258979006414,
+      0.06028597016481602,
+      0.09338258073423433,
+      0.10379714848546447,
+      0.07205053086194564,
+      0.037999810422404086,
+      0.029508664888777996,
+      0.027710165532418996,
+      0.031306201049266257,
+      0.037596611891659505,
+      0.047168899914947736,
+      0.11181824990248972
+     ],
+     "mag_frac": 0.05,
+     "min_edge_px": 40,
+     "n_edge_px": 283950,
+     "nbins": 18,
+     "shape": [
+      592,
+      889
+     ]
+    },
+    "cnfa.fluency.processing_load_proxy": {
+     "audit_class": "jpeg_tiles",
+     "global_bpp": 0.22453105523971667,
+     "n_tiles": 532,
+     "quality": 75,
+     "shape": [
+      592,
+      889
+     ],
+     "tile": 32,
+     "tile_bpp_q": {
+      "p5": 0.23763020833333334,
+      "p50": 0.2809244791666667,
+      "p95": 0.42298177083333327
+     }
+    },
+    "cnfa.fluency.spectral_slope_deviation": {
+     "audit_class": "radial_fft",
+     "conversion": "BT601",
+     "fit_band": [
+      0.1,
+      0.8
+     ],
+     "intercept": 13.858795982158309,
+     "n_bins": 32,
+     "r2": 0.9979643298266772,
+     "radial_logpower": [
+      24.979681990516287,
+      22.634037592025567,
+      21.452092229094962,
+      20.42627380929298,
+      19.740188419356198,
+      19.229649644257503,
+      18.782362885342245,
+      18.405935241644144,
+      18.01085048074948,
+      17.651870310556475,
+      17.326509767273333,
+      17.004322723159138,
+      16.81240700838119,
+      16.449738268068806,
+      16.236583782884296,
+      16.073028756447062,
+      15.888153379985965,
+      15.681978949116194,
+      15.57553241223578,
+      15.298529036344588,
+      15.194071782648908,
+      14.973865096066884,
+      14.82035936737094,
+      14.811133176367315,
+      14.619382241257592,
+      14.616514526501131,
+      14.537510654213062,
+      13.610523496532416,
+      13.030469133424136,
+      12.872532340511292,
+      12.68796082207733,
+      12.62575830409465
+     ],
+     "shape": [
+      592,
+      889
+     ],
+     "slope": -3.048004280285109,
+     "window_fn": "hann2d"
+    },
+    "cnfa.fractal_dimension": {
+     "D": 1.6132334868322444,
+     "R2": 0.9971832907779405,
+     "audit_class": "box_count",
+     "canny": [
+      60,
+      160
+     ],
+     "conversion": "BT601-on-RGB uint8",
+     "edge_px": 91464,
+     "series": [
+      [
+       2,
+       49435
+      ],
+      [
+       4,
+       18814
+      ],
+      [
+       8,
+       5955
+      ],
+      [
+       16,
+       1745
+      ]
+     ],
+     "shape": [
+      592,
+      889
+     ]
+    },
+    "cnfa.light.brightness_variance": {
+     "audit_class": "luminance_field",
+     "bright_fraction": 0.027766166053567628,
+     "conversion": "BT601",
+     "global_mean": 109.00273031876083,
+     "global_std": 50.727377724530015,
+     "local_sd_q": {
+      "p5": 8.650836662716445,
+      "p50": 37.93451802648319,
+      "p95": 61.247784413353706,
+      "p99": 70.1770543024408
+     },
+     "shape": [
+      592,
+      889
+     ],
+     "window": 31
+    }
+   }
+  },
+  "Example Images/bede-offices-sofia-6-1200x800-compact.jpg": {
+   "decoded_sha256": "e0fd17583f5b923b5b454ba3189c47b41cea6173c083660b2ff2b93e035b708c",
+   "digests": {
+    "C1.visual_integration": "sha256:bb40ca3e71afa4ee7fb7ced2eafea006690995ade4ceea8fd4b4fe35c6ca3602",
+    "cnfa.fluency.color_palette_entropy": "sha256:04dfe88b14d4bd46e17f3874ff709d95bd86f17a09ea0a08aa4950dd0553306d",
+    "cnfa.fluency.edge_clarity_mean": "sha256:880e13ee17d59f40d820a8c55632e549e949274a9dce4c7cdd84f487d94e643a",
+    "cnfa.fluency.edge_orientation_entropy": "sha256:d0b270b23fc91dd270b5f4a4de003684b283667ced442a5fb55fd02944134c36",
+    "cnfa.fluency.processing_load_proxy": "sha256:2ab9b1c9b19025e1ec5f73eb8ebbad65f80418675997c991fcdbae0e3f743e49",
+    "cnfa.fluency.spectral_slope_deviation": "sha256:52bef88cbc7c0a833e1618fe5d34954c5f109a4627acc335c36b0319f4976174",
+    "cnfa.fractal_dimension": "sha256:4333a3a2d08645bbb87599a2504992b4e664c863e72c2e98a8ea17c99e1fe896",
+    "cnfa.light.brightness_variance": "sha256:86dbd05b7a92d9e3cfb3434e39b3c559de42d315f5a6749b3338bad0847a8e46"
+   },
+   "image_sha256": "bc19e459e75442152bda8d7b0e88cea1437245493b1097d9caea383875b7e8ff",
+   "stats": {
+    "C1.visual_integration": {
+     "audit_class": "geometry_plan",
+     "cell_m": 0.0731,
+     "connectivity_norm": 0.599,
+     "free_cells": 10820,
+     "grid_hash": "50487517ba979799",
+     "integration_norm": 0.995,
+     "shape": [
+      600,
+      900
+     ],
+     "vanishing_point": [
+      503.1,
+      287.1
+     ]
+    },
+    "cnfa.fluency.color_palette_entropy": {
+     "attempts": 2,
+     "audit_class": "color_palette",
+     "centers": [
+      [
+       18.0,
+       130.1,
+       130.8
+      ],
+      [
+       49.7,
+       133.1,
+       135.6
+      ],
+      [
+       80.0,
+       135.2,
+       139.0
+      ],
+      [
+       109.2,
+       135.8,
+       141.2
+      ],
+      [
+       136.3,
+       141.8,
+       150.7
+      ],
+      [
+       165.1,
+       139.1,
+       147.4
+      ],
+      [
+       195.8,
+       134.1,
+       139.5
+      ],
+      [
+       230.5,
+       127.8,
+       130.9
+      ]
+     ],
+     "colorspace": "cv2-BGR2LAB",
+     "entropy_norm": 0.9682,
+     "k": 8,
+     "proportions": [
+      0.193,
+      0.167,
+      0.163,
+      0.146,
+      0.102,
+      0.084,
+      0.081,
+      0.064
+     ],
+     "seed": 1234,
+     "shape": [
+      600,
+      900
+     ]
+    },
+    "cnfa.fluency.edge_clarity_mean": {
+     "audit_class": "edge_stats",
+     "canny": [
+      60,
+      160
+     ],
+     "conversion": "BT601-on-RGB/255",
+     "mag_q": {
+      "p50": 0.17602768540382385,
+      "p95": 1.2200350761413574
+     },
+     "mean_mag_on_edges": 0.8535500168800354,
+     "n_edge_px": 95279,
+     "shape": [
+      600,
+      900
+     ]
+    },
+    "cnfa.fluency.edge_orientation_entropy": {
+     "audit_class": "orientation_hist",
+     "conversion": "BT601-on-RGB/255",
+     "entropy_norm": 0.9434916470083495,
+     "hist": [
+      0.07080139895946969,
+      0.03581859390667951,
+      0.02635682419636369,
+      0.02478775642618942,
+      0.027222243493802933,
+      0.03740414452557549,
+      0.05444364435456645,
+      0.07685044998439745,
+      0.1197718541551397,
+      0.1492725477904048,
+      0.07292534535934168,
+      0.05195324354001075,
+      0.03749475738894331,
+      0.02892197692483226,
+      0.02691629416859307,
+      0.029909678831338705,
+      0.0417652411427422,
+      0.08738400485160888
+     ],
+     "mag_frac": 0.05,
+     "min_edge_px": 40,
+     "n_edge_px": 281017,
+     "nbins": 18,
+     "shape": [
+      600,
+      900
+     ]
+    },
+    "cnfa.fluency.processing_load_proxy": {
+     "audit_class": "jpeg_tiles",
+     "global_bpp": 0.19833703703703703,
+     "n_tiles": 551,
+     "quality": 75,
+     "shape": [
+      600,
+      900
+     ],
+     "tile": 32,
+     "tile_bpp_q": {
+      "p5": 0.23128255208333331,
+      "p50": 0.2737630208333333,
+      "p95": 0.33658854166666663
+     }
+    },
+    "cnfa.fluency.spectral_slope_deviation": {
+     "audit_class": "radial_fft",
+     "conversion": "BT601",
+     "fit_band": [
+      0.1,
+      0.8
+     ],
+     "intercept": 13.890760134405017,
+     "n_bins": 32,
+     "r2": 0.9923795430167546,
+     "radial_logpower": [
+      25.77599475501761,
+      22.85849916717367,
+      21.32310066365789,
+      20.615931137726253,
+      20.108161323981115,
+      19.48055796365023,
+      19.112004057983263,
+      18.712415224739274,
+      18.3810798186171,
+      18.039360261264804,
+      17.64657519378438,
+      17.394868108064564,
+      17.096757098531445,
+      16.84527237732456,
+      16.608687158538185,
+      16.219310424661945,
+      16.053379402241625,
+      15.823999495940717,
+      15.502493283904426,
+      15.456178539059902,
+      15.209032143062526,
+      15.054688371112203,
+      14.875291714428709,
+      14.838700988653876,
+      14.63937352699338,
+      14.52344703009468,
+      14.301043930189175,
+      13.041150128708898,
+      12.568693649298055,
+      12.319413731342063,
+      12.277050136081273,
+      12.24314238836085
+     ],
+     "shape": [
+      600,
+      900
+     ],
+     "slope": -3.229969907906058,
+     "window_fn": "hann2d"
+    },
+    "cnfa.fractal_dimension": {
+     "D": 1.6353187013841766,
+     "R2": 0.9972680930155581,
+     "audit_class": "box_count",
+     "canny": [
+      60,
+      160
+     ],
+     "conversion": "BT601-on-RGB uint8",
+     "edge_px": 95315,
+     "series": [
+      [
+       2,
+       51722
+      ],
+      [
+       4,
+       19367
+      ],
+      [
+       8,
+       6045
+      ],
+      [
+       16,
+       1743
+      ]
+     ],
+     "shape": [
+      600,
+      900
+     ]
+    },
+    "cnfa.light.brightness_variance": {
+     "audit_class": "luminance_field",
+     "bright_fraction": 0.04841481481481481,
+     "conversion": "BT601",
+     "global_mean": 94.81765534629629,
+     "global_std": 62.331827541908766,
+     "local_sd_q": {
+      "p5": 5.198314746428239,
+      "p50": 30.016386310180774,
+      "p95": 64.54421320367575,
+      "p99": 73.12371604144617
+     },
+     "shape": [
+      600,
+      900
+     ],
+     "window": 31
+    }
+   }
+  },
+  "Example Images/heb-digital-and-favor-delivery-eastside-tech-hub-austin-6.jpg": {
+   "decoded_sha256": "df972cb73043de34e6cdb1ffe3256ef9a104031c52b5a8c618a99f5fd9a275ce",
+   "digests": {
+    "C1.visual_integration": "sha256:096b6cc1a2beb693d75edac3a10e53dc4bd0b238d9a54d5f31b027d03f948241",
+    "cnfa.fluency.color_palette_entropy": "sha256:d1c633cac8f741d56f01dab9fe5602268e89517e6c5aa28028d896bdcf40a3b4",
+    "cnfa.fluency.edge_clarity_mean": "sha256:f1b3960b7e46a14766a445b100ebd473c540c6f240c0d0702333be94269fefbd",
+    "cnfa.fluency.edge_orientation_entropy": "sha256:0f506dd47e78ada1bccb329ad082fd69d6bdad3a83ed37c46269942b49512d27",
+    "cnfa.fluency.processing_load_proxy": "sha256:f37df22d8b4336fc0a8fc5218dae1b9933f32020366c72d72ebf43efdbc0521d",
+    "cnfa.fluency.spectral_slope_deviation": "sha256:652f54306aadfef6d69e6510b0bbc5ef205fb46eb0e636f27819d89ba8fcc8f3",
+    "cnfa.fractal_dimension": "sha256:a96801afb7665aa80ca8c3426cc28352295723a8896b67650bf7a1ebf324233d",
+    "cnfa.light.brightness_variance": "sha256:c3569e61d8191f62e031033ca0dda03f93f5fc5e59be004d0acd72d8aa0dcabc"
+   },
+   "image_sha256": "96970996d66fe8406cefe28e4e91a36909a3062220a59d331aec0b6a93fc91d8",
+   "stats": {
+    "C1.visual_integration": {
+     "audit_class": "geometry_plan",
+     "cell_m": 0.1373,
+     "connectivity_norm": 0.336,
+     "free_cells": 11682,
+     "grid_hash": "83224bb0cc8b98b9",
+     "integration_norm": 0.99,
+     "shape": [
+      600,
+      900
+     ],
+     "vanishing_point": [
+      381.9,
+      342.1
+     ]
+    },
+    "cnfa.fluency.color_palette_entropy": {
+     "attempts": 2,
+     "audit_class": "color_palette",
+     "centers": [
+      [
+       43.4,
+       128.7,
+       127.5
+      ],
+      [
+       76.3,
+       131.2,
+       126.6
+      ],
+      [
+       106.9,
+       132.8,
+       133.8
+      ],
+      [
+       136.8,
+       128.6,
+       129.3
+      ],
+      [
+       152.3,
+       136.3,
+       149.9
+      ],
+      [
+       167.0,
+       128.8,
+       130.1
+      ],
+      [
+       191.4,
+       129.0,
+       135.2
+      ],
+      [
+       222.3,
+       128.3,
+       131.3
+      ]
+     ],
+     "colorspace": "cv2-BGR2LAB",
+     "entropy_norm": 0.9739,
+     "k": 8,
+     "proportions": [
+      0.069,
+      0.111,
+      0.135,
+      0.14,
+      0.072,
+      0.164,
+      0.197,
+      0.112
+     ],
+     "seed": 1234,
+     "shape": [
+      600,
+      900
+     ]
+    },
+    "cnfa.fluency.edge_clarity_mean": {
+     "audit_class": "edge_stats",
+     "canny": [
+      60,
+      160
+     ],
+     "conversion": "BT601-on-RGB/255",
+     "mag_q": {
+      "p50": 0.17454898357391357,
+      "p95": 1.272971272468567
+     },
+     "mean_mag_on_edges": 0.9272987246513367,
+     "n_edge_px": 88428,
+     "shape": [
+      600,
+      900
+     ]
+    },
+    "cnfa.fluency.edge_orientation_entropy": {
+     "audit_class": "orientation_hist",
+     "conversion": "BT601-on-RGB/255",
+     "entropy_norm": 0.9130343357566568,
+     "hist": [
+      0.07195637556763915,
+      0.0325238604186844,
+      0.02743174411767031,
+      0.02593549850814704,
+      0.026215784025590976,
+      0.043117500611925715,
+      0.05233610509023451,
+      0.07082280668383255,
+      0.20091263570397683,
+      0.14480267857508053,
+      0.05700091835469077,
+      0.03342992371723993,
+      0.02624425113717084,
+      0.025799510139107737,
+      0.025548231474333154,
+      0.02823466921055226,
+      0.03582560683233439,
+      0.07186189983178894
+     ],
+     "mag_frac": 0.05,
+     "min_edge_px": 40,
+     "n_edge_px": 280862,
+     "nbins": 18,
+     "shape": [
+      600,
+      900
+     ]
+    },
+    "cnfa.fluency.processing_load_proxy": {
+     "audit_class": "jpeg_tiles",
+     "global_bpp": 0.19197962962962964,
+     "n_tiles": 551,
+     "quality": 75,
+     "shape": [
+      600,
+      900
+     ],
+     "tile": 32,
+     "tile_bpp_q": {
+      "p5": 0.23681640625,
+      "p50": 0.2718098958333333,
+      "p95": 0.3102213541666667
+     }
+    },
+    "cnfa.fluency.spectral_slope_deviation": {
+     "audit_class": "radial_fft",
+     "conversion": "BT601",
+     "fit_band": [
+      0.1,
+      0.8
+     ],
+     "intercept": 13.776301536012424,
+     "n_bins": 32,
+     "r2": 0.9931877916321816,
+     "radial_logpower": [
+      24.835824258113917,
+      22.878634899456657,
+      21.686034243258632,
+      20.831102076469964,
+      20.212688335598926,
+      19.733594841001118,
+      19.243498889769665,
+      18.81797890781544,
+      18.370987338093382,
+      18.066638129889935,
+      17.666698643854122,
+      17.47331614817428,
+      17.086624418284302,
+      16.818780941544436,
+      16.582335052405295,
+      16.32946133053156,
+      16.06355992730624,
+      15.805479467727677,
+      15.430280013291236,
+      15.325182090753268,
+      15.251093815281244,
+      15.005220182609811,
+      14.911093075041697,
+      14.66284803764126,
+      14.63733543580604,
+      14.360700247080603,
+      14.161795954527353,
+      13.003296752552352,
+      12.579993371684278,
+      12.322630258578386,
+      12.314801514406495,
+      12.647044691612631
+     ],
+     "shape": [
+      600,
+      900
+     ],
+     "slope": -3.374741942320512,
+     "window_fn": "hann2d"
+    },
+    "cnfa.fractal_dimension": {
+     "D": 1.5816826753873836,
+     "R2": 0.9963767765356505,
+     "audit_class": "box_count",
+     "canny": [
+      60,
+      160
+     ],
+     "conversion": "BT601-on-RGB uint8",
+     "edge_px": 88298,
+     "series": [
+      [
+       2,
+       47438
+      ],
+      [
+       4,
+       18717
+      ],
+      [
+       8,
+       6066
+      ],
+      [
+       16,
+       1787
+      ]
+     ],
+     "shape": [
+      600,
+      900
+     ]
+    },
+    "cnfa.light.brightness_variance": {
+     "audit_class": "luminance_field",
+     "bright_fraction": 0.0060537037037037035,
+     "conversion": "BT601",
+     "global_mean": 139.23532657777778,
+     "global_std": 51.68341050685354,
+     "local_sd_q": {
+      "p5": 5.789826914426624,
+      "p50": 36.789002916704845,
+      "p95": 59.49459038767551,
+      "p99": 68.43406744914927
+     },
+     "shape": [
+      600,
+      900
+     ],
+     "window": 31
+    }
+   }
+  },
+  "Example Images/korridor.jpg": {
+   "decoded_sha256": "cb450dc11e38ab4255d1be551754c41e4975460b60c47e5e781f761936296310",
+   "digests": {
+    "C1.visual_integration": "sha256:1ae5205b2d342834698aa563ee0da8921879f07bd80618a947432719522f251b",
+    "cnfa.fluency.color_palette_entropy": "sha256:e9426553a4643ff1fd68de88d764b6fd0a4a3dd512ce89351459483dd0ab28a1",
+    "cnfa.fluency.edge_clarity_mean": "sha256:6b90c14b3e984de2e2d50219c30bf12babc353e1bdad0329e2b74c155dd3b5e2",
+    "cnfa.fluency.edge_orientation_entropy": "sha256:e7db55dfba57b4009aea331f44a696ab90da1c2992409e97c400b0af94aabdb4",
+    "cnfa.fluency.processing_load_proxy": "sha256:94b8974d2a370bd8b9193cc70b8bb62400d3601831d430488368d3ea16586ad9",
+    "cnfa.fluency.spectral_slope_deviation": "sha256:87cdb318cfb49f1fe337b192dd99ae2c118f8f95f902b835e62fe8e7b5ebd9be",
+    "cnfa.fractal_dimension": "sha256:25a9de60c52d2dd325a53467eb11c0cd72e8f871a361a22ebb6f5a03bcf1bb75",
+    "cnfa.light.brightness_variance": "sha256:b6ab708042b457b81c89a3b63ad226243cbd29435892437ffecfe81877685e48"
+   },
+   "image_sha256": "7f46493a6efdfbf6dd108d6b009b3fb821017cf3638d5f9e763d5aabddcd0da1",
+   "stats": {
+    "C1.visual_integration": {
+     "audit_class": "geometry_plan",
+     "cell_m": 0.0847,
+     "connectivity_norm": 0.805,
+     "free_cells": 6610,
+     "grid_hash": "4286c8fd36888fbe",
+     "integration_norm": 0.998,
+     "shape": [
+      506,
+      900
+     ],
+     "vanishing_point": [
+      294.3,
+      272.3
+     ]
+    },
+    "cnfa.fluency.color_palette_entropy": {
+     "attempts": 2,
+     "audit_class": "color_palette",
+     "centers": [
+      [
+       114.5,
+       128.5,
+       137.0
+      ],
+      [
+       136.2,
+       128.8,
+       137.9
+      ],
+      [
+       152.8,
+       128.8,
+       137.9
+      ],
+      [
+       168.1,
+       128.7,
+       138.1
+      ],
+      [
+       186.6,
+       128.5,
+       137.4
+      ],
+      [
+       203.0,
+       127.9,
+       133.6
+      ],
+      [
+       221.8,
+       127.8,
+       135.7
+      ],
+      [
+       242.0,
+       128.0,
+       132.8
+      ]
+     ],
+     "colorspace": "cv2-BGR2LAB",
+     "entropy_norm": 0.9272,
+     "k": 8,
+     "proportions": [
+      0.04,
+      0.121,
+      0.215,
+      0.226,
+      0.125,
+      0.144,
+      0.095,
+      0.033
+     ],
+     "seed": 1234,
+     "shape": [
+      506,
+      900
+     ]
+    },
+    "cnfa.fluency.edge_clarity_mean": {
+     "audit_class": "edge_stats",
+     "canny": [
+      60,
+      160
+     ],
+     "conversion": "BT601-on-RGB/255",
+     "mag_q": {
+      "p50": 0.04738476499915123,
+      "p95": 0.7451404929161072
+     },
+     "mean_mag_on_edges": 0.7353067994117737,
+     "n_edge_px": 38760,
+     "shape": [
+      506,
+      900
+     ]
+    },
+    "cnfa.fluency.edge_orientation_entropy": {
+     "audit_class": "orientation_hist",
+     "conversion": "BT601-on-RGB/255",
+     "entropy_norm": 0.726249309250552,
+     "hist": [
+      0.2574923154293087,
+      0.021586255004196326,
+      0.01228923256536601,
+      0.010988578934535186,
+      0.012133659778074563,
+      0.017911279349668244,
+      0.017414871355213832,
+      0.019931722406923355,
+      0.13132511088163493,
+      0.18828331577646024,
+      0.0258266819349269,
+      0.009980589915460714,
+      0.007726581086893349,
+      0.006806285760297605,
+      0.0074671994462452195,
+      0.009905597700940958,
+      0.020470175590805703,
+      0.22246054708304813
+     ],
+     "mag_frac": 0.05,
+     "min_edge_px": 40,
+     "n_edge_px": 116027,
+     "nbins": 18,
+     "shape": [
+      506,
+      900
+     ]
+    },
+    "cnfa.fluency.processing_load_proxy": {
+     "audit_class": "jpeg_tiles",
+     "global_bpp": 0.11385375494071147,
+     "n_tiles": 464,
+     "quality": 75,
+     "shape": [
+      506,
+      900
+     ],
+     "tile": 32,
+     "tile_bpp_q": {
+      "p5": 0.21819661458333334,
+      "p50": 0.24283854166666666,
+      "p95": 0.28405448717948717
+     }
+    },
+    "cnfa.fluency.spectral_slope_deviation": {
+     "audit_class": "radial_fft",
+     "conversion": "BT601",
+     "fit_band": [
+      0.1,
+      0.8
+     ],
+     "intercept": 13.091617950647622,
+     "n_bins": 32,
+     "r2": 0.7841927802354728,
+     "radial_logpower": [
+      23.878846245700153,
+      20.2971423740944,
+      18.979967317746404,
+      18.75592506671974,
+      19.369186323469002,
+      17.25599820585253,
+      16.885135298841664,
+      17.17549921781375,
+      17.706801253774334,
+      15.68462454196014,
+      15.141817160210712,
+      14.811781963548766,
+      15.344688556289954,
+      15.036784600300916,
+      14.518387817702198,
+      14.490273524092947,
+      16.585263241065846,
+      15.20774110256781,
+      13.91093537063467,
+      13.556413860052944,
+      13.977258345371776,
+      13.852490012789072,
+      13.883909872494174,
+      13.460976696371212,
+      15.016130078814685,
+      14.710609036548723,
+      14.123488375466806,
+      13.034326899316389,
+      10.867835184105562,
+      10.625103998477496,
+      10.492197595523082,
+      10.525337718884646
+     ],
+     "shape": [
+      506,
+      900
+     ],
+     "slope": -2.594845198626548,
+     "window_fn": "hann2d"
+    },
+    "cnfa.fractal_dimension": {
+     "D": 1.402765209614131,
+     "R2": 0.9978486493168994,
+     "audit_class": "box_count",
+     "canny": [
+      60,
+      160
+     ],
+     "conversion": "BT601-on-RGB uint8",
+     "edge_px": 38729,
+     "series": [
+      [
+       2,
+       20001
+      ],
+      [
+       4,
+       8320
+      ],
+      [
+       8,
+       3173
+      ],
+      [
+       16,
+       1079
+      ]
+     ],
+     "shape": [
+      506,
+      900
+     ]
+    },
+    "cnfa.light.brightness_variance": {
+     "audit_class": "luminance_field",
+     "bright_fraction": 0.028025911286780853,
+     "conversion": "BT601",
+     "global_mean": 166.37640651295564,
+     "global_std": 32.589974909531676,
+     "local_sd_q": {
+      "p5": 3.93239231938609,
+      "p50": 15.660218353425805,
+      "p95": 37.66428166831519,
+      "p99": 43.726467246139734
+     },
+     "shape": [
+      506,
+      900
+     ],
+     "window": 31
+    }
+   }
+  }
+ },
+ "stats_version": "cnfa-m1p-2026-07-19"
+}

@@ -18,6 +18,7 @@ Compare:
     python3 scripts/m1p_cross_env_replay.py --compare A.json B.json
 """
 import argparse, hashlib, json, sys
+import numpy as np
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -44,13 +45,20 @@ def emit_all(env: str, out_path: str):
             continue
         img_sha = hashlib.sha256(p.read_bytes()).hexdigest()
         img = MP.load_for_m1p(str(p))
-        digests = {}
+        digests, stats = {}, {}
         for pid, (ac, params) in sorted(MP.M1P_BINDINGS.items()):
             try:
-                digests[pid] = MP.emit(ac, img, **params)["digest"]
+                blk = MP.emit(ac, img, **params)
+                digests[pid] = blk["digest"]
+                stats[pid] = blk["stats"]          # full stats so mismatch DELTAS are quantifiable
             except Exception as e:
                 digests[pid] = f"ERROR:{type(e).__name__}"
-        result["images"][rel] = {"image_sha256": img_sha, "digests": digests}
+        # decode fingerprint: catches libjpeg version differences (decoded PIXELS differing while
+        # file bytes match — the korridor.jpg L5 finding, 2026-07-19)
+        import hashlib as _h
+        decode_sha = _h.sha256(np.ascontiguousarray(img).tobytes()).hexdigest()
+        result["images"][rel] = {"image_sha256": img_sha, "decoded_sha256": decode_sha,
+                                 "digests": digests, "stats": stats}
     Path(out_path).write_text(json.dumps(result, indent=1, sort_keys=True))
     n = sum(len(v.get("digests", {})) for v in result["images"].values())
     print(f"[{env}] wrote {n} digests over {len(SMOKE_SET)} images -> {out_path}")
@@ -65,11 +73,23 @@ def compare(a_path: str, b_path: str) -> int:
             print(f"BYTES DIFFER (not comparable): {rel}")
             bad += 1
             continue
+        if ia.get("decoded_sha256") and ib.get("decoded_sha256") and \
+                ia["decoded_sha256"] != ib["decoded_sha256"]:
+            print(f"DECODE DIFFERS (libjpeg/platform): {rel} — all downstream mismatches expected")
         for pid in sorted(set(ia.get("digests", {})) | set(ib.get("digests", {}))):
             da, db = ia.get("digests", {}).get(pid), ib.get("digests", {}).get(pid)
             if da != db:
-                print(f"DIGEST MISMATCH: {rel} :: {pid}\n  {A['env']}: {da}\n  {B['env']}: {db}")
                 bad += 1
+                deltas = ""
+                sa, sb = ia.get("stats", {}).get(pid), ib.get("stats", {}).get(pid)
+                if sa and sb:
+                    ds = []
+                    for k in sa:
+                        va, vb = sa.get(k), sb.get(k)
+                        if isinstance(va, (int, float)) and isinstance(vb, (int, float)) and va != vb:
+                            ds.append(f"{k}: {va} vs {vb}")
+                    deltas = ("  deltas: " + "; ".join(ds[:5])) if ds else "  (list/array-level diff)"
+                print(f"DIGEST MISMATCH: {rel} :: {pid}\n{deltas}")
     print("L5 RESULT:", "FAIL — environment sensitivity found" if bad else
           "PASS — all digests identical across environments")
     return bad
