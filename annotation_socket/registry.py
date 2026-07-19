@@ -25,7 +25,7 @@ are satisfied by the unit, each reaching SCORED or a verified ABSTAINED — neve
 from __future__ import annotations
 from typing import Callable, Dict, FrozenSet, List
 
-MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1+codexS0S2fix"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
+MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1+codexS0S2fix+clutterstack"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
 
 # input tokens a unit may carry beyond the image
 #   plan            inferable from the image (Tier B) — always satisfiable
@@ -104,6 +104,17 @@ PREDICATES: List[Dict] = [
           "RESIDUAL micro-texture EXCLUDING structured/periodic pattern (wallpaper/ribbing read as structure and mask out — Codex S0S2 MED; periodic-texture stat is future work)"),
     _spec("cnfa.geometry.orderliness_alignment", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
           "LSD segment orientation order (segment-scale; V13 stays pixel-scale); abstains <20 segments"),
+    # ---- clutter-stack layers (C-CLUT-2a/b/c, 2026-07-19: post-2007 clutter literature —
+    # proto-object numerosity + interpretable structural/chromatic layers; see
+    # docs/PAPER_NOTE_ROSENHOLTZ_CLUTTER_2007_AND_AFTER_2026-07-19.md). NO combined scalar:
+    # layer weights for interiors are a corpus-time fit. All AMBER.
+    _spec("cnfa.fluency.proto_object_count", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "mean-shift proto-object COUNT (Yu et al. 2014 family) — numerosity layer; PROXY"),
+    _spec("cnfa.fluency.multiscale_gradient", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "MSG-inspired multi-scale Sobel mean (arXiv:2501.15890) — structural layer; named PROXY"),
+    _spec("cnfa.fluency.multiscale_unique_color", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "MUC-inspired occupied color-bin fraction — chromatic-variety layer; named PROXY"),
+
     # street-noise acoustic operator (declared-input; docs/STREET_NOISE_ACOUSTIC_OPERATOR_SPEC)
     _spec("cnfa.acoustic.street_noise_intrusion", "plan_metric",
           frozenset({"outdoor_leq", "facade_spec"}), "replayable_tol", "AMBER",
@@ -179,4 +190,6 @@ MAY_LACK_SIGNAL = frozenset({
     "cnfa.light.dark_zone_map",                  # globally dark image
     "cnfa.material.texture_density",             # structure mask leaves <20%
     "cnfa.geometry.orderliness_alignment",       # <20 segments
+    "cnfa.fluency.proto_object_count",           # near-blank: nothing to segment
+    "cnfa.fluency.multiscale_gradient",          # near-blank
 })

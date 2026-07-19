@@ -58,6 +58,7 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset(),
     from cnfa_algs import attributes as A
     from cnfa_algs import reliable_attrs as RA
     from cnfa_algs import wave1_ops as W1
+    from cnfa_algs import clutter_stack as CS
     from cnfa_algs.plan import infer_plan_from_image, FREE
     from cnfa_algs import space_syntax as ss, setting_classifier as st, affordance as af
 
@@ -122,6 +123,10 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset(),
         "cnfa.light.dark_zone_map":               lambda: W1.dark_zone_map(img),
         "cnfa.material.texture_density":          lambda: W1.texture_density(img),
         "cnfa.geometry.orderliness_alignment":    lambda: W1.orderliness_alignment(img),
+        # clutter-stack layers (C-CLUT-2a/b/c, 2026-07-19) — all AMBER, profile-only (no blend)
+        "cnfa.fluency.proto_object_count":        lambda: CS.proto_object_count(img),
+        "cnfa.fluency.multiscale_gradient":       lambda: CS.multiscale_gradient(img),
+        "cnfa.fluency.multiscale_unique_color":   lambda: CS.multiscale_unique_color(img),
     }
     # ---- plan metrics from the inferred plan alone ----
     def _vga():
