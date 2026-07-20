@@ -39,6 +39,10 @@ def layer_group(key: str) -> str:
         return "semantic_zones"
     if key.startswith("cnfa.light."):
         return "light"
+    if key.startswith("cnfa.geometry.") or key.startswith("cnfa.arch.") or key.startswith("cnfa.spatial.") \
+            or key.startswith("cnfa.plan.") or key.startswith("C1.") or key.startswith("C2.") \
+            or key.startswith("C3.") or key.startswith("C4."):
+        return "space_geometry"     # wave-2 geometry, spatial-syntax, plan metrics (CC-4)
     return "fluency_clutter"        # fluency.*, fractal, texture, orderliness, clutter stack
 
 
@@ -185,6 +189,10 @@ def build_sidecar(image_path: str, out_dir: str,
         "sidecar_version": 2,
     }
     man_path.write_text(json.dumps(manifest, indent=1, sort_keys=True))
+    # VIEW-3 needs the full record (scores/tiers/abstentions) alongside the sidecar; write it once
+    # here so consumers annotate ONCE. The record is the authoritative score source (composer reads
+    # numbers only from here — never recomputes).
+    (root / f"{u}.record.json").write_text(json.dumps(rec))
     return manifest
 
 
