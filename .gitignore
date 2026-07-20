@@ -48,6 +48,10 @@ cnfa_external_collect/datasets_local/
 cnfa_external_collect/.venv/
 structured3d/*.zip
 cnfa_algs_demo_outputs/*.zip
+
+# L6 calibration corpus: local canonical PNGs stay out of Git; commit the manifest only.
+corpus_L6/*
+!corpus_L6/manifest.csv
 *.pyc
 __pycache__/
 .DS_Store
