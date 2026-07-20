@@ -43,7 +43,18 @@ Wave-3 pinned segmentation model lands, the gate swaps to true vegetation masks;
 
 Self-test: python3 -m cnfa_algs.complexity_partition
 """
+
+
 from __future__ import annotations
+
+# TAX-0 fix (Codex attack 2026-07-19): support direct `python3 cnfa_algs/<file>.py` invocation.
+# PEP 366: bootstrap the package context so ALL relative imports (top-level and function-level)
+# resolve identically to `python3 -m cnfa_algs.<file>`.
+if __package__ in (None, ""):
+    import sys as _sys, pathlib as _pl
+    _sys.path.insert(0, str(_pl.Path(__file__).resolve().parent.parent))
+    import cnfa_algs                     # initialize the package
+    __package__ = "cnfa_algs"
 from typing import Dict, List
 import numpy as np
 import cv2
@@ -74,6 +85,9 @@ MAT_TEXTURE_MIN = 0.015     # 5x5 local-range mean floor (real grain/weave, not 
 MAT_HUE_STD_MAX = 14.0      # color-homogeneity: hue dispersion low within the tile
 WATER_HUE = (95, 130)       # OpenCV hue: blue band
 WATER_TEXTURE_MAX = 0.02    # water reads smooth at tile scale
+WATER_ROW_MIN_FRAC = 0.45   # CP-2: water tiles must sit in the lower frame (walls fill it all)
+WATER_SPEC_DELTA = 0.25     # CP-2: specular glint = pixels this far above tile mean luminance
+WATER_SPEC_FRAC = (0.003, 0.15)   # CP-2: glint fraction band (flat paint ~0; a bright oval >0.15)
 ART_MAX_TILES_FRAC = 0.15   # an artwork zone is compact, not a wall of chaos
 ART_FILL_MIN = 0.75         # zone tiles fill >=75% of their bbox (rectangular footprint)
 
@@ -96,6 +110,9 @@ def complexity_partition(img_bgr) -> AttributeResult:
     Statistics-first regionalization — a foliage mass is one zone even though it is hundreds of
     color regions (the v1 mean-shift-zone approach shattered it; fixture caught it).
     Headline scalar = NEGATIVE-signed complexity area fraction ('which parts hurt')."""
+    img_bgr = np.asarray(img_bgr)
+    if img_bgr.ndim == 3 and img_bgr.shape[2] == 4:      # CS-3 (Codex attack): declared alpha
+        img_bgr = img_bgr[:, :, :3]                      # policy — alpha is DROPPED, not blended
     H, W = img_bgr.shape[:2]
     g8 = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
     if float(g8.std()) < 2.0:
@@ -124,6 +141,10 @@ def complexity_partition(img_bgr) -> AttributeResult:
     k5 = np.ones((5, 5), np.uint8)
     g01 = g8.astype(np.float32) / 255.0
     rngf = cv2.dilate(g01, k5) - cv2.erode(g01, k5)
+    # CP-2: water smoothness is judged on MEDIAN-filtered luminance — isolated specular
+    # glints are the water SIGNATURE, they must not fail the smoothness gate they license
+    g_med = cv2.medianBlur(g8, 5).astype(np.float32) / 255.0
+    rngf_med = cv2.dilate(g_med, k5) - cv2.erode(g_med, k5)
     for ty in range(nty):
         for tx in range(ntx):
             ys, xs = ty * T, tx * T
@@ -170,7 +191,16 @@ def complexity_partition(img_bgr) -> AttributeResult:
             is_material = (green_frac < GREEN_FRAC_GATE and tex >= MAT_TEXTURE_MIN
                            and hue_std <= MAT_HUE_STD_MAX
                            and ((wood_frac > 0.30 and mean_sat <= 0.75) or mean_sat < 0.20))
-            is_water = (blue_frac > 0.40 and tex <= WATER_TEXTURE_MAX)
+            # CP-2 fix (Codex attack 2026-07-19): a blue painted WALL is blue+smooth too.
+            # Indoor water needs BOTH a lower-frame position (pools/fountains/basins sit low;
+            # a blue wall fills the frame top-to-bottom) AND a specular glint signature
+            # (bright outliers well above tile mean — flat paint has none). Declared limit:
+            # mid-frame aquaria without glints will read as not-water (failure mode below).
+            spec_frac = float((g01[ys:ys + T, xs:xs + T] > tlum + WATER_SPEC_DELTA).mean())
+            tex_med = float(rngf_med[ys:ys + T, xs:xs + T].mean())
+            is_water = (blue_frac > 0.40 and tex_med <= WATER_TEXTURE_MAX
+                        and (ty + 0.5) / nty >= WATER_ROW_MIN_FRAC
+                        and WATER_SPEC_FRAC[0] <= spec_frac <= WATER_SPEC_FRAC[1])
             if green_frac >= GREEN_FRAC_GATE and is_fractal_organic:
                 c = "biophilic_vegetation"
             elif is_water:
@@ -309,7 +339,26 @@ def complexity_partition(img_bgr) -> AttributeResult:
                 "class_ids": CLASS_ID,
                 "constants": {"min_zone_frac": MIN_ZONE_FRAC, "green_hue": list(GREEN_HUE),
                               "green_sat_min": GREEN_SAT_MIN, "green_frac_gate": GREEN_FRAC_GATE,
-                              "d_band": list(D_BAND), "r2_min": R2_MIN, "edge_dense": EDGE_DENSE}},
+                              "d_band": list(D_BAND), "r2_min": R2_MIN, "edge_dense": EDGE_DENSE,
+                              # CP-1 (Codex attack 2026-07-19): EVERY tuned gate constant declared
+                              "wood_hue": list(WOOD_HUE), "mat_texture_min": MAT_TEXTURE_MIN,
+                              "mat_hue_std_max": MAT_HUE_STD_MAX,
+                              "mat_wood_frac_min": 0.30, "mat_wood_sat_max": 0.75,
+                              "mat_desat_max": 0.20,
+                              "water_hue": list(WATER_HUE),
+                              "water_texture_max": WATER_TEXTURE_MAX,
+                              "water_row_min_frac": WATER_ROW_MIN_FRAC,
+                              "water_spec_delta": WATER_SPEC_DELTA,
+                              "water_spec_frac": list(WATER_SPEC_FRAC),
+                              "fire_hue": list(FIRE_HUE), "fire_sat_min": FIRE_SAT_MIN,
+                              "fire_lum_min": FIRE_LUM_MIN, "fire_std_min": FIRE_STD_MIN,
+                              "sky_lum_min": SKY_LUM_MIN, "sky_tex_max": SKY_TEX_MAX,
+                              "sky_blown_lum": 0.88,
+                              "periodic_peak_min": PERIODIC_PEAK_MIN,
+                              "ornament_peak_min": ORNAMENT_PEAK_MIN,
+                              "coherence_min": COHERENCE_MIN,
+                              "art_frame_edge_min": ART_FRAME_EDGE_MIN,
+                              "merge_connectivity": 4}},   # CP-8: 4-adjacency tile merge, declared
         failure_modes=["biophilic gate is chromaticity+D-band, NOT true vegetation (AMBER; the "
                        "Wave-3 segmentation model upgrades the gate, architecture unchanged)",
                        "hedonic hypotheses are UNLICENSED pending corpus (Taylor/Hagerhall "
@@ -320,7 +369,15 @@ def complexity_partition(img_bgr) -> AttributeResult:
                        "surfaces read as material wholesale, shrinking junk_clutter (industrial "
                        "office smoke: junk 0.60 pre-taxonomy -> 0.0 post) — gate PRECISION is the "
                        "corpus's first calibration target for this operator",
-                       "tile gates are declared engineering thresholds pending corpus refit"])
+                       "tile gates are declared engineering thresholds pending corpus refit",
+                       # Codex attack 2026-07-19 dispositions (CP-2/3/4 fixtures):
+                       "water gate needs lower-frame position + glint band: mid-frame aquaria "
+                       "without specular glints read as not-water (declared limit)",
+                       "mirrors/framed reflective surfaces confound the art frame test and can "
+                       "scatter across material/sky/ornament (CP-3; real fix is the Wave-3 "
+                       "detector + VLM art-content gate, CC-5)",
+                       "bright HIGH-TEXTURE ceilings can read junk_clutter (CP-4): the "
+                       "sky/ceiling/junk boundary is threshold-tuned, corpus-refit target"])
 
 
 # --------------------------------------------------------------------------- self-test

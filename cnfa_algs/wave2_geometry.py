@@ -13,7 +13,18 @@ openness, W2.3 double-height flag, W2.4 blind corners, W2.5 barrier permeability
 
 Self-test: python3 -m cnfa_algs.wave2_geometry
 """
+
+
 from __future__ import annotations
+
+# TAX-0 fix (Codex attack 2026-07-19): support direct `python3 cnfa_algs/<file>.py` invocation.
+# PEP 366: bootstrap the package context so ALL relative imports (top-level and function-level)
+# resolve identically to `python3 -m cnfa_algs.<file>`.
+if __package__ in (None, ""):
+    import sys as _sys, pathlib as _pl
+    _sys.path.insert(0, str(_pl.Path(__file__).resolve().parent.parent))
+    import cnfa_algs                     # initialize the package
+    __package__ = "cnfa_algs"
 import numpy as np
 import cv2
 

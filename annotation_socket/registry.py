@@ -25,7 +25,7 @@ are satisfied by the unit, each reaching SCORED or a verified ABSTAINED — neve
 from __future__ import annotations
 from typing import Callable, Dict, FrozenSet, List
 
-MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1+codexS0S2fix+clutterstack+cpart+faithfulV6V7+tax2+cc2m1p"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
+MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1+codexS0S2fix+clutterstack+cpart+faithfulV6V7+tax2+cc2m1p+taxfix"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
 
 # input tokens a unit may carry beyond the image
 #   plan            inferable from the image (Tier B) — always satisfiable
@@ -120,9 +120,11 @@ PREDICATES: List[Dict] = [
     # construct validation only. Proxies stay registered (Q3 parallel run).
     _spec("cnfa.fluency.feature_congestion", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
           "Rosenholtz FC, ADJUDICATED reference port; weights fit on maps/UI — corpus must "
-          "validate for interiors (see DT-1: foliage reads as clutter)"),
+          "validate for interiors (see DT-1: foliage reads as clutter). RUNTIME DEP: "
+          "scikit-image (FC-3, Codex 07-19) — absent -> compute_failed UNKNOWN, honest RED"),
     _spec("cnfa.fluency.subband_entropy", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
-          "Rosenholtz SE, ADJUDICATED reference port; same corpus caveat + DT-1"),
+          "Rosenholtz SE, ADJUDICATED reference port; same corpus caveat + DT-1; same "
+          "scikit-image runtime dep as FC (FC-3)"),
 
     # semantic complexity partition (David 2026-07-19: regionalized, SIGNED complexity — the
     # DT-1 fix): tile-classify -> merge to zones {biophilic_fractal+, ordered, junk_clutter-,

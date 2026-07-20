@@ -26,7 +26,18 @@ out of scope here.
 
 Self-test: python3 -m cnfa_algs.clutter_stack
 """
+
+
 from __future__ import annotations
+
+# TAX-0 fix (Codex attack 2026-07-19): support direct `python3 cnfa_algs/<file>.py` invocation.
+# PEP 366: bootstrap the package context so ALL relative imports (top-level and function-level)
+# resolve identically to `python3 -m cnfa_algs.<file>`.
+if __package__ in (None, ""):
+    import sys as _sys, pathlib as _pl
+    _sys.path.insert(0, str(_pl.Path(__file__).resolve().parent.parent))
+    import cnfa_algs                     # initialize the package
+    __package__ = "cnfa_algs"
 import numpy as np
 import cv2
 
@@ -54,6 +65,9 @@ def proto_object_count(img_bgr) -> AttributeResult:
     above the noise floor. Emits count, density (per Mpx), and region-size entropy. The count is
     the construct the 2014 line found dominant; the size entropy separates 'many similar bits'
     from 'few big things + crumbs'."""
+    img_bgr = np.asarray(img_bgr)
+    if img_bgr.ndim == 3 and img_bgr.shape[2] == 4:   # CS-3: declared alpha policy
+        img_bgr = img_bgr[:, :, :3]                   # alpha DROPPED, not blended
     if float(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY).std()) < 2.0:
         return AttributeResult(key="cnfa.fluency.proto_object_count", scalar=None, confidence=0.0,
                                method="ABSTAIN: near-blank image (no segmentable structure)",
@@ -104,6 +118,9 @@ def multiscale_gradient(img_bgr) -> AttributeResult:
     """Structural layer (MSG-inspired, arXiv:2501.15890): mean Sobel magnitude averaged over
     4 dyadic scales. Multi-scale averaging is what lets it see BOTH fine busy-ness and large-scale
     structure — the property that beat plain Canny edge density on 5/16 datasets."""
+    img_bgr = np.asarray(img_bgr)
+    if img_bgr.ndim == 3 and img_bgr.shape[2] == 4:   # CS-3: declared alpha policy
+        img_bgr = img_bgr[:, :, :3]                   # alpha DROPPED, not blended
     g = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY).astype(np.float32) / 255.0
     if float(g.std()) < 2.0 / 255.0:
         return AttributeResult(key="cnfa.fluency.multiscale_gradient", scalar=None, confidence=0.0,
@@ -133,6 +150,9 @@ def multiscale_unique_color(img_bgr) -> AttributeResult:
     """Chromatic layer (MUC-inspired, arXiv:2501.15890): fraction of occupied color-quantization
     bins, averaged over spatial scales x color resolutions. Distinct from palette ENTROPY (which
     measures balance among 8 clusters): MUC measures VARIETY — how much of color space is used."""
+    img_bgr = np.asarray(img_bgr)
+    if img_bgr.ndim == 3 and img_bgr.shape[2] == 4:   # CS-3: declared alpha policy
+        img_bgr = img_bgr[:, :, :3]                   # alpha DROPPED, not blended
     a = np.asarray(img_bgr)
     vals = []
     for s in MUC_SPATIAL:

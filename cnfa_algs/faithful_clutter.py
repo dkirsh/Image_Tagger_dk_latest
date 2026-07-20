@@ -20,7 +20,18 @@ Q3 — the parallel run measures how wrong the proxies were.
 
 Self-test: python3 -m cnfa_algs.faithful_clutter   (fixtures + determinism + real-image smoke)
 """
+
+
 from __future__ import annotations
+
+# TAX-0 fix (Codex attack 2026-07-19): support direct `python3 cnfa_algs/<file>.py` invocation.
+# PEP 366: bootstrap the package context so ALL relative imports (top-level and function-level)
+# resolve identically to `python3 -m cnfa_algs.<file>`.
+if __package__ in (None, ""):
+    import sys as _sys, pathlib as _pl
+    _sys.path.insert(0, str(_pl.Path(__file__).resolve().parent.parent))
+    import cnfa_algs                     # initialize the package
+    __package__ = "cnfa_algs"
 import numpy as np
 
 try:
@@ -67,7 +78,8 @@ def feature_congestion_faithful(img_bgr) -> AttributeResult:
                                method="ABSTAIN: near-blank image — FC on a featureless field is the entropy/variance of "
                                       "numerical noise (S1 adjudication: platform-dependent, "
                                       "construct-meaningless)",
-                               extras={"std_dn": round(float(_cv2.cvtColor(a_chk if a_chk.ndim == 3
+                               extras={"std_threshold_dn": 2.0,   # FC-6: the abstain gate, declared
+                                       "std_dn": round(float(_cv2.cvtColor(a_chk if a_chk.ndim == 3
                                        else np.stack([a_chk]*3, -1).astype(np.uint8),
                                        _cv2.COLOR_BGR2GRAY).std()), 3)},
                                failure_modes=["undefined on blank input"])
@@ -110,7 +122,8 @@ def subband_entropy_faithful(img_bgr) -> AttributeResult:
                                method="ABSTAIN: near-blank image — SE on a featureless field is the entropy/variance of "
                                       "numerical noise (S1 adjudication: platform-dependent, "
                                       "construct-meaningless)",
-                               extras={"std_dn": round(float(_cv2.cvtColor(a_chk if a_chk.ndim == 3
+                               extras={"std_threshold_dn": 2.0,   # FC-6: the abstain gate, declared
+                                       "std_dn": round(float(_cv2.cvtColor(a_chk if a_chk.ndim == 3
                                        else np.stack([a_chk]*3, -1).astype(np.uint8),
                                        _cv2.COLOR_BGR2GRAY).std()), 3)},
                                failure_modes=["undefined on blank input"])
