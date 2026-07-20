@@ -636,6 +636,111 @@ def gen_ab(base_rel, manip, expected=None, note=""):
     print(f"generated A/B {pid}: A=base B={manip}  expected_better={exp}  (targets {op})")
 
 
+# target corpus composition (DK-1 plan: ~120 interiors + 80 A/B pairs + niches). Edit to taste.
+TARGETS = {"interiors": 116, "nature_glass": 20, "materials": 15, "collections": 15}
+PAIR_TARGET = 80
+AB_MANIPS = ["daylight", "glare", "warmth", "contrast"]
+
+
+def gen_ab_batch(from_cat, n, manips):
+    """Generate n controlled A/B pairs from the singleton images already in corpus_L6/<from_cat>/,
+    cycling the manipulation list for variety. Idempotent per (base, manip): re-running overwrites
+    the same pair id rather than duplicating."""
+    bases = sorted(p for p in (CORPUS / from_cat).glob("*.png") if "_A_base" not in p.name)
+    if not bases:
+        sys.exit(f"no base images in corpus_L6/{from_cat}/ — collect some interiors first")
+    made = 0
+    for i, base in enumerate(bases):
+        if made >= n:
+            break
+        manip = manips[i % len(manips)]
+        gen_ab(f"{from_cat}/{base.name}", manip)
+        made += 1
+    print(f"\ngenerated {made} A/B pairs from {from_cat}/ (targets: {', '.join(manips)})")
+
+
+def corpus_status():
+    """Report corpus composition vs targets from the manifest + provenance — the 'are we there yet'."""
+    from collections import Counter, defaultdict
+    if not MANIFEST.exists():
+        print("no manifest yet — nothing collected."); return
+    rows = list(csv.DictReader(MANIFEST.open()))
+    prov = list(csv.DictReader(PROVENANCE.open())) if PROVENANCE.exists() else []
+    singles = [r for r in rows if not r["pair_id"]]
+    cat = Counter(r["category"] for r in singles)
+    pairs = defaultdict(list)
+    for r in rows:
+        if r["pair_id"]:
+            pairs[r["pair_id"]].append(r)
+    complete = [p for p, rs in pairs.items() if len(rs) == 2]
+    verdicted = [p for p in complete if any(rs["pair_expected_better"] in ("A", "B") for rs in pairs[p])]
+
+    def bar(have, want, w=24):
+        f = min(1.0, have / want) if want else 1.0
+        return "[" + "#" * int(f * w) + "-" * (w - int(f * w)) + f"] {have}/{want} ({f*100:.0f}%)"
+
+    print("\n==================== L6 CORPUS STATUS ====================")
+    print("Singletons by category:")
+    for c, want in TARGETS.items():
+        print(f"  {c:14s} {bar(cat.get(c, 0), want)}")
+    other = {c: n for c, n in cat.items() if c not in TARGETS}
+    if other:
+        print(f"  (other: {other})")
+    print(f"\nA/B pairs:       {bar(len(complete), PAIR_TARGET)}  "
+          f"({len(verdicted)} with an expected-better verdict)")
+    total_imgs = sum(cat.values()) + sum(len(rs) for rs in pairs.values())
+    print(f"\nTotal images:    {total_imgs}   (manifest rows: {len(rows)})")
+    if prov:
+        src = Counter(r["source"] for r in prov)
+        lic = Counter((r["license"].split(";")[0].split(" by ")[0]).strip() for r in prov)
+        on_drive = sum(1 for r in prov if r.get("gdrive_path"))
+        dims = [(int(r["width"]), int(r["height"])) for r in prov if r.get("width")]
+        print(f"Sources:         {dict(src)}")
+        print(f"Licences:        {dict(lic)}")
+        print(f"On Google Drive: {on_drive}/{len(prov)} provenance rows")
+        if dims:
+            shorts = sorted(min(w, h) for w, h in dims)
+            print(f"Short-side px:   min {shorts[0]}, median {shorts[len(shorts)//2]}, max {shorts[-1]}")
+    # gap callouts
+    gaps = [f"{want - cat.get(c, 0)} more {c}" for c, want in TARGETS.items() if cat.get(c, 0) < want]
+    if len(complete) < PAIR_TARGET:
+        gaps.append(f"{PAIR_TARGET - len(complete)} more A/B pairs")
+    print("\nStill needed:    " + ("; ".join(gaps) if gaps else "targets met ✓"))
+    print("==========================================================\n")
+
+
+def seed_all(gdrive, per_web=12):
+    """One-shot: run the recommended collection plan to Drive. Runs on YOUR machine (live network +
+    keys). Academic MIT Indoor67 for volume+niches, Unsplash for high-res niche shots, then batch A/B
+    from the collected interiors. Adjust budgets inline; safe to re-run (idempotent per source id)."""
+    global GDRIVE_REMOTE
+    if gdrive:
+        GDRIVE_REMOTE = gdrive; check_rclone(GDRIVE_REMOTE)
+    print("SEED-ALL plan -> filling every category, then A/B pairs.\n")
+    # 1) MIT Indoor67 (volume + niches auto-routed) — needs Kaggle creds
+    try:
+        root = kaggle_download("itsahmad/indoor-scenes-cvpr-2019")
+        collect_from_examples(walk_dir(root, MIT_INDOOR_KEEP, "interiors", "mit_indoor67", 600),
+                              limit=200, min_px=1024, dry=False)
+    except Exception as e:
+        print(f"  [skip mit_indoor: {e}]")
+    # 2) Unsplash high-res niche top-ups (needs UNSPLASH_ACCESS_KEY)
+    if os.environ.get("UNSPLASH_ACCESS_KEY"):
+        for c in ["nature_glass", "materials", "collections", "_water", "_fire", "_sky"]:
+            try:
+                collect(c, "unsplash", per_web, 1024, dry=False)
+            except SystemExit:
+                pass
+    else:
+        print("  [skip unsplash top-ups: set UNSPLASH_ACCESS_KEY]")
+    # 3) A/B pairs from collected interiors
+    try:
+        gen_ab_batch("interiors", PAIR_TARGET, AB_MANIPS)
+    except SystemExit as e:
+        print(f"  [A/B batch: {e}]")
+    print("\nSEED-ALL done. Run --status to see composition.")
+
+
 def main():
     global GDRIVE_REMOTE, OFFLOAD
     ap = argparse.ArgumentParser(description="Collect licence-clean images into the L6 corpus.")
@@ -656,6 +761,14 @@ def main():
     ap.add_argument("--ab-expected", choices=["A", "B", "unknown"], default=None,
                     help="override the manipulation's default expected-better (default A = base)")
     ap.add_argument("--ab-note", default="", help="extra note for the generated pair")
+    ap.add_argument("--gen-ab-batch", type=int, metavar="N",
+                    help="generate N A/B pairs from collected interiors (cycles manipulations)")
+    ap.add_argument("--ab-from", default="interiors", help="category folder to draw A/B bases from")
+    ap.add_argument("--ab-manips", default=",".join(AB_MANIPS),
+                    help="comma list of manipulations to cycle for --gen-ab-batch")
+    ap.add_argument("--status", action="store_true", help="report corpus composition vs targets, then exit")
+    ap.add_argument("--seed-all", action="store_true",
+                    help="one-shot: run the full recommended collection plan (academic+web+A/B)")
     # storage: mirror payloads to Google Drive (manifest + provenance stay local as the index)
     ap.add_argument("--gdrive", nargs="?", const="gdrive:corpus_L6", default=None,
                     help="mirror each PNG to this rclone remote (default gdrive:corpus_L6 if bare)")
@@ -675,14 +788,22 @@ def main():
     ap.add_argument("--hf-image-field", default="image")
     ap.add_argument("--hf-label-field", default="label")
     a = ap.parse_args()
+    if a.status:
+        return corpus_status()
     if a.rehydrate:
         return rehydrate(a.rehydrate)
+    if a.seed_all:
+        return seed_all(a.gdrive)
     if a.make_pair:
         return make_pair(*a.make_pair)
     if a.gen_ab:
         if a.gdrive:
             GDRIVE_REMOTE = a.gdrive; check_rclone(GDRIVE_REMOTE)
         return gen_ab(a.gen_ab[0], a.gen_ab[1], a.ab_expected, a.ab_note)
+    if a.gen_ab_batch:
+        if a.gdrive:
+            GDRIVE_REMOTE = a.gdrive; check_rclone(GDRIVE_REMOTE)
+        return gen_ab_batch(a.ab_from, a.gen_ab_batch, [m.strip() for m in a.ab_manips.split(",")])
     if not CORPUS.exists() and not a.dry_run:
         sys.exit(f"{CORPUS} not found — run from the repo root.")
     if a.offload and not a.gdrive:
