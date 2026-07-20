@@ -576,7 +576,68 @@ def make_pair(a_rel, b_rel, better, note):
     print(f"registered pair {pid}: A={a_rel} B={b_rel} expected_better={better}")
 
 
+def _apply_manip(im, manip):
+    """Degrade a base interior along ONE well-being axis -> a controlled A/B variant. The base is the
+    ground-truth 'better' (expected_better='A'). Returns (variant, default_expected, operator, desc).
+    Photometric only: valid for the LIGHT / colour / affect operators, NOT geometry/biophilia (same
+    room, one variable changed — a cleaner signal than two different rooms for those operators)."""
+    from PIL import ImageEnhance, ImageFilter, ImageDraw, ImageChops
+    m = manip.lower()
+    if m == "daylight":                       # dim -> less daylight access
+        v = ImageEnhance.Brightness(im).enhance(0.5)
+        return v, "A", "C10 daylight_proximity / C22 circadian_contrast", "brightness x0.5 (dimmer)"
+    if m == "glare":                          # add a blown-out hotspot -> glare cost
+        v = im.copy(); w, h = v.size
+        blob = Image.new("L", (w, h), 0); d = ImageDraw.Draw(blob)
+        r = int(min(w, h) * 0.18); cx, cy = int(w * 0.72), int(h * 0.28)
+        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=255)
+        blob = blob.filter(ImageFilter.GaussianBlur(r * 0.6))
+        white = Image.new("RGB", (w, h), (255, 255, 255))
+        v = Image.composite(white, v, blob)
+        v = ImageChops.screen(v, Image.merge("RGB", [blob] * 3))
+        return v, "A", "glare-risk", "added specular hotspot (upper-right)"
+    if m == "warmth":                         # cold blue cast -> loses evening warmth
+        rr, gg, bb = im.split()
+        rr = rr.point(lambda p: int(p * 0.78)); bb = bb.point(lambda p: min(255, int(p * 1.25)))
+        v = Image.merge("RGB", (rr, gg, bb))
+        return v, "A", "evening_ambience / temperature_mismatch", "cool colour cast (R x0.78, B x1.25)"
+    if m == "contrast":                       # harsh contrast + crushed shadows
+        v = ImageEnhance.Contrast(im).enhance(1.8)
+        v = ImageEnhance.Brightness(v).enhance(0.85)
+        return v, "A", "processing_load / fluency", "contrast x1.8, brightness x0.85 (harsh)"
+    sys.exit(f"unknown manip '{manip}'. Choose: daylight | glare | warmth | contrast")
+
+
+def gen_ab(base_rel, manip, expected=None, note=""):
+    """Make a controlled photometric A/B pair from a base image already under corpus_L6/: writes
+    pairs/<pid>_A_base.png and pairs/<pid>_B_<manip>.png, registers them with the manipulation's known
+    'expected better', and (if --gdrive is set) mirrors both to Drive."""
+    from PIL import Image as _I
+    base = CORPUS / base_rel
+    if not base.exists():
+        sys.exit(f"base not found: {base} (path relative to corpus_L6/)")
+    im = _I.open(base).convert("RGB")
+    variant, dexp, op, desc = _apply_manip(im, manip)
+    pid = "gab_" + hashlib.sha1(f"{base_rel}|{manip}".encode()).hexdigest()[:8]
+    (CORPUS / "pairs").mkdir(parents=True, exist_ok=True)
+    a_rel, b_rel = f"pairs/{pid}_A_base.png", f"pairs/{pid}_B_{manip}.png"
+    im.save(CORPUS / a_rel, "PNG"); variant.save(CORPUS / b_rel, "PNG")
+    exp = expected or dexp
+    full = (f"controlled photometric A/B from {base_rel}; manip={manip} ({desc}); targets {op}. "
+            f"{note}").strip()
+    make_pair(a_rel, b_rel, exp, full)
+    if GDRIVE_REMOTE:
+        try:
+            for rel in (a_rel, b_rel):
+                gdrive_upload(CORPUS / rel, GDRIVE_REMOTE, "pairs", Path(rel).name)
+            print(f"  mirrored pair to {GDRIVE_REMOTE}/pairs/")
+        except Exception as e:
+            print(f"  pair upload failed: {e} (kept local)")
+    print(f"generated A/B {pid}: A=base B={manip}  expected_better={exp}  (targets {op})")
+
+
 def main():
+    global GDRIVE_REMOTE, OFFLOAD
     ap = argparse.ArgumentParser(description="Collect licence-clean images into the L6 corpus.")
     web_sources = list(SEARCH)                               # openverse/unsplash/pexels (query-based)
     academic = ["mit_indoor", "hf", "from-dir"]              # label/folder-based
@@ -589,6 +650,12 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--make-pair", nargs=4, metavar=("A_REL", "B_REL", "BETTER", "NOTE"),
                     help="register an A/B pair (paths relative to corpus_L6/)")
+    ap.add_argument("--gen-ab", nargs=2, metavar=("BASE_REL", "MANIP"),
+                    help="generate a controlled photometric A/B pair from a base image; "
+                         "MANIP = daylight | glare | warmth | contrast")
+    ap.add_argument("--ab-expected", choices=["A", "B", "unknown"], default=None,
+                    help="override the manipulation's default expected-better (default A = base)")
+    ap.add_argument("--ab-note", default="", help="extra note for the generated pair")
     # storage: mirror payloads to Google Drive (manifest + provenance stay local as the index)
     ap.add_argument("--gdrive", nargs="?", const="gdrive:corpus_L6", default=None,
                     help="mirror each PNG to this rclone remote (default gdrive:corpus_L6 if bare)")
@@ -612,9 +679,12 @@ def main():
         return rehydrate(a.rehydrate)
     if a.make_pair:
         return make_pair(*a.make_pair)
+    if a.gen_ab:
+        if a.gdrive:
+            GDRIVE_REMOTE = a.gdrive; check_rclone(GDRIVE_REMOTE)
+        return gen_ab(a.gen_ab[0], a.gen_ab[1], a.ab_expected, a.ab_note)
     if not CORPUS.exists() and not a.dry_run:
         sys.exit(f"{CORPUS} not found — run from the repo root.")
-    global GDRIVE_REMOTE, OFFLOAD
     if a.offload and not a.gdrive:
         ap.error("--offload needs --gdrive")
     if a.gdrive:
