@@ -18,6 +18,24 @@ SOURCES (pick with --source; combine by running more than once)
   unsplash   needs UNSPLASH_ACCESS_KEY. High-res, watermark-free. Unsplash Licence (commercial OK).
   pexels     needs PEXELS_API_KEY. High-res, watermark-free. Pexels Licence (commercial OK).
 
+ACADEMIC SOURCES (label/folder based; research licence — keep on your own storage)
+  mit_indoor  MIT Indoor67 via Kaggle (--kaggle-dataset, default itsahmad/indoor-scenes-cvpr-2019).
+              Needs the Kaggle CLI + ~/.kaggle/kaggle.json. Original-res photos; its 67 categories map
+              onto the niches (greenhouse/florist/nursery->nature_glass, library/bookstore/museum->
+              collections, winecellar->materials, the rest->interiors). Best academic fit.
+  from-dir    Walk an already-extracted dataset tree (--from-dir ROOT), category = parent folder.
+              Use for the MIT tar (indoorCVPR_09/Images/<cat>/) or any ImageNet-style layout.
+  hf          Stream a Hugging Face dataset (--hf-preset places365|ade20k, or --hf-dataset ID +
+              --hf-split/--hf-image-field/--hf-label-field). `pip3 install datasets`; gated sets need
+              `huggingface-cli login`. NOTE: Places365 HF mirrors are 256px (raise/lower --min-px
+              knowingly); ADE20K has no per-image scene label so everything routes to --default-cat.
+
+  ACADEMIC EXAMPLES
+    pip3 install datasets kaggle --break-system-packages
+    python3 scripts/collect_corpus_L6.py --source mit_indoor --limit 120           # niches auto-routed
+    python3 scripts/collect_corpus_L6.py --source from-dir --from-dir ~/indoorCVPR_09/Images --limit 80
+    python3 scripts/collect_corpus_L6.py --source hf --hf-preset places365 --min-px 256 --limit 100
+
 WHY these: free/known licence, native resolution, no watermarks or UI chrome — exactly the corpus rule.
 Avoid scraping ArchDaily/Dezeen/Pinterest (copyright) and Freepik (attribution / AI content).
 
@@ -193,6 +211,199 @@ def search_pexels(query, limit):
 SEARCH = {"openverse": search_openverse, "unsplash": search_unsplash, "pexels": search_pexels}
 
 
+# ================================================================= ACADEMIC datasets
+# Academic scene sets carry their OWN scene-category labels; we map the relevant ones onto the
+# corpus_L6 folders and route the rest of the interior labels to interiors/. Everything not in a
+# keep-map is skipped. All are research-licence — keep them on your own storage (as with Structured3D).
+#
+# MIT Indoor67 (Kaggle: itsahmad/indoor-scenes-cvpr-2019 -> indoorCVPR_09/Images/<category>/*.jpg,
+# or the MIT tar). Original resolution real photos; its 67 categories cover the niches directly.
+MIT_INDOOR_KEEP = {
+    # biophilia / nature-through-glazing
+    "greenhouse": "nature_glass", "florist": "nature_glass", "nursery": "nature_glass",
+    # material-forward
+    "winecellar": "materials",
+    # collections / ornament / shelving
+    "library": "collections", "bookstore": "collections", "museum": "collections",
+    "toystore": "collections", "jewelleryshop": "collections", "videostore": "collections",
+    "clothingstore": "collections", "shoeshop": "collections", "grocerystore": "collections",
+    "deli": "collections", "bakery": "collections",
+    # general + ordinary/ugly interiors -> interiors/
+    "livingroom": "interiors", "lobby": "interiors", "waitingroom": "interiors", "office": "interiors",
+    "meeting_room": "interiors", "dining_room": "interiors", "classroom": "interiors",
+    "bedroom": "interiors", "kitchen": "interiors", "corridor": "interiors", "bathroom": "interiors",
+    "hospitalroom": "interiors", "restaurant": "interiors", "auditorium": "interiors",
+    "concert_hall": "interiors", "church_inside": "interiors", "mall": "interiors", "gym": "interiors",
+    "computerroom": "interiors", "poolinside": "interiors", "pantry": "interiors", "closet": "interiors",
+    "garage": "interiors", "locker_room": "interiors", "prisoncell": "interiors",
+    "stairscase": "interiors", "dentaloffice": "interiors", "operating_room": "interiors",
+    "artstudio": "interiors", "gameroom": "interiors", "children_room": "interiors",
+    "laundromat": "interiors", "kindergarden": "interiors", "buffet": "interiors", "bar": "interiors",
+}
+# Places365: 365 categories; keep the interior ones. (256px mirrors will be dropped by --min-px;
+# use --min-px 256 knowingly, or pull the high-res Places365-large tars.)
+PLACES365_KEEP = {c: "interiors" for c in [
+    "living_room", "waiting_room", "lobby", "atrium/public", "reception", "office", "office_cubicles",
+    "conference_room", "hospital_room", "art_gallery", "library/indoor", "bookstore", "restaurant",
+    "dining_room", "bedroom", "kitchen", "corridor", "classroom", "auditorium", "museum/indoor",
+    "art_studio", "childs_room", "computer_room", "recreation_room", "television_room", "home_office",
+    "hotel_room", "dorm_room", "physics_laboratory", "server_room", "clean_room"]}
+PLACES365_KEEP.update({"greenhouse/indoor": "nature_glass", "conservatory": "nature_glass",
+                       "botanical_garden": "nature_glass"})
+
+# HF presets for `--source hf` (streamed; filter by the dataset's own label feature).
+HF_PRESETS = {
+    "places365": {"hf": "torch-uncertainty/Places365", "split": "train", "image_field": "image",
+                  "label_field": "label", "keep": PLACES365_KEEP, "default_cat": None},
+    "ade20k":    {"hf": "zhoubolei/scene_parse_150", "split": "train", "image_field": "image",
+                  "label_field": None, "keep": None, "default_cat": "interiors"},  # no per-image scene
+}
+
+
+def _pil_from(x):
+    """Accept a PIL image, a datasets Image dict {bytes|path}, or a filesystem path -> RGB PIL."""
+    from PIL import Image as _I
+    if hasattr(x, "convert"):
+        return x.convert("RGB")
+    if isinstance(x, dict):
+        if x.get("bytes"):
+            return _I.open(io.BytesIO(x["bytes"])).convert("RGB")
+        if x.get("path"):
+            return _I.open(x["path"]).convert("RGB")
+    if isinstance(x, (str, Path)):
+        return _I.open(x).convert("RGB")
+    raise ValueError("unrecognized image field")
+
+
+def walk_dir(root, keep_map, default_cat, source_tag, limit):
+    """Yield (meta, PIL) from an extracted dataset tree <root>/**/<category>/<file>. The category is
+    the immediate parent folder (MIT Indoor67, ImageNet-style, Kaggle unzips). keep_map routes
+    category->corpus folder; unknown categories go to default_cat (or are skipped if None)."""
+    root = Path(root)
+    exts = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+    n = 0
+    for p in sorted(root.rglob("*")):
+        if n >= limit:
+            break
+        if p.suffix.lower() not in exts or not p.is_file():
+            continue
+        cat_raw = p.parent.name
+        corpus_cat = keep_map.get(_norm(cat_raw), default_cat)
+        if corpus_cat is None:
+            continue
+        try:
+            im = _pil_from(p)
+        except Exception as e:
+            print(f"    skip {p.name}: {e}"); continue
+        meta = {"source": source_tag, "id": f"{cat_raw}_{p.stem}", "creator": "dataset",
+                "license": f"{source_tag} research licence", "license_url": "",
+                "orig_url": str(p), "_corpus_cat": corpus_cat, "_tag": cat_raw}
+        yield meta, im
+        n += 1
+
+
+def _norm(s):
+    return re.sub(r"[^a-z0-9]+", "", str(s).lower())
+
+
+def stream_hf(name, split, image_field, label_field, keep_map, default_cat, source_tag, limit):
+    """Yield (meta, PIL) from a Hugging Face dataset in streaming mode, filtered by its label feature.
+    Gated datasets need `huggingface-cli login` first. If label_field is None, no scene filter is
+    applied (everything -> default_cat)."""
+    try:
+        from datasets import load_dataset
+    except ImportError:
+        sys.exit("pip3 install datasets --break-system-packages   (needed for --source hf)")
+    ds = load_dataset(name, split=split, streaming=True)
+    int2str = None
+    try:
+        feat = ds.features.get(label_field) if label_field else None
+        if feat is not None and hasattr(feat, "int2str"):
+            int2str = feat.int2str
+    except Exception:
+        pass
+    n = 0
+    for ex in ds:
+        if n >= limit:
+            break
+        lab_name = None
+        if label_field is not None and label_field in ex:
+            lv = ex[label_field]
+            lab_name = int2str(lv) if (int2str and isinstance(lv, int)) else str(lv)
+        corpus_cat = default_cat if label_field is None else (keep_map or {}).get(_norm(lab_name))
+        if corpus_cat is None:
+            continue
+        try:
+            im = _pil_from(ex[image_field])
+        except Exception as e:
+            print(f"    skip hf#{n}: {e}"); continue
+        meta = {"source": source_tag, "id": f"{lab_name or 'img'}_{n}", "creator": "dataset",
+                "license": f"{name} research licence", "license_url": f"https://huggingface.co/datasets/{name}",
+                "orig_url": f"hf://{name}", "_corpus_cat": corpus_cat, "_tag": lab_name or split}
+        yield meta, im
+        n += 1
+
+
+def _save_image(im, meta, dest_cat, tag, min_px, max_aspect, seen_ids, seen_hash, dry):
+    """The ONE save path shared by every source: dims/aspect filter, de-dup on native pixels, save
+    canonical PNG at native resolution, append manifest (repo schema) + provenance. Returns kept?"""
+    sid = f"{meta['source']}:{meta['id']}"
+    if sid in seen_ids:
+        return False
+    im = im.convert("RGB")
+    w, h = im.size
+    if min(w, h) < min_px or max(w, h) / max(1, min(w, h)) > max_aspect:
+        print(f"    drop {sid}: {w}x{h} (too small or extreme aspect)"); return False
+    sha = hashlib.sha256(im.tobytes()).hexdigest()          # native-pixel hash -> cross-source de-dup
+    if sha in seen_hash:
+        print(f"    dup   {sid}"); return False
+    seen_ids.add(sid); seen_hash.add(sha)
+    if dry:
+        print(f"    WOULD KEEP {sid} -> {dest_cat}/  {w}x{h}  {meta['license']}"); return True
+    outdir = CORPUS / dest_cat; outdir.mkdir(parents=True, exist_ok=True)
+    name = f"{meta['source']}_{slug(meta['id'], 28)}_{slug(tag, 20)}.png"
+    im.save(outdir / name, "PNG")                            # native resolution, no resample
+    notes = f"source={meta['source']}; {meta['license']}; by {meta['creator']}; {meta['orig_url']}"
+    _append(MANIFEST, MANIFEST_COLS,
+            {"filename": f"{dest_cat}/{name}", "category": dest_cat, "pair_id": "",
+             "pair_expected_better": "unknown", "notes": notes})
+    _append(PROVENANCE, PROV_COLS,
+            {"filename": f"{dest_cat}/{name}", "source": meta["source"], "source_id": meta["id"],
+             "creator": meta["creator"], "license": meta["license"], "license_url": meta["license_url"],
+             "orig_url": meta["orig_url"], "width": w, "height": h, "sha256": sha, "query": tag,
+             "collected_utc": datetime.now(timezone.utc).isoformat(timespec="seconds")})
+    print(f"    + {dest_cat}/{name}  {w}x{h}")
+    return True
+
+
+def collect_from_examples(gen, limit, min_px, dry, max_aspect=3.0):
+    """Consume a (meta, PIL) generator (academic sources) through the shared save path."""
+    seen_ids, seen_hash = load_seen(), load_hashes()
+    kept = 0
+    for meta, im in gen:
+        if kept >= limit:
+            break
+        if _save_image(im, meta, meta["_corpus_cat"], meta.get("_tag", ""), min_px, max_aspect,
+                       seen_ids, seen_hash, dry):
+            kept += 1
+    print(f"  -> kept {kept}")
+    return kept
+
+
+def kaggle_download(dataset, cache="~/.cache/l6_kaggle"):
+    """Download+unzip a Kaggle dataset via the kaggle CLI (needs ~/.kaggle/kaggle.json). Returns dir."""
+    import subprocess, zipfile
+    d = Path(os.path.expanduser(cache)) / slug(dataset)
+    d.mkdir(parents=True, exist_ok=True)
+    if not any(d.iterdir()):
+        print(f"  kaggle download {dataset} -> {d} ...")
+        subprocess.run(["kaggle", "datasets", "download", "-d", dataset, "-p", str(d)], check=True)
+        for z in d.glob("*.zip"):
+            with zipfile.ZipFile(z) as zf:
+                zf.extractall(d)
+    return d
+
+
 # ----------------------------------------------------------------- collect
 def collect(category, source, limit, min_px, dry, max_aspect=3.0):
     queries = CATEGORY_QUERIES.get(category)
@@ -219,37 +430,23 @@ def collect(category, source, limit, min_px, dry, max_aspect=3.0):
             # cheap pre-filter on reported dims
             if c.get("w") and c.get("h") and min(c["w"], c["h"]) < min_px:
                 continue
-            if dry:
-                print(f"    WOULD KEEP {sid}  {c.get('w')}x{c.get('h')}  {c['license']}  by {c['creator']}")
-                seen_ids.add(sid); kept += 1
+            if c.get("w") and c.get("h") and max(c["w"], c["h"]) / max(1, min(c["w"], c["h"])) > max_aspect:
                 continue
             try:
-                img_bytes = _download(c, key)
-                im = Image.open(io.BytesIO(img_bytes))
-                im = im.convert("RGB")
+                img_bytes = _download(c, key) if not dry else None
+                im = Image.open(io.BytesIO(img_bytes)) if img_bytes is not None else None
             except Exception as e:
                 print(f"    skip {sid}: {type(e).__name__} {e}"); continue
-            w, h = im.size
-            if min(w, h) < min_px or max(w, h) / max(1, min(w, h)) > max_aspect:
-                print(f"    drop {sid}: {w}x{h} (too small or extreme aspect)"); continue
-            sha = hashlib.sha256(img_bytes).hexdigest()
-            if sha in seen_hash:
-                print(f"    dup   {sid} (identical bytes already have)"); continue
-            name = f"{c['source']}_{slug(c['id'],24)}_{slug(q,24)}.png"
-            path = outdir / name
-            im.save(path, "PNG")                              # native resolution, no resample
-            notes = f"source={c['source']}; {c['license']}; by {c['creator']}; {c['orig_url']}"
-            _append(MANIFEST, MANIFEST_COLS,
-                    {"filename": f"{dest_cat}/{name}", "category": dest_cat, "pair_id": "",
-                     "pair_expected_better": "unknown", "notes": notes})
-            _append(PROVENANCE, PROV_COLS,
-                    {"filename": f"{dest_cat}/{name}", "source": c["source"], "source_id": c["id"],
-                     "creator": c["creator"], "license": c["license"], "license_url": c["license_url"],
-                     "orig_url": c["orig_url"], "width": w, "height": h, "sha256": sha,
-                     "query": q, "collected_utc": datetime.now(timezone.utc).isoformat(timespec="seconds")})
-            seen_ids.add(sid); seen_hash.add(sha); kept += 1
-            print(f"    + {dest_cat}/{name}  {w}x{h}")
-            time.sleep(0.4)
+            if dry:
+                print(f"    WOULD KEEP {sid} -> {dest_cat}/  {c.get('w')}x{c.get('h')}  "
+                      f"{c['license']}  by {c['creator']}")
+                seen_ids.add(sid); kept += 1
+                continue
+            meta = {"source": c["source"], "id": c["id"], "creator": c["creator"],
+                    "license": c["license"], "license_url": c["license_url"], "orig_url": c["orig_url"]}
+            if _save_image(im, meta, dest_cat, q, min_px, max_aspect, seen_ids, seen_hash, dry=False):
+                kept += 1
+                time.sleep(0.4)
     print(f"  -> kept {kept} for category '{category}' (folder {dest_cat}/)")
     return kept
 
@@ -305,22 +502,63 @@ def make_pair(a_rel, b_rel, better, note):
 
 def main():
     ap = argparse.ArgumentParser(description="Collect licence-clean images into the L6 corpus.")
+    web_sources = list(SEARCH)                               # openverse/unsplash/pexels (query-based)
+    academic = ["mit_indoor", "hf", "from-dir"]              # label/folder-based
     ap.add_argument("--category", choices=list(CATEGORY_QUERIES))
-    ap.add_argument("--all", action="store_true", help="run every category")
-    ap.add_argument("--source", choices=list(SEARCH), default="openverse")
-    ap.add_argument("--limit", type=int, default=20, help="images per category")
-    ap.add_argument("--min-px", type=int, default=1024, help="min short-side pixels (anti-upscale)")
+    ap.add_argument("--all", action="store_true", help="run every web category")
+    ap.add_argument("--source", choices=web_sources + academic, default="openverse")
+    ap.add_argument("--limit", type=int, default=20, help="images (per web category, or total for academic)")
+    ap.add_argument("--min-px", type=int, default=1024,
+                    help="min short-side pixels (anti-upscale; use 256 knowingly for Places365-256)")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--make-pair", nargs=4, metavar=("A_REL", "B_REL", "BETTER", "NOTE"),
                     help="register an A/B pair (paths relative to corpus_L6/)")
+    # academic-source options
+    ap.add_argument("--kaggle-dataset", default="itsahmad/indoor-scenes-cvpr-2019",
+                    help="for --source mit_indoor: Kaggle owner/name to download")
+    ap.add_argument("--from-dir", help="for --source from-dir: root of an extracted dataset tree")
+    ap.add_argument("--default-cat", default="interiors",
+                    help="for --source from-dir/hf: corpus folder for unmapped interior labels")
+    ap.add_argument("--hf-preset", choices=list(HF_PRESETS), help="for --source hf: places365 | ade20k")
+    ap.add_argument("--hf-dataset", help="for --source hf: override the HF dataset id")
+    ap.add_argument("--hf-split", default="train")
+    ap.add_argument("--hf-image-field", default="image")
+    ap.add_argument("--hf-label-field", default="label")
     a = ap.parse_args()
     if a.make_pair:
         return make_pair(*a.make_pair)
     if not CORPUS.exists() and not a.dry_run:
         sys.exit(f"{CORPUS} not found — run from the repo root.")
+
+    # ---- academic sources (folder/label based) -------------------------------------
+    if a.source in academic:
+        if a.source == "mit_indoor":
+            root = kaggle_download(a.kaggle_dataset)
+            gen = walk_dir(root, MIT_INDOOR_KEEP, a.default_cat, "mit_indoor67", a.limit * 4)
+        elif a.source == "from-dir":
+            if not a.from_dir:
+                ap.error("--source from-dir needs --from-dir <path>")
+            gen = walk_dir(a.from_dir, MIT_INDOOR_KEEP, a.default_cat,
+                           slug(Path(a.from_dir).name), a.limit * 4)
+        else:  # hf
+            p = HF_PRESETS.get(a.hf_preset, {})
+            name = a.hf_dataset or p.get("hf")
+            if not name:
+                ap.error("--source hf needs --hf-preset or --hf-dataset")
+            gen = stream_hf(name, p.get("split", a.hf_split), p.get("image_field", a.hf_image_field),
+                            p.get("label_field", a.hf_label_field), p.get("keep"),
+                            p.get("default_cat", a.default_cat), a.hf_preset or slug(name), a.limit * 4)
+        print(f"== academic source {a.source} ==")
+        total = collect_from_examples(gen, a.limit, a.min_px, a.dry_run)
+        print(f"\nDONE. {'(dry-run) ' if a.dry_run else ''}collected {total} images.")
+        if not a.dry_run:
+            print("Review, then commit ONLY the manifest:  git add corpus_L6/manifest.csv && git commit")
+        return
+
+    # ---- web sources (query based) -------------------------------------------------
     cats = list(CATEGORY_QUERIES) if a.all else ([a.category] if a.category else None)
     if not cats:
-        ap.error("give --category X, --all, or --make-pair ...")
+        ap.error("give --category X, --all, --make-pair ..., or an academic --source")
     total = 0
     for c in cats:
         print(f"== category {c} ==")
