@@ -17,7 +17,7 @@ DAVID (only-human-can) / PANEL (decision). Every CODEX row names its committed a
 |----|---|------|-------|-----------|
 | CC-1 | P0 | External ATTACK pass on the un-attacked batch: clutter_stack + complexity_partition (11-class taxonomy) + faithful FC/SE + wave2_geometry — the cadence rule says attack before building on top | CODEX (prompt to write; artifact `docs/CODEX_ATTACK_TAX_VERDICT_<date>.md`) | — |
 | CC-3 | P1 | C5–C23 declared-input VALUE bundles through the `input_values` channel (street-noise opened it); full-socket fixtures per predicate | FABLE | — |
-| CC-4 | P1 | S3 remainder: W2.2 ceiling_openness_relative, W2.3 double-height flag, W2.4 blind_corner_index, W2.5 barrier_permeability, W2.8 thresholds; register W2.1 verticality + W2.6 choice_richness with the batch | FABLE | ~~CC-1~~ UNBLOCKED (TAX dispositioned 07-20) — IN PROGRESS |
+| ~~CC-4~~ **DONE 07-20** | P1 | S3 remainder W2.2-W2.5/W2.8 built + W2.1/W2.6 registered — all AMBER, abstain-with-evidence; registry 68 preds; smoke GREEN=0/AMBER=3/RED=0 | FABLE | commit 90bd03e9 · docs/CC4_WAVE2_GEOMETRY_2026-07-20.md |
 | CC-5 | P1 | S4 detector wave: pinned segmentation model → vegetation/window-view/blue-space/sociopetal ops; upgrades the partition's biophilic gate + adds segment-count clutter layer; art-CONTENT + text/signage VLM-tier gates ride the same decision | FABLE build; PANEL/DAVID model choice (Q1) | DEC-1 |
 | CC-6 | P2 | V6-proxy retirement decision (Spearman −0.117 vs faithful — measured 2026-07-19); V7 proxy (0.717) keep-parallel question | PANEL | corpus helps but not required |
 | CC-7 | P2 | P3 finding to panel: reference-package collapse() lacks MATLAB ×4 upConv gain — which is "the" FC for us? | PANEL | — |
@@ -39,7 +39,7 @@ scores — same separation as the ≠-mind judge).*
 
 | ID | P | Task | Owner | Blocked by |
 |----|---|------|-------|-----------|
-| VIEW-3 | P1 | Question-driven composer: question → (LLM, registry-aware) → display-composition JSON {layers, focus bboxes, narrative-with-anchors} → rendered view. Acceptance test IS David's example: "effects of street noise on the foyer" → explanatory answer + SPL/huddle layers + how-to-read guidance pointing at specific zones. Template library for the common question classes (noise, clutter-where, biophilia, wayfinding, privacy) | FABLE (+VLM) | VIEW-1; street-noise needs input_values (CC-3) for live units |
+| ~~VIEW-3~~ **DONE 07-20** | P1 | Question-driven composer: question → (LLM, registry-aware) → display-composition JSON {layers, focus bboxes, narrative-with-anchors} → rendered view. Acceptance test IS David's example: "effects of street noise on the foyer" → explanatory answer + SPL/huddle layers + how-to-read guidance pointing at specific zones. Template library for the common question classes (noise, clutter-where, biophilia, wayfinding, privacy) | FABLE (+VLM) | VIEW-1; street-noise needs input_values (CC-3) for live units |
 | VIEW-4 | P2 | A-vs-B compare view (two units side-by-side, synchronized layers) — also the corpus-labeling tool | FABLE | VIEW-1 |
 | VIEW-5 | P3 | Server mode: parameter sliders with live recompute; batch browsing | FABLE | VIEW-2 |
 
@@ -77,3 +77,5 @@ scores — same separation as the ≠-mind judge).*
 | CC-2 owed M1' classes (7 bindings; 15 predicates now emit M1') | 07-19 | commit d5fe276b; MODEL_VERSION +cc2m1p |
 | Reliable-A reconciliation: honest keys (V2/V6/V7 renamed), F1/F7/F8 fixes, cv2 SSIM, full-BFS Turner integration | 07-20 | commit 6d2d20a6; HEAD was inconsistent (committed registry used new keys, impl returned old) — now aligned; all per-file tests + spatial_syntax self-test PASS |
 | (a) skimage-present 3-image stage smoke | 07-20 | 3 units AMBER, 42/42 scored, unknown=0, replayed, problems=[]; FC/SE (gabor/congestion/feature_congestion/subband) RED->cleared; neg-control RED; idempotent; docs/SMOKE_SKIMAGE_RERUN_2026-07-20.md |
+| CC-4 wave-2 geometry (W2.2-W2.5,W2.8 built; W2.1/W2.6 registered) | 07-20 | commit 90bd03e9; all AMBER, abstain-with-evidence; 68 preds; module+socket tests + 68-pred smoke (AMBER x3, unknown=0, neg-control RED) |
+| VIEW-3 question-driven composer (advisory-only, score-separated) | 07-20 | commit 743d0d6a; acceptance 'street noise on foyer' PASS; rogue-LLM number redacted; noise/clutter/biophilia/wayfinding/privacy templates; docs/VIEW3_QUESTION_COMPOSER_2026-07-20.md |
