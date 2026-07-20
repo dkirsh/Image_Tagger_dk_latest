@@ -17,4 +17,5 @@ from . import attributes
 from .plan import infer_plan_from_image, plan_from_floorplan_image, \
     isovist_fields, camera_isovist_polygon, render_plan_topo, PlanGrid
 from .composition import rule_of_thirds, visual_balance
-
+from . import spatial_syntax
+from . import reliable_attrs

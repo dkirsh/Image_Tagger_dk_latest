@@ -87,7 +87,13 @@ def main(argv=None) -> int:
         print(f"    e.g. ABSTAINED {exa['predicate']} missing={exa['missing_inputs']}")
 
     # ---- (b) the score_layout negative control ----
-    base_uid = (gate["AMBER"] + gate["GREEN"])[0]
+    # Codex-2 fix: don't IndexError when every real unit is RED — the negative control only needs
+    # ANY quarantined base record to clone+corrupt; fall back to a RED unit if no AMBER/GREEN.
+    _base_pool = gate["AMBER"] + gate["GREEN"] + gate.get("RED", [])
+    if not _base_pool:
+        print("[negative-control] SKIPPED: no quarantined records to clone")
+        return 0
+    base_uid = _base_pool[0]
     base = json.loads((paths.quarantine / f"{base_uid}.json").read_text())["output"]
     neg_uid = seed_negative_control(paths, base)
     neg_rec = json.loads((paths.quarantine / f"{neg_uid}.json").read_text())["output"]

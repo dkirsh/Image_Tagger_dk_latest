@@ -104,9 +104,13 @@ def compute(img, planes, Z, pg, vga_result: Dict, geom_conf: float, chain: list)
         cell, reg_conf = T.pixel_to_plan_cell(pg, Z, planes, int((x0 + x1) / 2), int(y1))
         if cell is None:
             state, val, det = decide(dE, appeal01, seat01, None, reg_conf, None, geom_conf)
+        elif T.ridge_is_degenerate(list(vga_result["integration"])):
+            # FABLE F7: without a usable desire-line ridge, off-path-ness is undefined -> a
+            # degenerate field would otherwise make EVERY amenity read 'stranded'. Fail closed.
+            state, val, det = "UNKNOWN", None, {"reason": "integration_field_degenerate"}
         else:
             ridge = T.ridge_cells([tuple(c) for c in vga_result["cells"]],
-                                  list(vga_result["integration_score01"]))
+                                  list(vga_result["integration"]))
             dm = T.dist_to_ridge_m(cell, ridge, pg.cell_m)
             state, val, det = decide(dE, appeal01, seat01, cell, reg_conf, dm, geom_conf)
             det["anchor_bbox"] = [int(x0), int(y0), int(x1), int(y1)]

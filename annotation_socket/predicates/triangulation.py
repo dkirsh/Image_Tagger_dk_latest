@@ -73,11 +73,47 @@ def gate(dist_m: float, d0: float = D0_M) -> float:
     return math.exp(-(dist_m / d0) ** 2)
 
 
+RIDGE_MIN_RELIQR = 0.05      # min interquartile range / |median| of RAW integration; below = no ridge
+
+
+def _percentile(sorted_v, q):
+    if not sorted_v:
+        return 0.0
+    k = (len(sorted_v) - 1) * q
+    lo = int(k)
+    return sorted_v[lo] if lo >= len(sorted_v) - 1 else \
+        sorted_v[lo] + (k - lo) * (sorted_v[lo + 1] - sorted_v[lo])
+
+
+def ridge_is_degenerate(integ_raw: Sequence[float]) -> bool:
+    """FABLE F7 (+ Codex-2 hardening): a uniform integration field makes the percentile ridge the
+    WHOLE plan, so the gate cannot discriminate. Test RELATIVE spread on the RAW Turner integration.
+    Uses the ROBUST interquartile range / |median|, NOT the coefficient of variation — CV is
+    inflated by the single clipped 1e6 outlier the VGA produces, so a genuinely flat field + one
+    outlier passed the old CV guard (Codex-2). IQR ignores the outlier: a flat field has IQR=0
+    whether or not one cell is clipped. Also degenerate if the ridge threshold has no cells strictly
+    below it (everything tied at/above p85)."""
+    v = sorted(float(x) for x in integ_raw if x is not None and x == x)
+    if len(v) < 4:
+        return True
+    med = _percentile(v, 0.5)
+    if abs(med) < 1e-9:
+        return True
+    iqr = _percentile(v, 0.75) - _percentile(v, 0.25)
+    if (iqr / abs(med)) < RIDGE_MIN_RELIQR:
+        return True
+    # belt-and-braces: the ridge (>= p85) must leave a real off-ridge population
+    thr = _percentile(v, RIDGE_PCTL / 100.0)
+    below = sum(1 for x in v if x < thr)
+    return below < max(4, int(0.25 * len(v)))
+
+
 def ridge_cells(cells: Sequence[Tuple[int, int]], integ01: Sequence[float],
                 pctl: float = RIDGE_PCTL) -> List[Tuple[int, int]]:
     """The desire-line ridge = sampled cells at/above the integration percentile
-    (Hillier natural-movement: integration predicts the paths people take)."""
-    if not cells:
+    (Hillier natural-movement: integration predicts the paths people take). Returns [] when the
+    field is degenerate (caller must treat that as UNKNOWN, not as 'every cell on-ridge')."""
+    if not cells or ridge_is_degenerate(integ01):
         return []
     vals = sorted(integ01)
     k = (len(vals) - 1) * (pctl / 100.0)
@@ -187,14 +223,27 @@ def compute(img, planes, Z, pg, vga_result: Dict, geom_conf: float,
         cell, reg_conf = pixel_to_plan_cell(pg, Z, planes, foot_px, foot_py)
         if cell is None:
             state, val, det = decide(dE, sal01, None, reg_conf, None, None, geom_conf)
+        elif ridge_is_degenerate(list(vga_result["integration"])):
+            # FABLE F7: no usable desire-line ridge (uniform integration) -> the gate cannot
+            # discriminate on/off-path; fail closed rather than call everything on-ridge.
+            state, val, det = "UNKNOWN", None, {"reason": "integration_field_degenerate"}
         else:
             iv = ss.integration_at(vga_result, [cell])[0]
             integ = 0.0 if (iv is None or not (iv == iv)) else float(iv)   # nan-safe
-            ridge = ridge_cells([tuple(c) for c in vga_result["cells"]],
-                                 list(vga_result["integration_score01"]))
+            # ridge from RAW integration ranks (real structure); anchor VALUE from score01 [0,1]
+            raw = list(vga_result["integration"])
+            ridge = ridge_cells([tuple(c) for c in vga_result["cells"]], raw)
             dm = dist_to_ridge_m(cell, ridge, pg.cell_m)
             state, val, det = decide(dE, sal01, cell, reg_conf, integ, dm, geom_conf)
             det["anchor_bbox"] = [int(x0), int(y0), int(x1), int(y1)]
+            # Codex F7 audit diagnostics: expose the raw ridge set + anchor rank, not just gate.
+            anchor_raw = raw[min(range(len(raw)),
+                                 key=lambda i: (tuple(vga_result["cells"][i])[0]-cell[0])**2
+                                             + (tuple(vga_result["cells"][i])[1]-cell[1])**2)] if raw else 0.0
+            det["ridge_count"] = len(ridge)
+            det["n_cells"] = len(raw)
+            det["ridge_frac"] = round(len(ridge) / max(len(raw), 1), 3)
+            det["anchor_rank_pctl"] = round(100.0 * sum(1 for x in raw if x <= anchor_raw) / max(len(raw), 1), 1)
 
     gh = D.grid_hash(pg.grid)
     if state == "UNKNOWN":
@@ -209,7 +258,9 @@ def compute(img, planes, Z, pg, vga_result: Dict, geom_conf: float,
         {"grid_hash": gh, "free_cells": int((pg.grid == FREE).sum()),
          "anchor_cell": det["anchor_cell"], "anchor_bbox": det.get("anchor_bbox"),
          "dist_to_ridge_m": det["dist_m"], "gate": det["gate"],
-         "salience01": det["sal01"], "integration01": det["integ01"], "ridge_pctl": RIDGE_PCTL},
+         "salience01": det["sal01"], "integration01": det["integ01"], "ridge_pctl": RIDGE_PCTL,
+         "ridge_count": det.get("ridge_count"), "n_cells": det.get("n_cells"),
+         "ridge_frac": det.get("ridge_frac"), "anchor_rank_pctl": det.get("anchor_rank_pctl")},
         f"triangulation ignition = sal01*integ01*gate(dist={det['dist_m']}m) (M1)",
         min(0.5, geom_conf), upstream=chain)
     return D.scored(PRED_ID, val, ev, TIER_HINT, img.shape)

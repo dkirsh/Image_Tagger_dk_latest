@@ -60,6 +60,11 @@ def test_v13_entropy_ordering():
     e_grid2 = R.edge_orientation_entropy(grid).scalar
     assert abs(e_grid - e_grid2) < 1e-9                  # deterministic
     assert e_iso > e_grid, (e_iso, e_grid)               # isotropic > cardinal grid
+    # FABLE F1: a near-edgeless blank image must ABSTAIN (scalar=None), not score max entropy
+    blank=np.full((200,200),128,np.uint8)
+    rb=R.edge_orientation_entropy(blank)
+    assert rb.scalar is None and rb.extras.get("reason")=="insufficient_edges", rb.scalar
+    print("  V13 F1-fix: blank image abstains (scalar=None), not 1.0  OK")
     print("  V13 entropy: isotropic=%.3f > cardinal-grid=%.3f ; deterministic  OK" % (e_iso, e_grid))
 
 

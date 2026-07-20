@@ -46,11 +46,26 @@ def edge_clarity(img) -> AttributeResult:
         failure_modes=["motion blur/low-res source reads as low clarity"])
 
 
+def _ssim_cv2(a, b):
+    """Dependency-free SSIM (Wang et al. 2004) via cv2 Gaussian windows. Codex-2 portability fix:
+    the old `from skimage.metrics import structural_similarity` hard-crashed (-> compute_failed ->
+    UNKNOWN -> RED for the whole unit) wherever skimage is absent. cv2 is always present."""
+    a = a.astype(np.float64); b = b.astype(np.float64)
+    C1 = (0.01 * 255) ** 2; C2 = (0.03 * 255) ** 2
+    win = (11, 11); sig = 1.5
+    mu_a = cv2.GaussianBlur(a, win, sig); mu_b = cv2.GaussianBlur(b, win, sig)
+    mu_a2, mu_b2, mu_ab = mu_a * mu_a, mu_b * mu_b, mu_a * mu_b
+    va = cv2.GaussianBlur(a * a, win, sig) - mu_a2
+    vb = cv2.GaussianBlur(b * b, win, sig) - mu_b2
+    vab = cv2.GaussianBlur(a * b, win, sig) - mu_ab
+    smap = ((2 * mu_ab + C1) * (2 * vab + C2)) / ((mu_a2 + mu_b2 + C1) * (va + vb + C2))
+    return float(smap.mean()), smap
+
+
 def symmetry_horizontal(img) -> AttributeResult:
-    from skimage.metrics import structural_similarity as ssim
     g = (_gray(img) * 255).astype(np.uint8)
     flipped = np.fliplr(g)
-    score, diff = ssim(g, flipped, full=True)
+    score, diff = _ssim_cv2(g, flipped)
     return AttributeResult(
         key="cnfa.fluency.symmetry_score_horizontal",
         scalar=float(score), field=normalize01(1.0 - diff), confidence=0.9,

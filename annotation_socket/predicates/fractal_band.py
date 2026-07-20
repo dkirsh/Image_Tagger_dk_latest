@@ -1,7 +1,8 @@
 """
 annotation_socket.predicates.fractal_band — V9 `fractal_mid_d_band_score`.
 
-The committee's most RELIABLE-per-effort primitive (rank 8.3, GREEN, Tier A). Fractal fluency:
+Committee rank 8.3. AMBER (Fable F5 / Codex 2026-07-18): the R2 fit does NOT prove a valid
+scale range, and the plateau/falloff constants are engineering — construct-validation owed. Fractal fluency:
 human preference and physiological calm peak when a scene's fractal dimension sits in a mid-D
 band (~1.3-1.5), falling off toward sterile blankness (low D) and chaotic overload (high D).
 The existing engine computes D but never SCORES it against that response curve — V9 adds the
@@ -10,7 +11,7 @@ curve, reading the fractal output rather than recomputing it (M3 no-double-work)
     band_score = trapezoid_response(D_global)         # inverted-U peaked on [1.3, 1.5]
     coverage   = fraction of RAW per-tile D in [1.25, 1.55]
 
-DETERMINISTIC, pure numpy over already-computed values -> ceiling GREEN, audit_class
+DETERMINISTIC, pure numpy over already-computed values -> ceiling AMBER, audit_class
 replayable_tol (float polyfit accumulation upstream). Low-confidence flag when the global
 box-count fit R^2 < 0.98 (broken/absent scaling — the D is not trustworthy).
 
@@ -27,7 +28,7 @@ from typing import Dict, Optional, Tuple
 from .. import derivation as D
 
 PRED_ID = "cnfa.fluency.fractal_mid_d_band"
-TIER_HINT = "GREEN"
+TIER_HINT = "AMBER"        # Codex-2 F5 fix: was GREEN — split-brain with the AMBER registry note
 
 # declared response constants (emitted with every score so replay is exact)
 D_LO, D_HI = 1.30, 1.50          # preferred/calming band (Spehar 2003; Hagerhall 2004)

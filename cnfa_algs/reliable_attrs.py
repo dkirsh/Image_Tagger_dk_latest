@@ -3,20 +3,25 @@ cnfa_algs.reliable_attrs — the GREEN Tier-A reliability sprint primitives (det
 numpy/OpenCV, no inferred-plan dependency). Each returns an AttributeResult; pure helpers are
 directly unit-testable on synthetic arrays.
 
-  V2  spectral_discomfort_deviation  — FFT 1/f slope + Penacchio-Wilkins CSF-weighted mid-band
-                                        residual + periodic-stripe peak. (Fernandez&Wilkins 2008;
-                                        Penacchio&Wilkins 2015; Field 1987)
-  V13 edge_orientation_entropy       — Sobel first-order + pairwise second-order orientation
-                                        entropy. (Redies lab: Grebenkina et al. 2018)
-  V1  contour_angularity_index       — Canny+turning-angle: curve fraction + corner-density threat
-                                        subscore. (Bar&Neta 2006/2007; Dazkir&Read 2012)
-  V6  subband_entropy_clutter        — steerable-ish oriented-subband coefficient entropy.
-                                        (Rosenholtz, Li & Nakano 2007)
-  V7  feature_congestion_clutter     — Lab-covariance + contrast + orientation congestion.
-                                        (Rosenholtz, Li, Mansfield & Jin 2005)
+ALL AMBER after the Fable/Codex-2 reviews: deterministic but NOT construct-validated, and several
+are declared PROXIES, not faithful implementations of the cited papers.
+
+  V2  spectral_slope_deviation       — radial FFT 1/f slope + mid-band residual. PROXY, NOT the
+                                        2-D Penacchio-Wilkins discomfort metric; scale-dependent;
+                                        no FOV/angular claim. (Field 1987 for 1/f only)
+  V13 edge_orientation_entropy       — Sobel 1st-order + first-neighbour co-occurrence (a PROXY for
+                                        the Grebenkina pairwise-over-distances 2nd-order measure).
+                                        Abstains below 40 edge px.
+  V1  contour_angularity_index       — Canny+turning-angle curve/corner statistic. IMAGE-contour,
+                                        NOT validated architectural valence. (Bar&Neta 2006 = obj pref)
+  V6  grayscale_gabor_entropy_proxy  — grayscale Gabor-magnitude entropy PROXY, NOT Rosenholtz
+                                        Subband Entropy (no CIELab, no steerable pyramid).
+  V7  local_congestion_proxy         — local-variance colour/contrast/orientation PROXY, NOT
+                                        Rosenholtz Feature Congestion (arbitrary weights + K).
 
 DETERMINISM: no randomness; FFT fit band excluded from DC and the Nyquist end; float accumulation
-=> audit_class replayable_tol at the socket. Each declares its constants + failure modes.
+=> audit_class replayable_tol at the socket. Each declares its constants + failure modes. Faithful
+reimplementations of V2/V6/V7 remain OWED (see FABLE_REVIEW_DISPOSITION).
 """
 from __future__ import annotations
 import numpy as np
@@ -39,7 +44,9 @@ def _gray01(img):
 
 # ============================================================ V2 spectral_discomfort_deviation
 NATURAL_POWER_SLOPE = -2.0        # natural scenes: power ~ 1/f^2 (amplitude ~ 1/f); Field 1987
-FOV_DEG = 65.0                    # DECLARED (matches plan.infer_plan_from_image); emitted w/ score
+# Codex-2 F2 fix: FOV was ornamental (never entered the math) yet was emitted in the score,
+# contradicting the registry. Removed entirely — this measure is a scale-free radial slope +
+# residual and makes NO angular-subtense / discomfort-magnitude claim.
 
 
 def _radial_power_spectrum(gray01):
@@ -107,26 +114,33 @@ def spectral_discomfort_deviation(img) -> AttributeResult:
     discomfort = float(np.clip(resid / 0.5, 0, 1))    # declared scale; higher = more discomfort
     conf = 0.7 if r2 >= 0.9 else 0.35
     return AttributeResult(
-        key="cnfa.fluency.spectral_discomfort_deviation",
+        key="cnfa.fluency.spectral_slope_deviation",
         scalar=discomfort, field=None, confidence=conf,
-        method=f"radial FFT 1/f slope={slope:.2f}(R2={r2:.2f}) + CSF mid-band residual; FOV={FOV_DEG}deg (M1)",
+        method=f"radial FFT 1/f slope={slope:.2f}(R2={r2:.2f}) + mid-band residual; "
+               f"PROXY, NOT the 2-D Penacchio-Wilkins discomfort metric; no angular calibration (M1)",
         extras={"power_slope": round(slope, 3), "r2": round(r2, 3),
-                "naturalness": round(naturalness, 3), "fov_deg": FOV_DEG,
-                "discomfort_deviation": round(discomfort, 4)},
-        failure_modes=["absolute discomfort assumes FOV=65deg (declared); slope is scale-free",
-                       "defocus/JPEG shift the tail — band excludes Nyquist end",
-                       "measures the photograph's spectrum, not only the room"])
+                "naturalness": round(naturalness, 3),
+                "mid_band_residual": round(discomfort, 4)},
+        failure_modes=["scale-DEPENDENT (raster size changes the score); no angular calibration",
+                       "radial averaging discards the 2-D Fourier-energy distribution the "
+                       "Penacchio-Wilkins measure requires — this is a slope statistic only",
+                       "defocus/JPEG shift the tail; measures the photograph, not only the room"])
 
 
 # ============================================================ V13 edge_orientation_entropy
+MIN_EDGE_PX = 40                 # below this the orientation distribution is undefined
+
+
 def _orientation_hist(gray01, nbins=18):
     gx = cv2.Sobel(gray01, cv2.CV_32F, 1, 0, ksize=3)
     gy = cv2.Sobel(gray01, cv2.CV_32F, 0, 1, ksize=3)
     mag = np.sqrt(gx * gx + gy * gy)
     ang = (np.arctan2(gy, gx) % np.pi)           # 0..pi (undirected edges)
     m = mag > (0.05 * mag.max() + 1e-9)
-    if m.sum() < 20:
-        return np.ones(nbins) / nbins, mag, ang, m
+    if m.sum() < MIN_EDGE_PX:
+        # FABLE F1 FIX: do NOT impute a uniform histogram — that turned "no edges" into
+        # "maximum orientation diversity" (a blank image scored entropy 1.0). Signal undefined.
+        return None, mag, ang, m
     idx = np.minimum((ang[m] / np.pi * nbins).astype(int), nbins - 1)
     h = np.bincount(idx, weights=mag[m], minlength=nbins).astype(float)
     h = h / (h.sum() + 1e-12)
@@ -142,12 +156,19 @@ def edge_orientation_entropy(img) -> AttributeResult:
     g = _gray01(img)
     nb = 18
     h, mag, ang, m = _orientation_hist(g, nb)
+    if h is None:                    # FABLE F1 FIX: undefined on a near-edgeless image -> abstain
+        return AttributeResult(
+            key="cnfa.fluency.edge_orientation_entropy", scalar=None, field=None, confidence=0.0,
+            method="orientation entropy undefined: <%d edge px (M1)" % MIN_EDGE_PX,
+            extras={"reason": "insufficient_edges", "edge_px": int(m.sum())})
     first = _entropy(h) / np.log2(nb)            # normalized 0..1: 1 = isotropic, 0 = single orient
-    # second-order: entropy of orientation of NEIGHBOURING edge pixels (Redies pairwise proxy)
-    if m.sum() >= 40:
-        oi = np.minimum((ang / np.pi * nb).astype(int), nb - 1)
-        shifted = np.roll(oi, 1, axis=1)
-        pairs = oi[m] * nb + shifted[m]
+    # second-order: orientation co-occurrence of NEIGHBOURING edge pixels (declared as a first-
+    # neighbour proxy — NOT the full Grebenkina/Redies pairwise-over-distances measure; see note).
+    oi = np.minimum((ang / np.pi * nb).astype(int), nb - 1)
+    shifted = np.roll(oi, 1, axis=1)
+    valid = m & np.roll(m, 1, axis=1)            # both members of the pair are real edges
+    if valid.sum() >= MIN_EDGE_PX:
+        pairs = oi[valid] * nb + shifted[valid]
         hp = np.bincount(pairs, minlength=nb * nb).astype(float)
         hp = hp / (hp.sum() + 1e-12)
         second = _entropy(hp) / np.log2(nb * nb)
@@ -156,27 +177,20 @@ def edge_orientation_entropy(img) -> AttributeResult:
     scalar = float(0.5 * first + 0.5 * second)
     return AttributeResult(
         key="cnfa.fluency.edge_orientation_entropy",
-        scalar=scalar, field=None, confidence=0.7,
-        method="Sobel orientation-histogram entropy (1st) + pairwise (2nd), normalized (M1)",
-        extras={"first_order": round(first, 4), "second_order": round(second, 4)},
-        failure_modes=["cardinal-dominance is viewpoint-dependent (roll not corrected)",
-                       "very low-edge scenes fall back to first-order"])
+        scalar=scalar, field=None, confidence=0.65,
+        method="Sobel orientation-histogram entropy (1st) + first-neighbour co-occurrence (2nd) (M1)",
+        extras={"first_order": round(first, 4), "second_order": round(second, 4),
+                "edge_px": int(m.sum())},
+        failure_modes=["2nd-order is a first-neighbour proxy, NOT the Grebenkina pairwise-over-"
+                       "distances measure — construct-validate before claiming that literature",
+                       "cardinal-dominance is viewpoint-dependent (roll not corrected)",
+                       "abstains below %d edge px (no imputed distribution)" % MIN_EDGE_PX])
 
 
 # ============================================================ V1 contour_angularity_index
-def _straight_line_bow(gray01) -> float:
-    """Cheap lens-distortion warning (Decision D5): mean residual of long Hough segments from
-    perfect straightness proxy. High -> barrel distortion may inflate curvature. 0..1."""
-    g8 = (gray01 * 255).astype(np.uint8)
-    edges = cv2.Canny(g8, 60, 160)
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=80, minLineLength=40, maxLineGap=6)
-    if lines is None:
-        return 0.0
-    # straight segments are already straight; the "bow" proxy is how much long contours deviate
-    # from their chord — approximated here as 1 - (segment coverage of contour length). Kept simple
-    # and declared: a true undistort is not attempted (no per-image intrinsics).
-    return float(np.clip(1.0 - min(len(lines) / 200.0, 1.0), 0, 1)) * 0.0  # reported=0 placeholder; flag carried in extras
-
+# FABLE F8/D5 FIX: the previous `_straight_line_bow` multiplied its result by 0.0 — it could NEVER
+# warn (dead code masquerading as a lens-distortion diagnostic). Removed. A real bow diagnostic
+# needs per-image intrinsics we do not have; the honest state is: no bow warning is claimed.
 
 def contour_angularity_index(img) -> AttributeResult:
     """Curve fraction vs sharp-corner density of linked contours. Curvilinear interiors are
@@ -221,10 +235,10 @@ def contour_angularity_index(img) -> AttributeResult:
         scalar=scalar, field=None, confidence=0.65,
         method="Canny+turning-angle: curve fraction vs sharp-corner density (M1)",
         extras={"curve_fraction": round(curve_fraction, 4),
-                "corner_density": round(corner_density, 4),
-                "lens_bow_flag": round(_straight_line_bow(g), 3)},
-        failure_modes=["object contours (plants, fabric, people) counted as architectural",
-                       "barrel/lens distortion bows straight lines (flag only, not corrected)",
+                "corner_density": round(corner_density, 4)},
+        failure_modes=["IMAGE-contour statistic, NOT validated architectural valence: object "
+                       "contours (plants, fabric, people, graphics) are counted as architectural",
+                       "barrel/lens distortion bows straight lines (NOT detected — no intrinsics)",
                        "Canny fragmentation in clutter biases toward short chains"])
 
 
@@ -257,9 +271,10 @@ def subband_entropy_clutter(img) -> AttributeResult:
         ent += float(-(p * np.log2(p)).sum())
     ent_norm = float(np.clip(ent / (len(feats) * 5.0), 0, 1))    # declared normaliser
     return AttributeResult(
-        key="cnfa.fluency.subband_entropy_clutter",
+        key="cnfa.fluency.grayscale_gabor_entropy_proxy",
         scalar=ent_norm, field=None, confidence=0.7,
-        method="oriented-subband coefficient Shannon entropy (Rosenholtz 2007) (M1)",
+        method="grayscale Gabor-magnitude entropy PROXY — NOT Rosenholtz Subband Entropy "
+               "(no CIELab, no steerable pyramid, declared divisor) (M1)",
         extras={"raw_entropy_bits": round(ent, 3), "clutter_family": "V6"},
         failure_modes=["resolution/JPEG/defocus shift entropy — assumes homogeneous capture",
                        "one of a clutter family (V6/V7/legacy) — pick ONE for hedonics (Decision D2)"])
@@ -291,9 +306,10 @@ def feature_congestion_clutter(img) -> AttributeResult:
     mean_fc = float(fc.mean())
     scalar = float(mean_fc / (mean_fc + FC_K))
     return AttributeResult(
-        key="cnfa.fluency.feature_congestion_clutter",
+        key="cnfa.fluency.local_congestion_proxy",
         scalar=scalar, field=normalize01(fc), confidence=0.7,
-        method="Feature Congestion: Lab-cov + contrast + orientation, pooled (Rosenholtz 2005) (M1)",
+        method="local-variance colour/contrast/orientation congestion PROXY — NOT Rosenholtz "
+               "Feature Congestion (declared arbitrary weights + saturation K) (M1)",
         extras={"clutter_family": "V7"},
         failure_modes=["sensor noise/high ISO inflates contrast clutter",
                        "verify pooling weights vs the 2007 paper before publication",
