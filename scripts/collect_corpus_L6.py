@@ -55,6 +55,21 @@ USAGE
   python3 scripts/collect_corpus_L6.py --make-pair pairs/atrium_daylit.png pairs/atrium_dim.png A \
           "daylit atrium expected more restorative than the dim variant (same room)"
 
+STORAGE — Google Drive (recommended; payloads off local disk + git)
+  The PNG payloads should live on Drive like the Structured3D offload; manifest.csv (git-tracked) and
+  _provenance.csv (sidecar) stay LOCAL as the index. Uses rclone with the same remote pattern as
+  cnfa_external_collect/collect_datasets_to_gdrive.sh.
+    rclone config                        # once: new remote 'gdrive' -> type drive
+    # collect straight to Drive (keep a local working copy too):
+    python3 scripts/collect_corpus_L6.py --source mit_indoor --limit 120 --gdrive gdrive:corpus_L6
+    # collect to Drive and free local disk (keep only manifest/provenance locally):
+    python3 scripts/collect_corpus_L6.py --source unsplash --category interiors --limit 40 \
+            --gdrive gdrive:corpus_L6 --offload
+    # before an L6 calibration pass, pull the payloads back locally:
+    python3 scripts/collect_corpus_L6.py --rehydrate gdrive:corpus_L6
+  (--gdrive with no value defaults to gdrive:corpus_L6. Each PNG's Drive path is recorded in
+  _provenance.csv/gdrive_path and the manifest notes.)
+
 NOTES
   - Idempotent: already-collected source ids (tracked in _provenance.csv) are skipped.
   - --min-px (default 1024) drops small / likely-upscaled images (checked on the DOWNLOADED pixels).
@@ -78,7 +93,13 @@ MANIFEST = CORPUS / "manifest.csv"
 PROVENANCE = CORPUS / "_provenance.csv"          # gitignored (corpus_L6/*), full attribution
 MANIFEST_COLS = ["filename", "category", "pair_id", "pair_expected_better", "notes"]
 PROV_COLS = ["filename", "source", "source_id", "creator", "license", "license_url",
-             "orig_url", "width", "height", "sha256", "query", "collected_utc"]
+             "orig_url", "width", "height", "sha256", "query", "collected_utc", "gdrive_path"]
+
+# Storage: PNG payloads should live on Google Drive (like the Structured3D offload), not bloat local
+# disk or git. manifest.csv (git-tracked) + _provenance.csv (sidecar) stay LOCAL as the index. Set
+# via --gdrive; uploaded through rclone using the same remote as collect_datasets_to_gdrive.sh.
+GDRIVE_REMOTE = None        # e.g. "gdrive:corpus_L6"; None = local-only
+OFFLOAD = False             # delete the local PNG after a verified Drive upload (keep disk ~0)
 
 CATEGORIES = ["interiors", "pairs", "materials", "collections", "nature_glass"]
 
@@ -344,9 +365,43 @@ def stream_hf(name, split, image_field, label_field, keep_map, default_cat, sour
         n += 1
 
 
+def check_rclone(remote):
+    """Verify rclone exists and the remote is configured before collecting (fail early, clearly)."""
+    import subprocess
+    name = remote.split(":", 1)[0]
+    try:
+        remotes = subprocess.run(["rclone", "listremotes"], capture_output=True, text=True, check=True).stdout
+    except FileNotFoundError:
+        sys.exit("rclone not found. brew install rclone  (or curl https://rclone.org/install.sh | sudo bash)")
+    except subprocess.CalledProcessError as e:
+        sys.exit(f"rclone error: {e}")
+    if f"{name}:" not in remotes:
+        sys.exit(f"rclone remote '{name}:' not configured. Run: rclone config  "
+                 f"(new remote -> name: {name} -> type: drive). Configured: {remotes.strip() or '(none)'}")
+
+
+def gdrive_upload(local_path, remote, category, name):
+    """rclone copy the PNG to <remote>/<category>/<name>. Returns the Drive path (raises on failure)."""
+    import subprocess
+    dest_dir = f"{remote.rstrip('/')}/{category}"
+    subprocess.run(["rclone", "copyto", str(local_path), f"{dest_dir}/{name}"], check=True)
+    return f"{dest_dir}/{name}"
+
+
+def rehydrate(remote, dest=None):
+    """Pull the corpus PNGs back from Drive for a local calibration pass: rclone copy remote -> dest."""
+    import subprocess
+    dest = dest or str(CORPUS)
+    check_rclone(remote)
+    print(f"rclone copy {remote} -> {dest}")
+    subprocess.run(["rclone", "copy", remote, dest, "--progress"], check=True)
+    print("rehydrated. (manifest.csv is the index; payloads now local for calibration)")
+
+
 def _save_image(im, meta, dest_cat, tag, min_px, max_aspect, seen_ids, seen_hash, dry):
     """The ONE save path shared by every source: dims/aspect filter, de-dup on native pixels, save
-    canonical PNG at native resolution, append manifest (repo schema) + provenance. Returns kept?"""
+    canonical PNG at native resolution, optionally mirror to Google Drive (and offload the local copy),
+    append manifest (repo schema) + provenance. Returns kept?"""
     sid = f"{meta['source']}:{meta['id']}"
     if sid in seen_ids:
         return False
@@ -359,11 +414,23 @@ def _save_image(im, meta, dest_cat, tag, min_px, max_aspect, seen_ids, seen_hash
         print(f"    dup   {sid}"); return False
     seen_ids.add(sid); seen_hash.add(sha)
     if dry:
-        print(f"    WOULD KEEP {sid} -> {dest_cat}/  {w}x{h}  {meta['license']}"); return True
+        tgt = f" -> {GDRIVE_REMOTE}/{dest_cat}/" if GDRIVE_REMOTE else f" -> {dest_cat}/ (local)"
+        print(f"    WOULD KEEP {sid}{tgt}  {w}x{h}  {meta['license']}"); return True
     outdir = CORPUS / dest_cat; outdir.mkdir(parents=True, exist_ok=True)
     name = f"{meta['source']}_{slug(meta['id'], 28)}_{slug(tag, 20)}.png"
-    im.save(outdir / name, "PNG")                            # native resolution, no resample
+    local = outdir / name
+    im.save(local, "PNG")                                   # native resolution, no resample
+    gdrive_path = ""
+    if GDRIVE_REMOTE:
+        try:
+            gdrive_path = gdrive_upload(local, GDRIVE_REMOTE, dest_cat, name)
+            if OFFLOAD:
+                local.unlink()                              # verified on Drive -> free local disk
+        except Exception as e:
+            print(f"    UPLOAD FAILED {sid}: {e} (kept local copy)")
     notes = f"source={meta['source']}; {meta['license']}; by {meta['creator']}; {meta['orig_url']}"
+    if gdrive_path:
+        notes += f"; stored={gdrive_path}" + ("; local_offloaded" if OFFLOAD else "")
     _append(MANIFEST, MANIFEST_COLS,
             {"filename": f"{dest_cat}/{name}", "category": dest_cat, "pair_id": "",
              "pair_expected_better": "unknown", "notes": notes})
@@ -371,8 +438,10 @@ def _save_image(im, meta, dest_cat, tag, min_px, max_aspect, seen_ids, seen_hash
             {"filename": f"{dest_cat}/{name}", "source": meta["source"], "source_id": meta["id"],
              "creator": meta["creator"], "license": meta["license"], "license_url": meta["license_url"],
              "orig_url": meta["orig_url"], "width": w, "height": h, "sha256": sha, "query": tag,
-             "collected_utc": datetime.now(timezone.utc).isoformat(timespec="seconds")})
-    print(f"    + {dest_cat}/{name}  {w}x{h}")
+             "collected_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+             "gdrive_path": gdrive_path})
+    where = gdrive_path if gdrive_path else f"{dest_cat}/{name}"
+    print(f"    + {where}  {w}x{h}" + ("  [offloaded]" if (gdrive_path and OFFLOAD) else ""))
     return True
 
 
@@ -465,10 +534,17 @@ def _download(c, unsplash_key):
 
 
 def _append(path, cols, row):
-    new = not path.exists()
+    existing = None
+    if path.exists():
+        with path.open() as f:
+            try:
+                existing = next(csv.reader(f))
+            except StopIteration:
+                existing = None
+    use = existing or cols                         # adapt to an older header if one is already there
     with path.open("a", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=cols)
-        if new:
+        w = csv.DictWriter(f, fieldnames=use, extrasaction="ignore")
+        if existing is None:
             w.writeheader()
         w.writerow(row)
 
@@ -513,6 +589,13 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--make-pair", nargs=4, metavar=("A_REL", "B_REL", "BETTER", "NOTE"),
                     help="register an A/B pair (paths relative to corpus_L6/)")
+    # storage: mirror payloads to Google Drive (manifest + provenance stay local as the index)
+    ap.add_argument("--gdrive", nargs="?", const="gdrive:corpus_L6", default=None,
+                    help="mirror each PNG to this rclone remote (default gdrive:corpus_L6 if bare)")
+    ap.add_argument("--offload", action="store_true",
+                    help="delete the local PNG after a verified Drive upload (needs --gdrive)")
+    ap.add_argument("--rehydrate", nargs="?", const="gdrive:corpus_L6", default=None,
+                    metavar="REMOTE", help="pull the corpus PNGs back from Drive into corpus_L6/, then exit")
     # academic-source options
     ap.add_argument("--kaggle-dataset", default="itsahmad/indoor-scenes-cvpr-2019",
                     help="for --source mit_indoor: Kaggle owner/name to download")
@@ -525,10 +608,20 @@ def main():
     ap.add_argument("--hf-image-field", default="image")
     ap.add_argument("--hf-label-field", default="label")
     a = ap.parse_args()
+    if a.rehydrate:
+        return rehydrate(a.rehydrate)
     if a.make_pair:
         return make_pair(*a.make_pair)
     if not CORPUS.exists() and not a.dry_run:
         sys.exit(f"{CORPUS} not found — run from the repo root.")
+    global GDRIVE_REMOTE, OFFLOAD
+    if a.offload and not a.gdrive:
+        ap.error("--offload needs --gdrive")
+    if a.gdrive:
+        GDRIVE_REMOTE, OFFLOAD = a.gdrive, a.offload
+        if not a.dry_run:
+            check_rclone(GDRIVE_REMOTE)
+        print(f"storage: mirroring PNGs to {GDRIVE_REMOTE}" + ("  [offload local]" if OFFLOAD else ""))
 
     # ---- academic sources (folder/label based) -------------------------------------
     if a.source in academic:
