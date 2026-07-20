@@ -55,7 +55,7 @@ scores — same separation as the ≠-mind judge).*
 
 | ID | Task | Status |
 |----|------|--------|
-| DK-1 | Drive corpus export: **PNG**, ~120 interiors + 80 A/B pairs (Codex's category list) + nature-through-glass (DT-1) + wood/stone-material and bookshelf/ornament contrasts (new taxonomy classes) | OPEN — gates all L6 |
+| DK-1 | Drive corpus export: **PNG**, ~120 interiors + 80 A/B pairs (Codex's category list) + nature-through-glass (DT-1) + wood/stone-material and bookshelf/ornament contrasts (new taxonomy classes) | OPEN — STAGED plan AGREED 2026-07-20: starter set FIRST (~30 interiors + 15 A/B pairs + 5 each nature-glass/materials/collections, manifest.csv from day one, ALL PNG converted on Mac) -> first L6 calibration pass -> grow to ~200 incl. ugly/ordinary rooms  — gates all L6 |
 | DK-2 | Drop CC-1 attack prompt into Codex when written | waiting on prompt |
 | DK-3 | Master-doc well-being entry revision (docs/MASTERDOC_WELLBEING_REVISION_TODO_2026-07-18.md) | OPEN |
 | DK-4 | Periodic `git push` (several local commits accumulate between pushes) | recurring |
