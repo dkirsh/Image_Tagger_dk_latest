@@ -25,7 +25,7 @@ are satisfied by the unit, each reaching SCORED or a verified ABSTAINED — neve
 from __future__ import annotations
 from typing import Callable, Dict, FrozenSet, List
 
-MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1+codexS0S2fix+clutterstack+cpart+faithfulV6V7+tax2+cc2m1p+taxfix"   # sprint Reliable-A: V9,V2,V13,V1,V6,V7 + C01,C29   # bump on any algorithm/seed change
+MODEL_VERSION = "cnfa_algs-2026-07-19+seed1234+reliableA+reviewfix+codex2fix+codex3fix+m1prime+wave1+codexS0S2fix+clutterstack+cpart+faithfulV6V7+tax2+cc2m1p+taxfix+reliableAreconcile+wave2geomCC4"   # +reconcile (07-20 stranded batch) +wave2geomCC4 (W2.1/2/3/4/5/6/8)   # bump on any algorithm/seed change
 
 # input tokens a unit may carry beyond the image
 #   plan            inferable from the image (Tier B) — always satisfiable
@@ -104,6 +104,27 @@ PREDICATES: List[Dict] = [
           "RESIDUAL micro-texture EXCLUDING structured/periodic pattern (wallpaper/ribbing read as structure and mask out — Codex S0S2 MED; periodic-texture stat is future work)"),
     _spec("cnfa.geometry.orderliness_alignment", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
           "LSD segment orientation order (segment-scale; V13 stays pixel-scale); abstains <20 segments"),
+    # ---- Wave-2 geometry candidates (Sprint S3; W2.1/W2.6 [FULL], W2.2-W2.5/W2.8 [SKETCH], CC-4
+    # 2026-07-20). All AMBER by rule (ride VP / plane-seg / inferred-plan machinery); all ABSTAIN
+    # when their substrate is absent. RELATIVE quantities only — metric scale is W2.7 (dormant).
+    _spec("cnfa.geometry.verticality_cues", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "W2.1 [FULL]: LSD vertical-length fraction (long runs x2); roll-gated (abstains >12deg roll "
+          "or <20 segments). image-vertical proxies world-vertical only on a level camera"),
+    _spec("cnfa.geometry.ceiling_openness_relative", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "W2.2 [SKETCH]: floor-to-ceiling angular span + ceiling elevation/area, RELATIVE only (no "
+          "metres — that is W2.7). Horizon estimated from the plane split; abstains with no ceiling"),
+    _spec("cnfa.arch.double_height_space", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "W2.3 [SKETCH]: continuous f2c span + double-height flag on an UNCALIBRATED threshold "
+          "(needs_calibration=True; POE atria pair owed). Abstains iff W2.2 does"),
+    _spec("cnfa.geometry.blind_corner_index", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "W2.4 [SKETCH]: skeleton-corner isovist contraction (bounded Σ form) on the inferred plan; "
+          "no transparency gate yet (glazed corners over-counted, Wave-3); abstains on cornerless/tiny plan"),
+    _spec("cnfa.geometry.barrier_permeability", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "W2.5 [SKETCH]: VISUAL see-through (scalar) + PHYSICAL gap (extras), emitted SEPARATELY and "
+          "NEVER averaged; OPENING class == aperture+glass proxy (Wave-3 glass gate owed); abstains no-wall"),
+    _spec("cnfa.arch.threshold_emphasized", "image_attr", IMAGE_ONLY, "replayable_tol", "AMBER",
+          "W2.8 [SKETCH]: emphasis = frame_contrast x aperture_height x frame-edge presence, for an "
+          "aperture EMBEDDED in a wall; allowed to die in S3 — abstains on no wall-embedded aperture"),
     # ---- clutter-stack layers (C-CLUT-2a/b/c, 2026-07-19: post-2007 clutter literature —
     # proto-object numerosity + interpretable structural/chromatic layers; see
     # docs/PAPER_NOTE_ROSENHOLTZ_CLUTTER_2007_AND_AFTER_2026-07-19.md). NO combined scalar:
@@ -146,6 +167,9 @@ PREDICATES: List[Dict] = [
     _spec("C3.intelligibility",     "plan_metric", PLAN, "replayable_tol", "AMBER"),
     _spec("C4.wayfinding_load",     "plan_metric", PLAN, "replayable_tol", "AMBER"),
     _spec("C13.setting_fit",        "plan_metric", PLAN, "replayable_tol", "AMBER"),
+    _spec("cnfa.plan.choice_richness", "plan_metric", PLAN, "replayable_tol", "AMBER",
+          "W2.6 [FULL]: Shannon evenness x type-coverage over the C13 setting classification "
+          "(pure reuse); abstains when the classifier returns no regions"),
     _spec("C24.spatial_generosity", "plan_metric", PLAN, "replayable_tol", "AMBER",
           "2D openness-contrast proxy; true awe wants Tier-C height"),
     _spec("C01.triangulation_ignition", "plan_metric", PLAN, "replayable_tol", "AMBER",
@@ -214,4 +238,11 @@ MAY_LACK_SIGNAL = frozenset({
     "cnfa.fluency.complexity_partition",         # near-blank / too small / over-fragmented
     "cnfa.fluency.feature_congestion",           # near-blank: FC of numerical noise
     "cnfa.fluency.subband_entropy",              # near-blank: SE of numerical noise
+    # ---- Wave-2 geometry (CC-4): each ABSTAINS when its substrate is absent ----
+    "cnfa.geometry.verticality_cues",            # <20 segments or >12deg roll
+    "cnfa.geometry.ceiling_openness_relative",   # no ceiling in frame
+    "cnfa.arch.double_height_space",             # ceiling openness undefined
+    "cnfa.geometry.blind_corner_index",          # cornerless / too-small inferred plan
+    "cnfa.geometry.barrier_permeability",        # no wall/barrier in frame
+    "cnfa.arch.threshold_emphasized",            # no wall-embedded aperture
 })

@@ -65,6 +65,7 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset(),
     from cnfa_algs import attributes as A
     from cnfa_algs import reliable_attrs as RA
     from cnfa_algs import wave1_ops as W1
+    from cnfa_algs import wave2_geometry as WG
     from cnfa_algs import clutter_stack as CS
     from cnfa_algs import complexity_partition as CP
     from cnfa_algs import faithful_clutter as FC
@@ -159,6 +160,13 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset(),
         "cnfa.light.dark_zone_map":               lambda: W1.dark_zone_map(img),
         "cnfa.material.texture_density":          lambda: W1.texture_density(img),
         "cnfa.geometry.orderliness_alignment":    lambda: W1.orderliness_alignment(img),
+        # Wave-2 geometry (Sprint S3, CC-4 2026-07-20) — all AMBER, abstain when substrate absent
+        "cnfa.geometry.verticality_cues":         lambda: WG.verticality_cues(img),
+        "cnfa.geometry.ceiling_openness_relative":lambda: WG.ceiling_openness_relative(img, planes, Z),
+        "cnfa.arch.double_height_space":          lambda: WG.double_height_space(img, planes, Z),
+        "cnfa.geometry.blind_corner_index":       lambda: WG.blind_corner_index(pg),
+        "cnfa.geometry.barrier_permeability":     lambda: WG.barrier_permeability(img, planes, Z),
+        "cnfa.arch.threshold_emphasized":         lambda: WG.threshold_emphasized(img, planes),
         # clutter-stack layers (C-CLUT-2a/b/c, 2026-07-19) — all AMBER, profile-only (no blend)
         "cnfa.fluency.proto_object_count":        lambda: CS.proto_object_count(img),
         "cnfa.fluency.multiscale_gradient":       lambda: CS.multiscale_gradient(img),
@@ -204,6 +212,17 @@ def annotate_image(image_path: str, unit_inputs: FrozenSet[str] = frozenset(),
     }
     from .predicates import fractal_band as FB
     compound_fns["cnfa.fluency.fractal_mid_d_band"] = lambda: FB.compute(img, fractal())
+
+    # W2.6 choice_richness_zones (dict-returning; convert to a scored/unknown record)
+    def _choice_richness():
+        r = WG.choice_richness_zones(pg)
+        if r.get("status") != "scored":
+            return D.unknown("cnfa.plan.choice_richness", f"choice_richness:{r.get('reason','unscored')}")
+        rec = D.scored("cnfa.plan.choice_richness", float(r["scalar"]),
+                       plan_ev(r["method"], r["confidence"]), "AMBER", (H, W))
+        rec["extras"] = r["extras"]
+        return rec
+    compound_fns["cnfa.plan.choice_richness"] = _choice_richness
 
     # street-noise (declared-input): tokens name the inputs; VALUES ride input_values (Codex S0S2
     # HIGH-1 — a token without its value is a unit-construction error -> UNKNOWN, fail closed).

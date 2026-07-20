@@ -83,8 +83,15 @@ def main(argv=None) -> int:
         exp = next(s for s in rec["scores"] if s["status"] == D.SCORED and s["evidence"]["kind"] == "plan_chain")
         print(f"    e.g. {exp['predicate']}={exp['value']} <- plan_chain grid={exp['evidence']['locator']['grid_hash']} "
               f"upstream={len(exp['evidence']['upstream'])} steps")
-        exa = next(s for s in rec["scores"] if s["status"] == D.ABSTAINED)
-        print(f"    e.g. ABSTAINED {exa['predicate']} missing={exa['missing_inputs']}")
+        # prefer an input-missing abstention for the example; else a signal-absent one (CC-4 wave-2
+        # geometry adds signal_absent abstentions, which carry absence_evidence, not missing_inputs)
+        exa = next((s for s in rec["scores"] if s["status"] == D.ABSTAINED and "missing_inputs" in s),
+                   next((s for s in rec["scores"] if s["status"] == D.ABSTAINED), None))
+        if exa is not None:
+            why = exa.get("missing_inputs")
+            if why is None:
+                why = f"signal_absent:{(exa.get('absence_evidence') or {}).get('reason', '?')}"
+            print(f"    e.g. ABSTAINED {exa['predicate']} {why}")
 
     # ---- (b) the score_layout negative control ----
     # Codex-2 fix: don't IndexError when every real unit is RED — the negative control only needs
