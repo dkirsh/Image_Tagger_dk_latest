@@ -17,7 +17,7 @@ DAVID (only-human-can) / PANEL (decision). Every CODEX row names its committed a
 |----|---|------|-------|-----------|
 | CC-1 | P0 | External ATTACK pass on the un-attacked batch: clutter_stack + complexity_partition (11-class taxonomy) + faithful FC/SE + wave2_geometry — the cadence rule says attack before building on top | CODEX (prompt to write; artifact `docs/CODEX_ATTACK_TAX_VERDICT_<date>.md`) | — |
 | CC-3 | P1 | C5–C23 declared-input VALUE bundles through the `input_values` channel (street-noise opened it); full-socket fixtures per predicate | FABLE | — |
-| CC-4 | P1 | S3 remainder: W2.2 ceiling_openness_relative, W2.3 double-height flag, W2.4 blind_corner_index, W2.5 barrier_permeability, W2.8 thresholds; register W2.1 verticality + W2.6 choice_richness with the batch | FABLE | CC-1 (attack first) |
+| CC-4 | P1 | S3 remainder: W2.2 ceiling_openness_relative, W2.3 double-height flag, W2.4 blind_corner_index, W2.5 barrier_permeability, W2.8 thresholds; register W2.1 verticality + W2.6 choice_richness with the batch | FABLE | ~~CC-1~~ UNBLOCKED (TAX dispositioned 07-20) — IN PROGRESS |
 | CC-5 | P1 | S4 detector wave: pinned segmentation model → vegetation/window-view/blue-space/sociopetal ops; upgrades the partition's biophilic gate + adds segment-count clutter layer; art-CONTENT + text/signage VLM-tier gates ride the same decision | FABLE build; PANEL/DAVID model choice (Q1) | DEC-1 |
 | CC-6 | P2 | V6-proxy retirement decision (Spearman −0.117 vs faithful — measured 2026-07-19); V7 proxy (0.717) keep-parallel question | PANEL | corpus helps but not required |
 | CC-7 | P2 | P3 finding to panel: reference-package collapse() lacks MATLAB ×4 upConv gain — which is "the" FC for us? | PANEL | — |
@@ -75,3 +75,5 @@ scores — same separation as the ≠-mind judge).*
 | VIEW-1 layered viewer (8 register groups, zone tooltips, 4.8 MB) | 07-19 | commits a3995318, 229640f0; example in viz/examples/ |
 | VIEW-2 function inspector (61 predicate pages, all constants surfaced) | 07-19 | commit 88e55989 |
 | CC-2 owed M1' classes (7 bindings; 15 predicates now emit M1') | 07-19 | commit d5fe276b; MODEL_VERSION +cc2m1p |
+| Reliable-A reconciliation: honest keys (V2/V6/V7 renamed), F1/F7/F8 fixes, cv2 SSIM, full-BFS Turner integration | 07-20 | commit 6d2d20a6; HEAD was inconsistent (committed registry used new keys, impl returned old) — now aligned; all per-file tests + spatial_syntax self-test PASS |
+| (a) skimage-present 3-image stage smoke | 07-20 | 3 units AMBER, 42/42 scored, unknown=0, replayed, problems=[]; FC/SE (gabor/congestion/feature_congestion/subband) RED->cleared; neg-control RED; idempotent; docs/SMOKE_SKIMAGE_RERUN_2026-07-20.md |
