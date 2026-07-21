@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>L6 Perceptual Labeling Console — 2AFC + anchored Likert</title>
+<!--
+  L6 corpus construct-validation console (S3, Part C of L6_CORRECTNESS_PROGRAM).
+  Built 2026-07-21 incorporating the env-psych + psychometrics panel corrections:
+   - revised construct set (restorative anchored to PRS wording; +mystery, +refuge; wayfinding dropped;
+     calm folded into affect); 2AFC pairwise workhorse + a small anchored-Likert set.
+   - QC: gold trials (independent answers), attention/identical-image "can't tell" catch, L/R
+     counterbalance + per-worker side-bias capture, min/max time, RT capture, confidence toggle.
+   - scale-free by design (BT downstream); NO browser storage (in-memory only, per artifact rules);
+     posts each judgment to a configurable endpoint OR exports a CSV the operator downloads.
+  Self-contained: no external assets. Demo items are drawn in-canvas so it runs offline. To use the
+  real corpus, set CONFIG.imageBaseUrl to the Drive/CDN public base and load a design.json (schema at
+  bottom of this file) via the "Load design.json" control on the consent screen.
+-->
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --ink:#eef1f6; --muted:#9aa4b2; --line:#262b34;
+    --accent:#5b8cff; --accent2:#3fb68b; --warn:#e0b341; --bad:#e5646e; --chip:#1f2530;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f7f9; --panel:#ffffff; --ink:#141821; --muted:#5b6472; --line:#e4e8ee;
+           --accent:#2f6bff; --accent2:#1a9e73; --chip:#eef1f6; }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:20px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:8px}
+  header h1{font-size:15px;margin:0;font-weight:600;letter-spacing:.2px}
+  .tag{font-size:11px;color:var(--muted);background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
+  .progress{height:6px;background:var(--chip);border-radius:999px;overflow:hidden;margin:14px 0}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .3s}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;margin:14px 0;box-shadow:0 1px 0 rgba(0,0,0,.04)}
+  h2{font-size:19px;margin:.1em 0 .5em}
+  p{color:var(--ink)} .muted{color:var(--muted)}
+  .q{font-size:20px;font-weight:600;text-align:center;margin:6px 0 14px}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .opt{position:relative;border:2px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;background:#000;aspect-ratio:4/3;transition:border-color .12s,transform .05s}
+  .opt:hover{border-color:var(--accent)} .opt:active{transform:scale(.997)}
+  .opt.sel{border-color:var(--accent2)}
+  .opt img,.opt canvas{width:100%;height:100%;object-fit:cover;display:block}
+  .opt .kbd{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.6);color:#fff;border-radius:6px;padding:2px 8px;font-size:12px}
+  .single{max-width:640px;margin:0 auto}
+  .single canvas,.single img{width:100%;border-radius:12px;display:block;aspect-ratio:4/3;object-fit:cover;background:#000}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:14px}
+  button,.btn{font:inherit;color:var(--ink);background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:10px 16px;cursor:pointer}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  button.big{padding:14px 26px;font-size:16px}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .likert{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+  .likert button{min-width:44px}
+  .toggle{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .toggle button{border:0;border-radius:0;background:transparent}
+  .toggle button.on{background:var(--accent);color:#fff}
+  label.chk{display:flex;gap:8px;align-items:flex-start;margin:8px 0;color:var(--ink)}
+  input[type=checkbox]{margin-top:3px}
+  .ex{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0}
+  .ex figure{margin:0} .ex canvas{width:100%;border-radius:8px;aspect-ratio:4/3}
+  .ex figcaption{font-size:12px;color:var(--muted);margin-top:4px}
+  code{background:var(--chip);border:1px solid var(--line);border-radius:6px;padding:1px 5px;font-size:12px}
+  .center{text-align:center}
+  .completion{font-size:26px;font-weight:700;letter-spacing:2px;background:var(--chip);border:1px dashed var(--line);border-radius:10px;padding:12px 18px;display:inline-block}
+  .hidden{display:none!important}
+  .settings{font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .settings input{background:var(--chip);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 8px;font:inherit}
+  .pill{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--muted)}
+  .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>L6 Perceptual Labeling Console</h1>
+    <div class="flex">
+      <span class="tag" id="constructTag">construct</span>
+      <span class="tag" id="counter">0 / 0</span>
+    </div>
+  </header>
+  <div class="progress"><i id="bar"></i></div>
+
+  <!-- 1. CONSENT + SCREENING -->
+  <section id="screen-consent" class="card">
+    <h2>Consent &amp; screening</h2>
+    <p class="muted">This is a short study about how people perceive photographs of indoor spaces. You'll
+      compare pairs of images and answer a simple question about each pair. No personal data is collected;
+      your responses are anonymous and used only for research.</p>
+    <label class="chk"><input type="checkbox" id="c1"/> I am 18+ and consent to participate voluntarily. I may stop at any time.</label>
+    <label class="chk"><input type="checkbox" id="c2"/> I have normal or corrected-to-normal vision (glasses/contacts are fine).</label>
+    <label class="chk"><input type="checkbox" id="c3"/> I am fluent in English and on a desktop/laptop with a large screen (not a phone).</label>
+    <label class="chk"><input type="checkbox" id="c4"/> My screen brightness is at a comfortable, normal level (not dimmed).</label>
+    <div class="row" style="justify-content:space-between">
+      <div class="settings">
+        <span class="pill">operator settings</span>
+        <label>image base URL <input id="cfgBase" size="26" placeholder="(demo mode: in-canvas)"/></label>
+        <label>load design.json <input type="file" id="cfgFile" accept="application/json"/></label>
+        <label>post URL <input id="cfgPost" size="18" placeholder="(none → CSV export)"/></label>
+      </div>
+      <button class="primary big" id="toInstructions" disabled>Continue</button>
+    </div>
+  </section>
+
+  <!-- 2. INSTRUCTIONS + WORKED EXAMPLES -->
+  <section id="screen-instructions" class="card hidden">
+    <h2 id="instrTitle">Instructions</h2>
+    <p id="instrBody" class="muted"></p>
+    <div class="ex" id="instrExamples"></div>
+    <p class="muted">You'll use two big buttons (or the <code>←</code> / <code>→</code> arrow keys). If the two
+      truly look the same on this dimension, use <b>Can't tell</b>. A quick gut response is best — there are no
+      trick answers. Please don't rush: very fast clicking is flagged.</p>
+    <div class="center"><button class="primary big" id="toQual">I understand — start the warm-up</button></div>
+  </section>
+
+  <!-- 3. QUALIFICATION (GOLD) -->
+  <section id="screen-qual" class="card hidden">
+    <h2>Warm-up (3 quick checks)</h2>
+    <p class="muted">These have an obvious answer and just confirm the task is clear.</p>
+    <div id="qualHost"></div>
+  </section>
+
+  <!-- 4. RATING LOOP -->
+  <section id="screen-rate" class="card hidden">
+    <div class="q" id="rateQ">…</div>
+    <div id="rateHost"></div>
+    <div class="row">
+      <button id="btnLeft">◀ Left</button>
+      <div class="toggle" title="How sure are you?">
+        <button id="confSure" class="on">sure</button>
+        <button id="confUnsure">unsure</button>
+      </div>
+      <button id="btnCant">Can't tell</button>
+      <button id="btnRight">Right ▶</button>
+    </div>
+    <div class="center muted" style="margin-top:8px;font-size:12px" id="rateHint">← / → to choose · space = can't tell</div>
+  </section>
+
+  <!-- 5. SUBMIT -->
+  <section id="screen-done" class="card hidden center">
+    <h2>All done — thank you!</h2>
+    <p class="muted">Your completion code:</p>
+    <p><span class="completion" id="code">—</span></p>
+    <p id="postStatus" class="muted"></p>
+    <div class="row">
+      <button id="btnCsv">Download my responses (CSV)</button>
+    </div>
+    <p class="muted" style="font-size:12px;margin-top:14px">You may close this tab.</p>
+  </section>
+
+  <p class="muted center" style="font-size:11px">L6 construct-validation console · scale-free 2AFC (Bradley–Terry downstream) · no data stored in your browser</p>
+</div>
+
+<script>
+"use strict";
+/* ----------------------------------------------------------------------------------------------
+   CONSTRUCTS — revised per the 2026-07-21 env-psych + psychometrics panels.
+   Each construct is ONE comparative (2AFC) question + a short instruction + the attributes it
+   validates. "wayfinding-ease" was DROPPED (not judgeable from a single photo). "calm/stress" folded
+   into affect/preference. "restorative" uses PRS-flavoured wording. "mystery" and "refuge" ADDED.
+---------------------------------------------------------------------------------------------- */
+const CONSTRUCTS = {
+  clutter:    {q:"Which space looks more visually busy or cluttered?",
+               tip:"“Busy” = the amount of stuff and visual detail — not whether it's ugly or messy in taste.",
+               validates:"FC, subband entropy, complexity_partition, proto-object clutter stack"},
+  openness:   {q:"Which space feels more open (vs. enclosed)?",
+               tip:"Open = expansive, high or unbounded; enclosed = tight, low, closed-in.",
+               validates:"prospect (isovist), enclosure_index, W2.2 ceiling openness"},
+  restorative:{q:"In which space would it be easier to rest and mentally recover?",
+               tip:"A place that feels like a break — calm, absorbing, a world apart — where attention can restore.",
+               validates:"biophilia (view/greenery/materials/water), spectral/fractal, restoration_nature"},
+  mystery:    {q:"Which space makes you more curious to explore what lies beyond view?",
+               tip:"A sense that there's more to discover around a corner or through an opening.",
+               validates:"blind_corner_index, barrier_permeability, choice_richness"},
+  refuge:     {q:"Which space gives a stronger sense of a safe, sheltered place to settle?",
+               tip:"A protected vantage — somewhere you could pause and feel secure, with your back covered.",
+               validates:"refuge (new), enclosure, prospect–refuge interaction"},
+  preference: {q:"Which space do you prefer overall?",
+               tip:"Your overall liking — whichever you'd rather be in.",
+               validates:"global hedonic fluency → affect (criterion, not a predictor)"}
+};
+
+/* Anchored-Likert items (shown only on the shared anchor set, to fix the BT origin + license a
+   hedonic zero). PRS-derived restorativeness + Russell valence/arousal. 1–7. */
+const LIKERT = [
+  {key:"prs_away",   text:"“Being here is an escape from day-to-day demands.”"},
+  {key:"prs_fascin", text:"“This place has fascinating qualities that draw my attention.”"},
+  {key:"affect_val", text:"How pleasant does this space feel?  (1 unpleasant … 7 pleasant)"},
+  {key:"affect_aro", text:"How calming vs. stimulating?  (1 very calm … 7 very stimulating)"}
+];
+
+const CONFIG = { imageBaseUrl:"", postUrl:"", minMs:1200, maxMs:60000 };
+
+/* ---------------- session + state ---------------- */
+const SESSION = { worker_id: uid("w"), session_id: uid("s"), started: nowIso() };
+const RESP = [];               // judgment rows
+let DESIGN = null;             // {pairs, singles, anchor, gold, construct_order}
+let queue = [];                // flattened trial queue
+let qi = 0;                    // queue index
+let sideBias = {L:0,R:0};
+let confidence = "sure";
+let trialShownAt = 0;
+
+function uid(p){ return p + Math.random().toString(36).slice(2,8) + (performance.now()|0).toString(36); }
+function nowIso(){ return new Date().toISOString(); }   // note: real deploy on a machine w/ a clock
+function $(id){ return document.getElementById(id); }
+function show(id){ ["screen-consent","screen-instructions","screen-qual","screen-rate","screen-done"].forEach(s=>$(s).classList.toggle("hidden", s!==id)); }
+
+/* ---------------- demo design (in-canvas, zero external assets) ----------------
+   Each "image" is a deterministic procedural interior-ish gradient+texture keyed by a seed, with a
+   controllable "busyness" and "brightness" so the demo 2AFC has a defensible ground truth for golds. */
+function makeDemoDesign(){
+  const mk = (id, seed, busy, bright, open)=>({id, seed, busy, bright, open, demo:true});
+  const A = mk("demo/bright_open_calm", 11, 0.15, 0.8, 0.85);
+  const B = mk("demo/dim_cluttered",    12, 0.85, 0.28, 0.25);
+  const C = mk("demo/mid_room",         13, 0.5,  0.55, 0.5);
+  const D = mk("demo/leafy_restful",    14, 0.35, 0.7,  0.6);
+  const E = mk("demo/narrow_corridor",  15, 0.4,  0.5,  0.35);
+  const F = mk("demo/wide_atrium",      16, 0.3,  0.75, 0.9);
+  return {
+    items:{ A,B,C,D,E,F },
+    construct_order:["clutter","openness","restorative","mystery","refuge","preference"],
+    pairs:[
+      {pair_id:"p1", left:"A", right:"B", construct:"clutter"},
+      {pair_id:"p2", left:"F", right:"E", construct:"openness"},
+      {pair_id:"p3", left:"D", right:"B", construct:"restorative"},
+      {pair_id:"p4", left:"C", right:"F", construct:"mystery"},
+      {pair_id:"p5", left:"E", right:"F", construct:"refuge"},
+      {pair_id:"p6", left:"A", right:"C", construct:"preference"}
+    ],
+    anchor:["A","D"],  // shown with Likert
+    gold:[
+      {pair_id:"g1", left:"B", right:"A", construct:"clutter", answer:"L"},   // B clearly busier
+      {pair_id:"g2", left:"F", right:"E", construct:"openness", answer:"L"},  // atrium clearly more open
+      {pair_id:"g3", left:"A", right:"A", construct:"preference", answer:"tie"} // identical → can't tell
+    ]
+  };
+}
+
+/* draw a procedural "interior" into a canvas */
+function drawItem(canvas, item){
+  const w=canvas.width=480, h=canvas.height=360, ctx=canvas.getContext("2d");
+  let s = item.seed*2654435761 >>> 0;
+  const rnd=()=>{ s^=s<<13; s^=s>>>17; s^=s<<5; s>>>=0; return s/4294967296; };
+  const b = item.bright ?? 0.5, busy = item.busy ?? 0.4;
+  // wall gradient
+  const g=ctx.createLinearGradient(0,0,0,h);
+  g.addColorStop(0,`hsl(210,12%,${18+b*55}%)`); g.addColorStop(1,`hsl(210,10%,${10+b*40}%)`);
+  ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+  // floor
+  ctx.fillStyle=`hsl(28,18%,${14+b*30}%)`; ctx.beginPath();
+  ctx.moveTo(0,h); ctx.lineTo(w,h); ctx.lineTo(w*0.72,h*0.6); ctx.lineTo(w*0.28,h*0.6); ctx.fill();
+  // a "window" for open/leafy items
+  if((item.open??0.5)>0.55){ ctx.fillStyle=`hsl(200,40%,${55+b*30}%)`; ctx.fillRect(w*0.55,h*0.12,w*0.34,h*0.4);
+    if(item.id.includes("leaf")){ for(let i=0;i<40;i++){ctx.fillStyle=`hsl(${100+rnd()*40},45%,${35+rnd()*25}%)`;ctx.beginPath();ctx.arc(w*0.55+rnd()*w*0.34,h*0.12+rnd()*h*0.4,3+rnd()*6,0,7);ctx.fill();}} }
+  // clutter: scatter rectangles/objects proportional to busy
+  const n=Math.round(busy*120);
+  for(let i=0;i<n;i++){ ctx.fillStyle=`hsl(${rnd()*360},${20+rnd()*40}%,${20+rnd()*50}%)`;
+    const x=rnd()*w, y=h*0.5+rnd()*h*0.45, sz=4+rnd()*22; ctx.fillRect(x,y,sz,sz*(0.5+rnd())); }
+  // corridor perspective lines for narrow items
+  if(item.id.includes("corridor")){ ctx.strokeStyle="rgba(255,255,255,.18)";ctx.lineWidth=2;
+    for(let k=1;k<6;k++){ctx.beginPath();ctx.moveTo(0,h*k/6);ctx.lineTo(w*0.5,h*0.55);ctx.stroke();ctx.beginPath();ctx.moveTo(w,h*k/6);ctx.lineTo(w*0.5,h*0.55);ctx.stroke();}}
+  ctx.strokeStyle="rgba(0,0,0,.25)";ctx.strokeRect(0,0,w,h);
+}
+
+function itemEl(item, tag){
+  const d=document.createElement("div"); d.className="opt"; d.dataset.side=tag||"";
+  if(item.demo || !CONFIG.imageBaseUrl){ const c=document.createElement("canvas"); d.appendChild(c); drawItem(c,item); }
+  else { const im=document.createElement("img"); im.loading="eager"; im.src=CONFIG.imageBaseUrl.replace(/\/$/,"")+"/"+item.id; d.appendChild(im); }
+  if(tag){ const k=document.createElement("span"); k.className="kbd"; k.textContent = tag==="L"?"←":"→"; d.appendChild(k); }
+  return d;
+}
+
+/* ---------------- queue build ---------------- */
+function buildQueue(){
+  const its = DESIGN.items, q=[];
+  // 1) gold qualification handled separately; 2) interleave real pairs with gold every ~10; 3) anchor Likert at end
+  const pairs = DESIGN.pairs.map(p=>({type:"pair", ...p}));
+  const anchors = (DESIGN.anchor||[]).map(id=>({type:"anchor", item:id}));
+  // insert an attention/gold catch every 10 trials (reuse gold[0]) — flagged is_gold
+  const woven=[]; let g=0;
+  pairs.forEach((p,i)=>{ woven.push(p); if((i+1)%5===0 && DESIGN.gold[g%DESIGN.gold.length]){ woven.push({type:"pair", is_gold:true, ...DESIGN.gold[g%DESIGN.gold.length]}); g++; } });
+  return woven.concat(anchors);
+}
+
+/* ---------------- rendering trials ---------------- */
+function renderQual(){
+  const host=$("qualHost"); host.innerHTML="";
+  let passed=0, idx=0;
+  const golds=DESIGN.gold;
+  function step(){
+    if(idx>=golds.length){
+      if(passed>=Math.ceil(golds.length*0.66)){ startRating(); }
+      else { host.innerHTML="<p class='muted'>Thanks — it looks like this task may not be a good fit right now. You can close this tab.</p>"; }
+      return;
+    }
+    const gTrial=golds[idx]; host.innerHTML="";
+    const con=CONSTRUCTS[gTrial.construct];
+    const q=document.createElement("div"); q.className="q"; q.textContent=con.q; host.appendChild(q);
+    const pair=document.createElement("div"); pair.className="pair";
+    const l=itemEl(DESIGN.items[gTrial.left],"L"), r=itemEl(DESIGN.items[gTrial.right],"R");
+    pair.appendChild(l); pair.appendChild(r); host.appendChild(pair);
+    const row=document.createElement("div"); row.className="row";
+    const bl=btn("◀ Left"), bc=btn("Can't tell"), br=btn("Right ▶");
+    row.append(bl,bc,br); host.appendChild(row);
+    const pick=(ans)=>{ const ok=(ans===gTrial.answer)||(gTrial.answer==="tie"&&ans==="tie"); if(ok)passed++; idx++; step(); };
+    bl.onclick=()=>pick("L"); br.onclick=()=>pick("R"); bc.onclick=()=>pick("tie");
+  }
+  step();
+}
+function btn(t){ const b=document.createElement("button"); b.textContent=t; return b; }
+
+function startRating(){
+  queue=buildQueue(); qi=0; show("screen-rate"); renderTrial();
+}
+function renderTrial(){
+  if(qi>=queue.length){ finish(); return; }
+  const t=queue[qi];
+  $("counter").textContent=(qi+1)+" / "+queue.length;
+  $("bar").style.width = Math.round((qi/queue.length)*100)+"%";
+  const host=$("rateHost"); host.innerHTML=""; confidence="sure"; setConf();
+  if(t.type==="anchor"){
+    $("constructTag").textContent="rating";
+    $("rateQ").textContent="Rate this space:";
+    const wrap=document.createElement("div"); wrap.className="single";
+    const c=document.createElement("canvas"); const it=DESIGN.items[t.item];
+    if(it.demo||!CONFIG.imageBaseUrl){ wrap.appendChild(c); drawItem(c,it);} else { const im=document.createElement("img"); im.src=CONFIG.imageBaseUrl.replace(/\/$/,"")+"/"+it.id; wrap.appendChild(im); }
+    host.appendChild(wrap);
+    LIKERT.forEach(item=>{
+      const lab=document.createElement("p"); lab.textContent=item.text; lab.style.textAlign="center"; lab.style.margin="12px 0 2px"; host.appendChild(lab);
+      const lk=document.createElement("div"); lk.className="likert";
+      for(let v=1;v<=7;v++){ const b=btn(String(v)); b.onclick=()=>{ b.parentNode.querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); lk.dataset.val=v; }; lk.appendChild(b); }
+      lk.dataset.key=item.key; host.appendChild(lk);
+    });
+    $("btnLeft").classList.add("hidden");$("btnRight").classList.add("hidden");$("btnCant").classList.add("hidden");
+    $("rateHint").textContent="pick a number on each scale, then Next";
+    // reuse the confidence toggle area's right button as "Next"
+    ensureNext(()=>{
+      const rows=[...host.querySelectorAll(".likert")];
+      if(rows.some(r=>!r.dataset.val)){ return; }
+      rows.forEach(r=> recordLikert(t.item, r.dataset.key, +r.dataset.val));
+      qi++; renderTrial();
+    });
+  } else {
+    $("nextWrap")&&$("nextWrap").remove();
+    $("btnLeft").classList.remove("hidden");$("btnRight").classList.remove("hidden");$("btnCant").classList.remove("hidden");
+    const con=CONSTRUCTS[t.construct]; $("constructTag").textContent=t.construct;
+    $("rateQ").textContent=con.q;
+    // counterbalance L/R physical position by session parity + trial index
+    const flip=((qi+ (SESSION.session_id.charCodeAt(2)%2))%2)===1;
+    const leftItem = flip? t.right : t.left, rightItem = flip? t.left : t.right;
+    const pair=document.createElement("div"); pair.className="pair";
+    pair.appendChild(itemEl(DESIGN.items[leftItem],"L"));
+    pair.appendChild(itemEl(DESIGN.items[rightItem],"R"));
+    host.appendChild(pair);
+    host._map={L:leftItem,R:rightItem,flip,t};
+    $("rateHint").textContent="← / → to choose · space = can't tell";
+  }
+  trialShownAt=performance.now();
+}
+
+/* a lazily-created Next button for anchor screens */
+function ensureNext(cb){
+  let w=$("nextWrap"); if(!w){ w=document.createElement("div"); w.id="nextWrap"; w.className="row"; const b=btn("Next ▶"); b.className="primary"; b.id="btnNext"; w.appendChild(b); $("screen-rate").appendChild(w);}
+  $("btnNext").onclick=cb;
+}
+
+function choose(side){
+  const t=queue[qi]; if(!t||t.type==="anchor") return;
+  const rt=performance.now()-trialShownAt;
+  if(rt<CONFIG.minMs){ flash("Take a moment to look — that was very fast."); return; }
+  const map=$("rateHost")._map;
+  let chosenItem=null, resp=side;
+  if(side==="tie"){ resp="tie"; }
+  else { chosenItem = map[side]; sideBias[side]++; }
+  RESP.push({
+    worker_id:SESSION.worker_id, session_id:SESSION.session_id,
+    kind:"pair", pair_id:t.pair_id, construct:t.construct,
+    left_item:map.L, right_item:map.R, chosen_side:side, chosen_item:chosenItem||"",
+    response:resp, confidence, rt_ms:Math.round(rt),
+    is_gold:!!t.is_gold, gold_answer:t.answer||"", gold_pass: t.is_gold ? String(gradeGold(t,map,side)) : "",
+    ua_desktop: (window.innerWidth>=1000)?1:0, ts_utc:nowIso()
+  });
+  postRow(RESP[RESP.length-1]);
+  qi++; renderTrial();
+}
+function gradeGold(t,map,side){
+  if(t.answer==="tie") return side==="tie";
+  // gold answer is L/R in DESIGN coordinates; translate through the flip
+  const wantItem = t.answer==="L"? t.left : t.right;
+  return map[side]===wantItem;
+}
+function recordLikert(item,key,val){
+  RESP.push({worker_id:SESSION.worker_id,session_id:SESSION.session_id,kind:"likert",item, likert_key:key, response:val, confidence:"", rt_ms:"", is_gold:false, ts_utc:nowIso()});
+  postRow(RESP[RESP.length-1]);
+}
+
+/* ---------------- finish + export ---------------- */
+function finish(){
+  $("bar").style.width="100%";
+  const total=sideBias.L+sideBias.R, bias= total? Math.abs(sideBias.L-sideBias.R)/total : 0;
+  const golds=RESP.filter(r=>r.is_gold), gp=golds.filter(r=>r.gold_pass==="true").length;
+  SESSION.gold_pass_rate = golds.length? (gp/golds.length):null;
+  SESSION.side_bias = bias;
+  $("code").textContent = "L6-"+SESSION.session_id.toUpperCase().slice(0,8);
+  show("screen-done");
+  const st=$("postStatus");
+  st.textContent = CONFIG.postUrl ? "Responses were streamed to the study server." :
+    "No server configured — use the button below to download your responses.";
+}
+function toCsv(){
+  const cols=["worker_id","session_id","kind","pair_id","construct","left_item","right_item","chosen_side","chosen_item","response","confidence","rt_ms","is_gold","gold_answer","gold_pass","item","likert_key","ua_desktop","ts_utc"];
+  const esc=v=>{ v=(v===undefined||v===null)?"":String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
+  const head="# session_meta side_bias="+(SESSION.side_bias??"").toString().slice(0,5)+" gold_pass_rate="+(SESSION.gold_pass_rate??"")+"\n";
+  return head+cols.join(",")+"\n"+RESP.map(r=>cols.map(c=>esc(r[c])).join(",")).join("\n");
+}
+function download(){
+  const blob=new Blob([toCsv()],{type:"text/csv"}); const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download="l6_labels_"+SESSION.session_id+".csv"; a.click();
+}
+function postRow(row){
+  if(!CONFIG.postUrl) return;
+  try{ fetch(CONFIG.postUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(row)}); }catch(e){}
+}
+
+/* ---------------- misc UI ---------------- */
+function setConf(){ $("confSure").classList.toggle("on",confidence==="sure"); $("confUnsure").classList.toggle("on",confidence==="unsure"); }
+let flashT=null; function flash(msg){ const h=$("rateHint"); const old=h.textContent; h.textContent=msg; h.style.color="var(--warn)"; clearTimeout(flashT); flashT=setTimeout(()=>{h.textContent=old;h.style.color="";},1400); }
+
+function buildInstructions(){
+  // show the first construct's instruction + two worked demo examples
+  const first = (DESIGN.construct_order&&DESIGN.construct_order[0])||"clutter";
+  const con=CONSTRUCTS[first];
+  $("instrTitle").textContent="How to compare: “"+first+"”";
+  $("instrBody").innerHTML = con.q+"<br><span class='muted'>"+con.tip+"</span>";
+  const host=$("instrExamples"); host.innerHTML="";
+  const demo=makeDemoDesign();
+  [["A","calmer / less busy"],["B","busier / more cluttered"]].forEach(([k,cap])=>{
+    const f=document.createElement("figure"); const c=document.createElement("canvas"); f.appendChild(c);
+    const cc=document.createElement("figcaption"); cc.textContent=cap; f.appendChild(cc); host.appendChild(f); drawItem(c,demo.items[k]);
+  });
+}
+
+/* ---------------- wiring ---------------- */
+["c1","c2","c3","c4"].forEach(id=>$(id).addEventListener("change",()=>{ $("toInstructions").disabled = !(c1.checked&&c2.checked&&c3.checked&&c4.checked); }));
+$("cfgFile").addEventListener("change",ev=>{ const f=ev.target.files[0]; if(!f)return; const rd=new FileReader(); rd.onload=()=>{ try{ DESIGN=JSON.parse(rd.result); flashConsole("design.json loaded ("+(DESIGN.pairs?.length||0)+" pairs)"); }catch(e){ alert("Invalid design.json"); } }; rd.readAsText(f); });
+function flashConsole(m){ const t=$("constructTag"); t.textContent=m; }
+$("toInstructions").onclick=()=>{ CONFIG.imageBaseUrl=$("cfgBase").value.trim(); CONFIG.postUrl=$("cfgPost").value.trim(); if(!DESIGN) DESIGN=makeDemoDesign(); buildInstructions(); show("screen-instructions"); };
+$("toQual").onclick=()=>{ show("screen-qual"); renderQual(); };
+$("btnLeft").onclick=()=>choose("L"); $("btnRight").onclick=()=>choose("R"); $("btnCant").onclick=()=>choose("tie");
+$("confSure").onclick=()=>{confidence="sure";setConf();}; $("confUnsure").onclick=()=>{confidence="unsure";setConf();};
+$("btnCsv").onclick=download;
+document.addEventListener("keydown",e=>{ if($("screen-rate").classList.contains("hidden"))return; if(e.key==="ArrowLeft")choose("L"); else if(e.key==="ArrowRight")choose("R"); else if(e.key===" "){e.preventDefault();choose("tie");} });
+
+show("screen-consent");
+/* =====================================================================================
+   design.json SCHEMA (load via the consent screen; else the in-canvas demo is used):
+   {
+     "items":   { "<key>": {"id":"interiors/foo.png"}, ... },   // id = corpus filename under imageBaseUrl
+     "construct_order": ["clutter","openness","restorative","mystery","refuge","preference"],
+     "pairs":   [ {"pair_id":"p1","left":"<key>","right":"<key>","construct":"clutter"}, ... ],
+     "anchor":  ["<key>", ...],                                  // shown with the Likert battery
+     "gold":    [ {"pair_id":"g1","left":"<key>","right":"<key>","construct":"clutter","answer":"L|R|tie"}, ... ]
+   }
+   The offline pipeline (ASAP two-stage active sampling + A/B injection) writes pairs/anchor; the
+   console just serves them, captures judgments, and streams rows matching corpus_L6/human_labels.csv.
+   ===================================================================================== */
+</script>
+</body>
+</html>
