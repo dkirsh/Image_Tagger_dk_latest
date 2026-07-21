@@ -354,6 +354,43 @@ _OPX = {
     "shadow_softness":    ("cnfa_algs.wave1_ops", "shadow_softness",
                            ["penumbra_px", "penumbra_frac_diag", "n_edges",
                             "n_rejected_material"], None),
+    # --- S1 / A5 M1' coverage batch (2026-07-21): the 13 image-only pixel operators ---
+    # (single-arg fn(img)->AttributeResult). Keys = the op's declared numeric pre-scalar
+    # signature + fixed constants; variable-length detail lists (patches/pools/zones) are
+    # deliberately excluded to keep the digest cross-env stable. glare_risk/landmark_salience
+    # carry no extras -> scalar-only digest (still tamper/stale/abstain-auditable).
+    "glare_risk":         ("cnfa_algs.attributes", "glare_risk", [], None),
+    "landmark_salience":  ("cnfa_algs.attributes", "landmark_salience", [], None),
+    "proto_object_count": ("cnfa_algs.clutter_stack", "proto_object_count",
+                           ["count", "density_per_mpx", "size_entropy", "n_regions_raw",
+                            "constants"], None),
+    "multiscale_gradient": ("cnfa_algs.clutter_stack", "multiscale_gradient",
+                            ["per_scale", "raw_mean", "scales", "fullscale"], None),
+    "multiscale_unique_color": ("cnfa_algs.clutter_stack", "multiscale_unique_color",
+                                ["per_config", "spatial_scales", "bins", "raw_mean",
+                                 "fullscale"], None),
+    "luminance_gradient_contrast": ("cnfa_algs.wave1_ops", "luminance_gradient_contrast",
+                                    ["mean_grad_diagu", "coherence", "contrast_ratio_p95_p5",
+                                     "sigma_px", "fullscale_grad"], None),
+    "sun_patch_geometry": ("cnfa_algs.wave1_ops", "sun_patch_geometry",
+                           ["n_patches", "thr"], None),
+    "evening_ambience":   ("cnfa_algs.wave1_ops", "evening_ambience",
+                           ["cct_proxy_K", "mean_lum", "lum_skew", "clipped_frac",
+                            "awb_unknown", "weights", "warm_below_K", "dim_below"], None),
+    "temperature_mismatch": ("cnfa_algs.wave1_ops", "temperature_mismatch",
+                             ["clusters_cct_K", "proportions", "worst_pair",
+                              "fullscale_mired", "awb_unknown"], None),
+    "spotlight_pool_geometry": ("cnfa_algs.wave1_ops", "spotlight_pool_geometry",
+                                ["n_pools", "tophat_thr", "se_radius_px"], None),
+    "dark_zone_map":      ("cnfa_algs.wave1_ops", "dark_zone_map",
+                           ["n_zones", "rel_thr", "global_median"], None),
+    "orderliness_alignment": ("cnfa_algs.wave1_ops", "orderliness_alignment",
+                              ["n_segments", "alignment_2mode", "modes_adjacent",
+                               "mode_bin_separation", "entropy_norm", "nbins", "mode_bins",
+                               "total_length_px"], None),
+    "verticality_cues":   ("cnfa_algs.wave2_geometry", "verticality_cues",
+                           ["n_segments", "n_vertical", "n_long_vertical_runs",
+                            "roll_est_deg", "constants"], None),
 }
 
 
@@ -417,6 +454,20 @@ M1P_BINDINGS = {
     "cnfa.material.texture_density":         ("operator_extract", {"op": "texture_density"}),
     "cnfa.geometry.contour_angularity":      ("operator_extract", {"op": "contour_angularity"}),
     "cnfa.light.shadow_softness":            ("operator_extract", {"op": "shadow_softness"}),
+    # --- S1 / A5 M1' coverage batch (2026-07-21): 13 image-only pixel operators ---
+    "glare-risk":                            ("operator_extract", {"op": "glare_risk"}),
+    "cnfa.cognitive.landmark_salience":      ("operator_extract", {"op": "landmark_salience"}),
+    "cnfa.fluency.proto_object_count":       ("operator_extract", {"op": "proto_object_count"}),
+    "cnfa.fluency.multiscale_gradient":      ("operator_extract", {"op": "multiscale_gradient"}),
+    "cnfa.fluency.multiscale_unique_color":  ("operator_extract", {"op": "multiscale_unique_color"}),
+    "cnfa.light.luminance_gradient_contrast":("operator_extract", {"op": "luminance_gradient_contrast"}),
+    "cnfa.light.sun_patch_geometry":         ("operator_extract", {"op": "sun_patch_geometry"}),
+    "cnfa.light.evening_ambience":           ("operator_extract", {"op": "evening_ambience"}),
+    "cnfa.light.temperature_mismatch":       ("operator_extract", {"op": "temperature_mismatch"}),
+    "cnfa.light.spotlight_pool_geometry":    ("operator_extract", {"op": "spotlight_pool_geometry"}),
+    "cnfa.light.dark_zone_map":              ("operator_extract", {"op": "dark_zone_map"}),
+    "cnfa.geometry.orderliness_alignment":   ("operator_extract", {"op": "orderliness_alignment"}),
+    "cnfa.geometry.verticality_cues":        ("operator_extract", {"op": "verticality_cues"}),
 }
 
 

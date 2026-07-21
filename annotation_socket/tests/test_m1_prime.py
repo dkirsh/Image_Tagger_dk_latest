@@ -56,28 +56,56 @@ def test_bindings_point_at_registry():
     print(f"  {len(M.M1P_BINDINGS)} bindings all point at registered predicates  OK")
 
 
-def test_cc2_operator_extract():
-    """CC-2 (2026-07-19): the 7 owed bindings — clean MATCH, tamper RED, diff-image RED.
-    Uses the synth fixture; operators that abstain on it exercise the abstained-digest path,
-    which must ALSO tamper-catch (a claim of abstention is a claim like any other)."""
+# S1 / A5 (2026-07-21): the 13 image-only pixel operators bound this batch. Explicitly listed so a
+# dropped binding is a test failure, not a silently-shrunk count.
+_S1_M1P_BATCH = [
+    "glare-risk", "cnfa.cognitive.landmark_salience", "cnfa.fluency.proto_object_count",
+    "cnfa.fluency.multiscale_gradient", "cnfa.fluency.multiscale_unique_color",
+    "cnfa.light.luminance_gradient_contrast", "cnfa.light.sun_patch_geometry",
+    "cnfa.light.evening_ambience", "cnfa.light.temperature_mismatch",
+    "cnfa.light.spotlight_pool_geometry", "cnfa.light.dark_zone_map",
+    "cnfa.geometry.orderliness_alignment", "cnfa.geometry.verticality_cues",
+]
+# Operators whose sufficient statistics are GLOBALLY TRANSLATION-INVARIANT by construction (whole-frame
+# light summaries): a circular roll produces statistically the same image, so diff-image legitimately
+# MATCHes. Their scalar is invariant to the roll too, so this is within M1' scope (tamper/stale/
+# wrong-pipeline), not a signature weakness. Documented here so the diff-image guard stays strict for
+# every spatially-discriminating op.
+_M1P_ROLL_INVARIANT = {
+    "cnfa.light.sun_patch_geometry", "cnfa.light.evening_ambience",
+    "cnfa.light.spotlight_pool_geometry", "cnfa.light.dark_zone_map",
+}
+
+
+def test_operator_extract_bindings():
+    """All operator_extract + ssim_map bindings (CC-2 + the S1/A5 batch) must satisfy the three hard
+    guarantees on the synth fixture: DETERMINISM (emit twice -> identical digest; the anti-false-RED
+    property), genuine -> MATCH, and forged-digest tamper -> STATS_MISMATCH. Diff-image discrimination
+    is additionally required for every op NOT in the documented roll-invariant allowlist. Abstaining
+    ops exercise the abstained-digest path (a claim of abstention is auditable like any other)."""
     img = _synth()
+    rolled = np.roll(img, 9, axis=1)
     new = [pid for pid, (ac, _) in M.M1P_BINDINGS.items()
            if ac in ("ssim_map", "operator_extract")]
-    assert len(new) == 7, f"expected 7 CC-2 bindings, found {len(new)}"
+    missing = [pid for pid in _S1_M1P_BATCH if pid not in new]
+    assert not missing, f"S1/A5 M1' bindings dropped: {missing}"
+    assert len(new) >= 20, f"expected >=20 operator_extract/ssim bindings, found {len(new)}"
+    n_abst = 0
     for pid in new:
         ac, params = M.M1P_BINDINGS[pid]
         m = M.emit(ac, img, **params)
+        assert M.emit(ac, img, **params)["digest"] == m["digest"], f"{pid}: non-deterministic digest"
         assert M.replay(m, img, **params)[0] == M.MATCH, pid
         t = json.loads(json.dumps(m))
         t["digest"] = "sha256:" + "0" * 64
-        assert M.replay(t, img, **params)[0] == M.STATS_MISMATCH, pid
-        if not m["stats"].get("abstained"):
-            assert M.replay(m, np.roll(img, 9, axis=1), **params)[0] == M.STATS_MISMATCH, \
-                f"{pid}: diff image not caught"
-    n_abst = sum(1 for pid in new
-                 if M.emit(*[M.M1P_BINDINGS[pid][0]], img,
-                           **M.M1P_BINDINGS[pid][1])["stats"].get("abstained"))
-    print(f"  CC-2: 7 owed bindings roundtrip+tamper ({n_abst} abstained on synth)  OK")
+        assert M.replay(t, img, **params)[0] == M.STATS_MISMATCH, f"{pid}: tamper not caught"
+        if m["stats"].get("abstained"):
+            n_abst += 1
+        elif pid not in _M1P_ROLL_INVARIANT:
+            assert M.replay(m, rolled, **params)[0] == M.STATS_MISMATCH, \
+                f"{pid}: diff image not caught (and not on the roll-invariant allowlist)"
+    print(f"  operator_extract: {len(new)} bindings determ+roundtrip+tamper "
+          f"({n_abst} abstained on synth, {len(_M1P_ROLL_INVARIANT)} roll-invariant allowlisted)  OK")
 
 
 def test_abstention_path():
@@ -99,6 +127,6 @@ def test_scalar_vs_stats_verdicts():
 if __name__ == "__main__":
     for fn in [test_all_audit_classes_roundtrip_and_tamper, test_canon_boundary,
                test_bindings_point_at_registry, test_abstention_path,
-               test_scalar_vs_stats_verdicts, test_cc2_operator_extract]:
+               test_scalar_vs_stats_verdicts, test_operator_extract_bindings]:
         print(fn.__name__); fn()
     print("\nM1' TESTS PASSED")
