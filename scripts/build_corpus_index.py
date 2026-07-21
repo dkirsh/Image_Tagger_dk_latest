@@ -47,28 +47,52 @@ FAMILY = {
 }
 FAMILY_OF = {c: fam for fam, cs in FAMILY.items() for c in cs}
 
+# QA round-2 (B1): classes that were landing in "other" or mis-substringed.
+FAMILY.setdefault("work", []).extend(["conference_center", "computer_room"])
+FAMILY.setdefault("domestic", []).extend(["dinette"])
+FAMILY_OF = {c: fam for fam, cs in FAMILY.items() for c in cs}
+
+# tokens that mark a curated photometric A/B variant, NOT a room class (B4)
+PAIR_VARIANT_TOKENS = {"base", "daylight", "contrast", "glare", "warmth", "cool", "warm", "manip"}
+
+
+def _norm(s: str) -> str:
+    return (s or "").strip().lower().replace(" ", "_").replace("-", "_")
+
 
 def arch_type(rec_man, rec_prov) -> str:
-    """Best available room/space class. Prefer provenance 'query' (the class the collector used);
-    else parse the trailing '_<class>.png' token; else fall back to category."""
+    """Best available room/space class, space-normalized. Prefer provenance 'query'; else parse the
+    trailing '_<class>.png' token; curated A/B pairs have no room class -> '(pair variant)' (B4)."""
+    if rec_man.get("pair_id"):
+        return "(pair variant)"
     if rec_prov and (rec_prov.get("query") or "").strip():
-        return rec_prov["query"].strip().lower()
+        return _norm(rec_prov["query"])
     fn = rec_man["filename"]
     m = re.search(r"_([a-z][a-z_]+)\.png$", fn.split("/")[-1])
     if m:
-        # strip a trailing hash-ish token if the class was duplicated
-        return m.group(1)
-    return rec_man.get("category", "unknown")
+        tok = _norm(m.group(1))
+        if tok in PAIR_VARIANT_TOKENS:
+            return "(pair variant)"
+        return tok
+    return _norm(rec_man.get("category", "unknown"))
 
 
 def family_of(t: str) -> str:
+    if "pair" in t and "variant" in t:      # the '(pair variant)' sentinel (pre/post normalization)
+        return "pairs"
+    t = _norm(t)
     if t in FAMILY_OF:
         return FAMILY_OF[t]
-    # heuristic contains-match
+    # token-boundary fallback (B1): match on whole underscore tokens, not raw substrings, so
+    # "coffee_shop" does NOT match "shop"->retail. Prefer the longest/most-specific key.
+    toks = set(t.split("_"))
+    best = None
     for c, fam in FAMILY_OF.items():
-        if c in t:
-            return fam
-    return "other"
+        ctoks = c.split("_")
+        if all(ct in toks for ct in ctoks):        # every token of the class appears
+            if best is None or len(ctoks) > best[0]:
+                best = (len(ctoks), fam)
+    return best[1] if best else "other"
 
 
 def px_bucket(w, h) -> str:
@@ -136,10 +160,19 @@ def build(corpus: Path, scores_path: Path | None):
     return summary
 
 
+def _safe_json(obj) -> str:
+    """JSON for embedding inside <script> — escape <, >, & so a filename/note containing '</script>'
+    (or an HTML tag) cannot break out of the script element (QA B2)."""
+    return (json.dumps(obj)
+            .replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026"))
+
+
 def render_html(records, summary) -> str:
-    data = json.dumps(records)
-    fam = json.dumps(dict(summary["facets"]["space_family"]))
-    return HTML_TMPL.replace("__DATA__", data).replace("__SUMMARY__", json.dumps(summary)).replace("__FAM__", fam)
+    # single-pass substitution so a data value literally containing a sentinel can't clobber (QA B3)
+    subs = {"__DATA__": _safe_json(records),
+            "__SUMMARY__": _safe_json(summary),
+            "__FAM__": _safe_json(dict(summary["facets"]["space_family"]))}
+    return re.sub(r"__DATA__|__SUMMARY__|__FAM__", lambda m: subs[m.group(0)], HTML_TMPL)
 
 
 HTML_TMPL = r"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>

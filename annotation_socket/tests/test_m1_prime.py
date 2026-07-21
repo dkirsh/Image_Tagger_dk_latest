@@ -77,35 +77,95 @@ _M1P_ROLL_INVARIANT = {
 }
 
 
+def _synth_lines():
+    """A fixture with real linear structure so the LSD ops (orderliness_alignment / verticality_cues)
+    SCORE (don't abstain) and their n_segments/alignment signature is actually exercised (QA A2)."""
+    img = np.full((160, 200, 3), 30, np.uint8)
+    for x in range(10, 200, 12):                 # many vertical lines
+        img[10:150, x:x + 2] = 235
+    for y in range(20, 150, 30):                 # a few horizontals
+        img[y:y + 2, 10:190] = 200
+    return img
+
+
+def _first_numeric_path(obj, path=()):
+    """Yield a (path, value) for the first mutable finite number nested in a stats dict/list."""
+    if isinstance(obj, bool):
+        return None
+    if isinstance(obj, (int, float)):
+        return (path, obj)
+    if isinstance(obj, dict):
+        for k in obj:
+            if k in ("audit_class",):
+                continue
+            r = _first_numeric_path(obj[k], path + (k,))
+            if r:
+                return r
+    if isinstance(obj, (list, tuple)):
+        for i, v in enumerate(obj):
+            r = _first_numeric_path(v, path + (i,))
+            if r:
+                return r
+    return None
+
+
+def _field_tamper(m):
+    """Mutate ONE real stats VALUE and RE-FORGE the digest (QA A1) — this makes the recompute-vs-claim
+    comparison load-bearing per key, unlike zeroing the digest string (which only tests digest equality).
+    Returns (tampered_block, tampered_a_real_field?)."""
+    t = json.loads(json.dumps(m))
+    hit = _first_numeric_path(t.get("stats", {}))
+    if hit is None:                              # scalar-only / abstained -> fall back to digest forge
+        t["digest"] = "sha256:" + "0" * 64
+        return t, False
+    path, val = hit
+    node = t["stats"]
+    for p in path[:-1]:
+        node = node[p]
+    node[path[-1]] = float(val) + 7.0            # perturb the real value
+    t["digest"] = M.digest(t["stats"])           # re-forge so ONLY a recompute catches it
+    return t, True
+
+
 def test_operator_extract_bindings():
-    """All operator_extract + ssim_map bindings (CC-2 + the S1/A5 batch) must satisfy the three hard
-    guarantees on the synth fixture: DETERMINISM (emit twice -> identical digest; the anti-false-RED
-    property), genuine -> MATCH, and forged-digest tamper -> STATS_MISMATCH. Diff-image discrimination
-    is additionally required for every op NOT in the documented roll-invariant allowlist. Abstaining
-    ops exercise the abstained-digest path (a claim of abstention is auditable like any other)."""
-    img = _synth()
-    rolled = np.roll(img, 9, axis=1)
+    """All operator_extract + ssim_map bindings (CC-2 + the S1/A5 batch) must satisfy the hard
+    guarantees on BOTH the synth and a line-structured fixture: DETERMINISM (emit twice -> identical
+    digest; the anti-false-RED property), genuine -> MATCH, and a REAL field-mutation tamper (value
+    changed + digest re-forged) -> STATS_MISMATCH (QA A1: proves the per-key pre-scalar signature is
+    load-bearing, not just the digest string). Diff-image discrimination required for every non-
+    roll-invariant op. The LSD ops score on the line fixture, so their signature is exercised (QA A2)."""
+    fixtures = {"synth": _synth(), "lines": _synth_lines()}
     new = [pid for pid, (ac, _) in M.M1P_BINDINGS.items()
            if ac in ("ssim_map", "operator_extract")]
     missing = [pid for pid in _S1_M1P_BATCH if pid not in new]
     assert not missing, f"S1/A5 M1' bindings dropped: {missing}"
     assert len(new) >= 20, f"expected >=20 operator_extract/ssim bindings, found {len(new)}"
-    n_abst = 0
+    n_abst = n_realfield = 0
     for pid in new:
         ac, params = M.M1P_BINDINGS[pid]
-        m = M.emit(ac, img, **params)
-        assert M.emit(ac, img, **params)["digest"] == m["digest"], f"{pid}: non-deterministic digest"
-        assert M.replay(m, img, **params)[0] == M.MATCH, pid
-        t = json.loads(json.dumps(m))
-        t["digest"] = "sha256:" + "0" * 64
-        assert M.replay(t, img, **params)[0] == M.STATS_MISMATCH, f"{pid}: tamper not caught"
-        if m["stats"].get("abstained"):
-            n_abst += 1
-        elif pid not in _M1P_ROLL_INVARIANT:
-            assert M.replay(m, rolled, **params)[0] == M.STATS_MISMATCH, \
-                f"{pid}: diff image not caught (and not on the roll-invariant allowlist)"
-    print(f"  operator_extract: {len(new)} bindings determ+roundtrip+tamper "
-          f"({n_abst} abstained on synth, {len(_M1P_ROLL_INVARIANT)} roll-invariant allowlisted)  OK")
+        for fx, img in fixtures.items():
+            rolled = np.roll(img, 9, axis=1)
+            m = M.emit(ac, img, **params)
+            assert M.emit(ac, img, **params)["digest"] == m["digest"], f"{pid}/{fx}: non-deterministic"
+            assert M.replay(m, img, **params)[0] == M.MATCH, f"{pid}/{fx}"
+            t, real = _field_tamper(m)
+            assert M.replay(t, img, **params)[0] == M.STATS_MISMATCH, f"{pid}/{fx}: tamper not caught"
+            if fx == "synth":
+                n_abst += 1 if m["stats"].get("abstained") else 0
+                n_realfield += 1 if real else 0
+                if not m["stats"].get("abstained") and pid not in _M1P_ROLL_INVARIANT:
+                    assert M.replay(m, rolled, **params)[0] == M.STATS_MISMATCH, \
+                        f"{pid}: diff image not caught (and not on the roll-invariant allowlist)"
+    # the two LSD ops must SCORE (not abstain) on the line fixture, exercising their real signature
+    for pid in ("cnfa.geometry.orderliness_alignment", "cnfa.geometry.verticality_cues"):
+        ac, params = M.M1P_BINDINGS[pid]
+        ml = M.emit(ac, _synth_lines(), **params)
+        assert not ml["stats"].get("abstained"), f"{pid}: expected to SCORE on the line fixture"
+        tl, real = _field_tamper(ml)
+        assert real and M.replay(tl, _synth_lines(), **params)[0] == M.STATS_MISMATCH, \
+            f"{pid}: real-field tamper on scored signature not caught"
+    print(f"  operator_extract: {len(new)} bindings x2 fixtures — determ+roundtrip+real-field-tamper "
+          f"({n_realfield}/{len(new)} real-field on synth, {n_abst} abstained, LSD ops scored on lines)  OK")
 
 
 def test_abstention_path():

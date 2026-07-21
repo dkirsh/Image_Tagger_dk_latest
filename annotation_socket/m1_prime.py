@@ -415,6 +415,21 @@ def stats_operator_extract(img, op: str = "") -> Dict:
                                   None if z.get("D") is None else round(float(z["D"]), 4),
                                   round(float(z["area_frac"]), 4)]
                                  for z in ex.get("zones", [])]
+    # QA A3: temperature_mismatch emits k-means clusters in LABEL order (BLAS/PP-init-dependent) and
+    # CCT rounded to integer K -> cross-env-fragile. Canonicalize: sort clusters by CCT ascending
+    # (co-reordering proportions), coarsen CCT to 50 K, and sort the worst-pair CCTs. Order-invariant
+    # digest, same tamper power. (Same-machine determinism was already fine; this is cross-env hygiene.)
+    if op == "temperature_mismatch":
+        cct = st.get("clusters_cct_K"); prop = st.get("proportions")
+        if isinstance(cct, (list, tuple)) and cct:
+            order = sorted(range(len(cct)), key=lambda i: cct[i])
+            st["clusters_cct_K"] = [int(round(float(cct[i]) / 50.0)) * 50 for i in order]
+            if isinstance(prop, (list, tuple)) and len(prop) == len(cct):
+                st["proportions"] = [round(float(prop[i]), 3) for i in order]
+        wp = st.get("worst_pair")
+        if isinstance(wp, (list, tuple)):
+            st["worst_pair"] = sorted(int(round(float(x) / 50.0)) * 50 for x in wp
+                                      if isinstance(x, (int, float)))
     return st
 
 

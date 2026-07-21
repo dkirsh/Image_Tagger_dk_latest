@@ -191,10 +191,20 @@ const LIKERT = [
   {key:"affect_aro", text:"How calming vs. stimulating?  (1 very calm … 7 very stimulating)"}
 ];
 
-const CONFIG = { imageBaseUrl:"", postUrl:"", minMs:1200, maxMs:60000 };
+const CONFIG = { imageBaseUrl:"", postUrl:"", minMs:1200, maxMs:45000 };
 
 /* ---------------- session + state ---------------- */
-const SESSION = { worker_id: uid("w"), session_id: uid("s"), started: nowIso() };
+/* H3: capture the real platform participant id + platform so downstream cluster-bootstrap (over
+   workers) and platform-as-covariate work; fall back to a random id only outside a study. */
+const Q = new URLSearchParams(location.search);
+const SESSION = {
+  worker_id: Q.get("PROLIFIC_PID") || Q.get("participant_id") || Q.get("workerId") || uid("w"),
+  session_id: Q.get("SESSION_ID") || Q.get("session_id") || uid("s"),
+  study_id: Q.get("STUDY_ID") || Q.get("study_id") || "",
+  platform: Q.get("platform") || (Q.get("PROLIFIC_PID") ? "prolific"
+            : Q.get("cloudresearch") || Q.get("assignmentId") ? "cloudresearch" : "unknown"),
+  started: nowIso()
+};
 const RESP = [];               // judgment rows
 let DESIGN = null;             // {pairs, singles, anchor, gold, construct_order}
 let queue = [];                // flattened trial queue
@@ -202,6 +212,8 @@ let qi = 0;                    // queue index
 let sideBias = {L:0,R:0};
 let confidence = "sure";
 let trialShownAt = 0;
+let fastAttempts = 0;          // H2: count sub-minMs clicks per trial (recorded, not silently dropped)
+const seenConstruct = new Set(); // H4: show each construct's definition on first appearance
 
 function uid(p){ return p + Math.random().toString(36).slice(2,8) + (performance.now()|0).toString(36); }
 function nowIso(){ return new Date().toISOString(); }   // note: real deploy on a machine w/ a clock
@@ -287,25 +299,33 @@ function buildQueue(){
 
 /* ---------------- rendering trials ---------------- */
 function renderQual(){
+  /* H1: counterbalance the display (random flip) so an always-one-side clicker cannot pass, require
+     ALL golds correct, and treat the identical-image "can't tell" catch as mandatory. */
   const host=$("qualHost"); host.innerHTML="";
-  let passed=0, idx=0;
+  let idx=0, wrong=0;
   const golds=DESIGN.gold;
   function step(){
     if(idx>=golds.length){
-      if(passed>=Math.ceil(golds.length*0.66)){ startRating(); }
+      if(wrong===0){ startRating(); }
       else { host.innerHTML="<p class='muted'>Thanks — it looks like this task may not be a good fit right now. You can close this tab.</p>"; }
       return;
     }
     const gTrial=golds[idx]; host.innerHTML="";
     const con=CONSTRUCTS[gTrial.construct];
     const q=document.createElement("div"); q.className="q"; q.textContent=con.q; host.appendChild(q);
+    const tip=document.createElement("p"); tip.className="muted center"; tip.style.marginTop="-4px"; tip.textContent=con.tip; host.appendChild(tip);
+    const flip = Math.random()<0.5;                          // physical position randomized
+    const leftItem = flip? gTrial.right : gTrial.left, rightItem = flip? gTrial.left : gTrial.right;
     const pair=document.createElement("div"); pair.className="pair";
-    const l=itemEl(DESIGN.items[gTrial.left],"L"), r=itemEl(DESIGN.items[gTrial.right],"R");
-    pair.appendChild(l); pair.appendChild(r); host.appendChild(pair);
+    pair.appendChild(itemEl(DESIGN.items[leftItem],"L")); pair.appendChild(itemEl(DESIGN.items[rightItem],"R"));
+    host.appendChild(pair);
     const row=document.createElement("div"); row.className="row";
     const bl=btn("◀ Left"), bc=btn("Can't tell"), br=btn("Right ▶");
     row.append(bl,bc,br); host.appendChild(row);
-    const pick=(ans)=>{ const ok=(ans===gTrial.answer)||(gTrial.answer==="tie"&&ans==="tie"); if(ok)passed++; idx++; step(); };
+    const correctPhysical = gTrial.answer==="tie" ? "tie"
+                            : (flip ? (gTrial.answer==="L"?"R":"L") : gTrial.answer);
+    if(Q.get("expose_qual")) window.__correct = correctPhysical;   // test-only seam (flag-guarded)
+    const pick=(physical)=>{ if(physical!==correctPhysical) wrong++; idx++; step(); };
     bl.onclick=()=>pick("L"); br.onclick=()=>pick("R"); bc.onclick=()=>pick("tie");
   }
   step();
@@ -320,7 +340,7 @@ function renderTrial(){
   const t=queue[qi];
   $("counter").textContent=(qi+1)+" / "+queue.length;
   $("bar").style.width = Math.round((qi/queue.length)*100)+"%";
-  const host=$("rateHost"); host.innerHTML=""; confidence="sure"; setConf();
+  const host=$("rateHost"); host.innerHTML=""; confidence="sure"; setConf(); fastAttempts=0;
   if(t.type==="anchor"){
     $("constructTag").textContent="rating";
     $("rateQ").textContent="Rate this space:";
@@ -348,15 +368,22 @@ function renderTrial(){
     $("btnLeft").classList.remove("hidden");$("btnRight").classList.remove("hidden");$("btnCant").classList.remove("hidden");
     const con=CONSTRUCTS[t.construct]; $("constructTag").textContent=t.construct;
     $("rateQ").textContent=con.q;
-    // counterbalance L/R physical position by session parity + trial index
-    const flip=((qi+ (SESSION.session_id.charCodeAt(2)%2))%2)===1;
+    // H4: show the construct definition persistently (highlighted on its first appearance) so mystery/
+    // refuge/restorative are anchored, not judged cold.
+    const first=!seenConstruct.has(t.construct); seenConstruct.add(t.construct);
+    const tip=document.createElement("p"); tip.className="muted center"; tip.style.margin="0 0 10px";
+    tip.textContent=con.tip; if(first) tip.style.color="var(--warn)"; host.appendChild(tip);
+    // M1: randomize physical L/R position PER TRIAL (was deterministic alternation, confounded w/ order)
+    const flip = Math.random()<0.5;
     const leftItem = flip? t.right : t.left, rightItem = flip? t.left : t.right;
     const pair=document.createElement("div"); pair.className="pair";
     pair.appendChild(itemEl(DESIGN.items[leftItem],"L"));
     pair.appendChild(itemEl(DESIGN.items[rightItem],"R"));
     host.appendChild(pair);
+    // M4: the images look clickable (cursor/hover) — make clicking one register the choice
+    pair.querySelectorAll(".opt").forEach(o=>o.addEventListener("click",()=>choose(o.dataset.side)));
     host._map={L:leftItem,R:rightItem,flip,t};
-    $("rateHint").textContent="← / → to choose · space = can't tell";
+    $("rateHint").textContent="click a photo, use ← / → , or space = can't tell";
   }
   trialShownAt=performance.now();
 }
@@ -370,16 +397,19 @@ function ensureNext(cb){
 function choose(side){
   const t=queue[qi]; if(!t||t.type==="anchor") return;
   const rt=performance.now()-trialShownAt;
-  if(rt<CONFIG.minMs){ flash("Take a moment to look — that was very fast."); return; }
+  // H2: sub-minMs clicks are counted (not silently dropped) and require a real second look
+  if(rt<CONFIG.minMs){ fastAttempts++; flash("Take a moment to look — that was very fast."); return; }
   const map=$("rateHost")._map;
   let chosenItem=null, resp=side;
   if(side==="tie"){ resp="tie"; }
-  else { chosenItem = map[side]; sideBias[side]++; }
+  else { chosenItem = map[side]; if(!t.is_gold) sideBias[side]++; }   // M1: golds excluded from bias
   RESP.push({
-    worker_id:SESSION.worker_id, session_id:SESSION.session_id,
-    kind:"pair", pair_id:t.pair_id, construct:t.construct,
-    left_item:map.L, right_item:map.R, chosen_side:side, chosen_item:chosenItem||"",
+    worker_id:SESSION.worker_id, session_id:SESSION.session_id, platform:SESSION.platform,
+    study_id:SESSION.study_id, kind:"pair", pair_id:t.pair_id, construct:t.construct,
+    left_item:map.L, right_item:map.R, display_flip:map.flip?1:0,
+    chosen_side:side, chosen_item:chosenItem||"",
     response:resp, confidence, rt_ms:Math.round(rt),
+    fast_attempts:fastAttempts, too_slow: rt>CONFIG.maxMs?1:0,
     is_gold:!!t.is_gold, gold_answer:t.answer||"", gold_pass: t.is_gold ? String(gradeGold(t,map,side)) : "",
     ua_desktop: (window.innerWidth>=1000)?1:0, ts_utc:nowIso()
   });
@@ -393,7 +423,7 @@ function gradeGold(t,map,side){
   return map[side]===wantItem;
 }
 function recordLikert(item,key,val){
-  RESP.push({worker_id:SESSION.worker_id,session_id:SESSION.session_id,kind:"likert",item, likert_key:key, response:val, confidence:"", rt_ms:"", is_gold:false, ts_utc:nowIso()});
+  RESP.push({worker_id:SESSION.worker_id,session_id:SESSION.session_id,platform:SESSION.platform,study_id:SESSION.study_id,kind:"likert",item, likert_key:key, response:val, confidence:"", rt_ms:"", is_gold:false, ts_utc:nowIso()});
   postRow(RESP[RESP.length-1]);
 }
 
@@ -411,7 +441,7 @@ function finish(){
     "No server configured — use the button below to download your responses.";
 }
 function toCsv(){
-  const cols=["worker_id","session_id","kind","pair_id","construct","left_item","right_item","chosen_side","chosen_item","response","confidence","rt_ms","is_gold","gold_answer","gold_pass","item","likert_key","ua_desktop","ts_utc"];
+  const cols=["worker_id","session_id","platform","study_id","kind","pair_id","construct","left_item","right_item","display_flip","chosen_side","chosen_item","response","confidence","rt_ms","fast_attempts","too_slow","is_gold","gold_answer","gold_pass","item","likert_key","ua_desktop","ts_utc"];
   const esc=v=>{ v=(v===undefined||v===null)?"":String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
   const head="# session_meta side_bias="+(SESSION.side_bias??"").toString().slice(0,5)+" gold_pass_rate="+(SESSION.gold_pass_rate??"")+"\n";
   return head+cols.join(",")+"\n"+RESP.map(r=>cols.map(c=>esc(r[c])).join(",")).join("\n");
