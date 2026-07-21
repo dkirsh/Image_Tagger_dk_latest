@@ -272,10 +272,34 @@ PLACES365_KEEP = {c: "interiors" for c in [
 PLACES365_KEEP.update({"greenhouse/indoor": "nature_glass", "conservatory": "nature_glass",
                        "botanical_garden": "nature_glass"})
 
+# SUN397 (Princeton): 397 scene categories, ~half INDOOR. Unlike MIT Indoor67 we must NOT default
+# unmapped categories to interiors (that would pull the ~200 OUTDOOR classes), so keep=explicit
+# indoor list and default_cat=None (skip anything not listed). Keys are pre-normalized (no
+# separators/case) to match stream_hf's _norm(label); "greenhouse_indoor" normalizes to "greenhouseindoor".
+SUN397_KEEP = {}
+SUN397_KEEP.update({k: "interiors" for k in (
+    "livingroom bedroom diningroom kitchen kitchenette office officecubicles cubicleoffice "
+    "conferenceroom conferencecenter waitingroom reception lobby corridor classroom lectureroom "
+    "auditorium hospitalroom hospital restaurant restaurantkitchen hotelroom childsroom playroom "
+    "recreationroom televisionstudio homeoffice computerroom ballroom banquethall bathroom basement "
+    "attic closet pantry utilityroom staircase dormroom operatingroom bar wetbar sushibar "
+    "fastfoodrestaurant cafeteria coffeeshop gameroom musicstudio sewingroom parlor dinettehome "
+    "lockerroom laundromat kindergardenclassroom cleanroom sauna poolroomhome poolroomestablishment "
+    "jailcell throneroom workshop garageindoor warehouseindoor factoryindoor engineroom galley"
+).split()})
+SUN397_KEEP.update({k: "nature_glass" for k in "greenhouseindoor floristshopindoor nursery".split()})
+SUN397_KEEP.update({k: "materials" for k in
+                    "winecellarbarrelstorage winecellarbottlestorage breweryindoor bankvault".split()})
+SUN397_KEEP.update({k: "collections" for k in (
+    "libraryindoor bookstore museumindoor artgallery artstudio giftshop jewelryshop shoeshop "
+    "clothingstore generalstoreindoor toyshop musicstore supermarket").split()})
+
 # HF presets for `--source hf` (streamed; filter by the dataset's own label feature).
 HF_PRESETS = {
     "places365": {"hf": "torch-uncertainty/Places365", "split": "train", "image_field": "image",
                   "label_field": "label", "keep": PLACES365_KEEP, "default_cat": None},
+    "sun397":    {"hf": "tanganke/sun397", "split": "train", "image_field": "image",
+                  "label_field": "label", "keep": SUN397_KEEP, "default_cat": None},
     "ade20k":    {"hf": "zhoubolei/scene_parse_150", "split": "train", "image_field": "image",
                   "label_field": None, "keep": None, "default_cat": "interiors"},  # no per-image scene
 }
@@ -296,14 +320,25 @@ def _pil_from(x):
     raise ValueError("unrecognized image field")
 
 
-def walk_dir(root, keep_map, default_cat, source_tag, limit):
+def walk_dir(root, keep_map, default_cat, source_tag, limit, stratified=False):
     """Yield (meta, PIL) from an extracted dataset tree <root>/**/<category>/<file>. The category is
     the immediate parent folder (MIT Indoor67, ImageNet-style, Kaggle unzips). keep_map routes
     category->corpus folder; unknown categories go to default_cat (or are skipped if None)."""
     root = Path(root)
     exts = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
     n = 0
-    for p in sorted(root.rglob("*")):
+    paths = sorted(root.rglob("*"))
+    if stratified:
+        # Round-robin the category folders. Dataset filenames are not consistently
+        # numbered, so a filename sort does not provide genuine stratification.
+        by_parent = {}
+        for p in paths:
+            if p.suffix.lower() in exts and p.is_file():
+                by_parent.setdefault(p.parent, []).append(p)
+        groups = [by_parent[parent] for parent in sorted(by_parent)]
+        paths = [group[i] for i in range(max(map(len, groups), default=0))
+                 for group in groups if i < len(group)]
+    for p in paths:
         if n >= limit:
             break
         if p.suffix.lower() not in exts or not p.is_file():
@@ -417,7 +452,10 @@ def _save_image(im, meta, dest_cat, tag, min_px, max_aspect, seen_ids, seen_hash
         tgt = f" -> {GDRIVE_REMOTE}/{dest_cat}/" if GDRIVE_REMOTE else f" -> {dest_cat}/ (local)"
         print(f"    WOULD KEEP {sid}{tgt}  {w}x{h}  {meta['license']}"); return True
     outdir = CORPUS / dest_cat; outdir.mkdir(parents=True, exist_ok=True)
-    name = f"{meta['source']}_{slug(meta['id'], 28)}_{slug(tag, 20)}.png"
+    # A truncated slug alone is not unique: dataset IDs often share long category prefixes.
+    # Retain a readable stem and append a stable digest of the complete source ID.
+    sid_hash = hashlib.sha1(sid.encode("utf-8")).hexdigest()[:10]
+    name = f"{meta['source']}_{slug(meta['id'], 18)}_{sid_hash}_{slug(tag, 20)}.png"
     local = outdir / name
     im.save(local, "PNG")                                   # native resolution, no resample
     gdrive_path = ""
@@ -720,7 +758,10 @@ def seed_all(gdrive, per_web=12):
     # 1) MIT Indoor67 (volume + niches auto-routed) — needs Kaggle creds
     try:
         root = kaggle_download("itsahmad/indoor-scenes-cvpr-2019")
-        collect_from_examples(walk_dir(root, MIT_INDOOR_KEEP, "interiors", "mit_indoor67", 600),
+        # The dataset is sorted by category. A 600-image scan stops within the first
+        # category and, after the resolution gate, yields too few and no diversity.
+        collect_from_examples(walk_dir(root, MIT_INDOOR_KEEP, "interiors", "mit_indoor67", 20000,
+                                       stratified=True),
                               limit=200, min_px=1024, dry=False)
     except Exception as e:
         print(f"  [skip mit_indoor: {e}]")
@@ -782,7 +823,7 @@ def main():
     ap.add_argument("--from-dir", help="for --source from-dir: root of an extracted dataset tree")
     ap.add_argument("--default-cat", default="interiors",
                     help="for --source from-dir/hf: corpus folder for unmapped interior labels")
-    ap.add_argument("--hf-preset", choices=list(HF_PRESETS), help="for --source hf: places365 | ade20k")
+    ap.add_argument("--hf-preset", choices=list(HF_PRESETS), help="for --source hf: places365 | sun397 | ade20k")
     ap.add_argument("--hf-dataset", help="for --source hf: override the HF dataset id")
     ap.add_argument("--hf-split", default="train")
     ap.add_argument("--hf-image-field", default="image")
