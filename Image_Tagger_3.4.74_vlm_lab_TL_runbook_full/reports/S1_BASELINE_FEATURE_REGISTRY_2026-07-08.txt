@@ -1,0 +1,25 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.0, pytest-9.1.1, pluggy-1.6.0 -- /Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full
+collecting ... collected 1 item
+
+tests/test_feature_registry_coverage.py::test_registry_keys_are_covered_by_compute_or_stub FAILED [100%]
+
+=================================== FAILURES ===================================
+______________ test_registry_keys_are_covered_by_compute_or_stub _______________
+
+    def test_registry_keys_are_covered_by_compute_or_stub() -> None:
+        registry_keys = _load_registry_keys()
+        computed_keys = _load_computed_keys()
+        stub_keys = feature_stubs.STUB_FEATURE_KEYS
+    
+        dangling = registry_keys - computed_keys - stub_keys
+>       assert not dangling, f"Dangling registry keys with no compute or stub: {sorted(dangling)[:20]}"
+E       AssertionError: Dangling registry keys with no compute or stub: ['affordance.L059', 'affordance.L059_norm', 'affordance.L079', 'affordance.L079_norm', 'affordance.L091', 'affordance.L091_norm', 'affordance.L130', 'affordance.L130_norm', 'affordance.L141', 'affordance.L141_norm', 'spatial.room_function.bathroom', 'spatial.room_function.bedroom', 'spatial.room_function.home_office', 'spatial.room_function.kitchen', 'spatial.room_function.living_room', 'style.bohemian', 'style.farmhouse', 'style.industrial', 'style.japandi', 'style.mid_century_modern']
+E       assert not {'affordance.L059', 'affordance.L059_norm', 'affordance.L079', 'affordance.L079_norm', 'affordance.L091', 'affordance.L091_norm', ...}
+
+tests/test_feature_registry_coverage.py:61: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_feature_registry_coverage.py::test_registry_keys_are_covered_by_compute_or_stub
+============================== 1 failed in 0.02s ===============================

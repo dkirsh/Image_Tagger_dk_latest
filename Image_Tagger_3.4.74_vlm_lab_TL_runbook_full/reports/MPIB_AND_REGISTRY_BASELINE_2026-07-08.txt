@@ -1,0 +1,12 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.0, pytest-9.1.1, pluggy-1.6.0 -- /Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full
+collecting ... collected 4 items
+
+tests/test_mpib_low_level.py::test_extract_mpib_features_emits_full_key_set PASSED [ 25%]
+tests/test_mpib_low_level.py::test_mpib_analyzer_writes_pipeline_metadata PASSED [ 50%]
+tests/test_mpib_low_level.py::test_canonical_config_enables_mpib_by_default PASSED [ 75%]
+tests/test_feature_registry_coverage.py::test_registry_keys_are_covered_by_compute_or_stub PASSED [100%]
+
+============================== 4 passed in 0.20s ===============================

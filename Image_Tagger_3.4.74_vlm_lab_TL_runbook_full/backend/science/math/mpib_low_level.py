@@ -125,7 +125,10 @@ def get_edge_density(image: np.ndarray, sigma: float = 0.33) -> tuple[float, flo
     straight_mask = np.zeros_like(gray, dtype=np.uint8)
     if lines is not None:
         for line in lines:
-            x1, y1, x2, y2 = line[0]
+            coords = np.asarray(line).reshape(-1)
+            if coords.size < 4:
+                continue
+            x1, y1, x2, y2 = coords[:4].astype(int)
             cv2.line(straight_mask, (x1, y1), (x2, y2), 255, 1)
 
     total = float(edges.size)

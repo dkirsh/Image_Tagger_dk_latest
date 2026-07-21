@@ -1,0 +1,26 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.0, pytest-9.1.1, pluggy-1.6.0 -- /Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full
+collecting ... collected 3 items
+
+tests/test_mpib_low_level.py::test_extract_mpib_features_emits_full_key_set FAILED [ 33%]
+tests/test_mpib_low_level.py::test_mpib_analyzer_writes_pipeline_metadata PASSED [ 66%]
+tests/test_mpib_low_level.py::test_canonical_config_enables_mpib_by_default PASSED [100%]
+
+=================================== FAILURES ===================================
+________________ test_extract_mpib_features_emits_full_key_set _________________
+
+    def test_extract_mpib_features_emits_full_key_set() -> None:
+        features = extract_mpib_features(_synthetic_room_like_image())
+    
+        assert set(features) == set(MPIB_FEATURE_KEYS)
+        assert len(features) == 20
+        finite_count = sum(math.isfinite(float(value)) for value in features.values())
+>       assert finite_count >= 18
+E       assert 17 >= 18
+
+tests/test_mpib_low_level.py:39: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_mpib_low_level.py::test_extract_mpib_features_emits_full_key_set
+========================= 1 failed, 2 passed in 27.94s =========================

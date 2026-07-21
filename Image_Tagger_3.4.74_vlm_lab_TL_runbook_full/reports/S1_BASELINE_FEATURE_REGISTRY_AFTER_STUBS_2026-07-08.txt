@@ -1,0 +1,9 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.0, pytest-9.1.1, pluggy-1.6.0 -- /Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full
+collecting ... collected 1 item
+
+tests/test_feature_registry_coverage.py::test_registry_keys_are_covered_by_compute_or_stub PASSED [100%]
+
+============================== 1 passed in 0.01s ===============================

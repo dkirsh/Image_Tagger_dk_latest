@@ -21,6 +21,7 @@ from backend.science.core import AnalysisFrame
 # v3.4 Modular Imports
 from backend.science.math.color import ColorAnalyzer
 from backend.science.math.complexity import ComplexityAnalyzer
+from backend.science.math.architectural_primitives import ArchitecturalPrimitivesAnalyzer
 from backend.science.math.mpib_low_level import MPIBLowLevelAnalyzer
 from backend.science.math.glcm import TextureAnalyzer
 from backend.science.math.fractals import FractalAnalyzer
@@ -44,6 +45,7 @@ class SciencePipelineConfig:
     def __init__(self, enable_all: bool = True):
         self.enable_color = enable_all
         self.enable_complexity = enable_all
+        self.enable_architectural_primitives = enable_all
         self.enable_mpib_low_level = enable_all
         self.enable_texture = enable_all
         self.enable_fractals = enable_all
@@ -78,6 +80,7 @@ class SciencePipelineConfig:
         return {
             "enable_color": self.enable_color,
             "enable_complexity": self.enable_complexity,
+            "enable_architectural_primitives": self.enable_architectural_primitives,
             "enable_mpib_low_level": self.enable_mpib_low_level,
             "enable_texture": self.enable_texture,
             "enable_fractals": self.enable_fractals,
@@ -107,6 +110,7 @@ class SciencePipeline:
         # Init Analyzers
         self.color = ColorAnalyzer()
         self.complexity = ComplexityAnalyzer()
+        self.architectural_primitives = ArchitecturalPrimitivesAnalyzer()
         self.mpib_low_level = MPIBLowLevelAnalyzer()
         self.texture = TextureAnalyzer()
         self.fractals = FractalAnalyzer()
@@ -144,6 +148,8 @@ class SciencePipeline:
                 self.color.analyze(frame)
             if self.config.enable_complexity:
                 self.complexity.analyze(frame)
+            if self.config.enable_architectural_primitives:
+                self.architectural_primitives.analyze(frame)
             if self.config.enable_mpib_low_level:
                 self.mpib_low_level.analyze(frame)
             if self.config.enable_texture:
@@ -324,6 +330,8 @@ class SciencePipeline:
                 self.color.analyze(frame)
             if self.config.enable_complexity:
                 self.complexity.analyze(frame)
+            if self.config.enable_architectural_primitives:
+                self.architectural_primitives.analyze(frame)
             if self.config.enable_mpib_low_level:
                 self.mpib_low_level.analyze(frame)
             if self.config.enable_texture:

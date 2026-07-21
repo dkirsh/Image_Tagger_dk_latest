@@ -1,0 +1,17 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.0, pytest-9.1.1, pluggy-1.6.0 -- /Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full
+collecting ... collected 9 items
+
+tests/test_mpib_low_level.py::test_extract_mpib_features_emits_full_key_set PASSED [ 11%]
+tests/test_mpib_low_level.py::test_mpib_analyzer_writes_pipeline_metadata PASSED [ 22%]
+tests/test_mpib_low_level.py::test_canonical_config_enables_mpib_by_default PASSED [ 33%]
+tests/test_feature_registry_coverage.py::test_registry_keys_are_covered_by_compute_or_stub PASSED [ 44%]
+tests/test_architectural_direct_stats.py::test_direct_stats_emit_finite_canonical_keys PASSED [ 55%]
+tests/test_architectural_direct_stats.py::test_direct_stats_are_deterministic PASSED [ 66%]
+tests/test_architectural_direct_stats.py::test_direct_stats_expected_monotonic_fixture_directions PASSED [ 77%]
+tests/test_architectural_direct_stats.py::test_analyzer_adds_attributes_to_analysis_frame PASSED [ 88%]
+tests/test_architectural_direct_stats.py::test_direct_stats_blank_image_fails_safely PASSED [100%]
+
+============================== 9 passed in 0.41s ===============================

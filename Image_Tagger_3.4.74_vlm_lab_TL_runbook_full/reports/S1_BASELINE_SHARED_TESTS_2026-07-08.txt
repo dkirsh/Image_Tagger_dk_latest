@@ -1,0 +1,25 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.0, pytest-9.1.1, pluggy-1.6.0 -- /Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full
+collecting ... collected 1 item / 1 error
+
+==================================== ERRORS ====================================
+____________ ERROR collecting tests/test_science_pipeline_smoke.py _____________
+ImportError while importing test module '/Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full/tests/test_science_pipeline_smoke.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_science_pipeline_smoke.py:16: in <module>
+    from backend.database.core import SessionLocal
+backend/database/__init__.py:2: in <module>
+    from backend.database.core import SessionLocal, engine, Base, get_db
+backend/database/core.py:1: in <module>
+    from sqlalchemy import create_engine
+E   ModuleNotFoundError: No module named 'sqlalchemy'
+=========================== short test summary info ============================
+ERROR tests/test_science_pipeline_smoke.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.26s ===============================

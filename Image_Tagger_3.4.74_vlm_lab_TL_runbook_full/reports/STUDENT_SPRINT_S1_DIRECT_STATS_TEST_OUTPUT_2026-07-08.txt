@@ -1,0 +1,13 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.0, pytest-9.1.1, pluggy-1.6.0 -- /Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest/Image_Tagger_3.4.74_vlm_lab_TL_runbook_full
+collecting ... collected 5 items
+
+tests/test_architectural_direct_stats.py::test_direct_stats_emit_finite_canonical_keys PASSED [ 20%]
+tests/test_architectural_direct_stats.py::test_direct_stats_are_deterministic PASSED [ 40%]
+tests/test_architectural_direct_stats.py::test_direct_stats_expected_monotonic_fixture_directions PASSED [ 60%]
+tests/test_architectural_direct_stats.py::test_analyzer_adds_attributes_to_analysis_frame PASSED [ 80%]
+tests/test_architectural_direct_stats.py::test_direct_stats_blank_image_fails_safely PASSED [100%]
+
+============================== 5 passed in 8.21s ===============================
