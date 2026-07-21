@@ -1,0 +1,195 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Visual Tagger — a clean account</title>
+<style>
+:root{--ink:#1c1e24;--mut:#5b6069;--line:#e5e2da;--bg:#fbfaf7;--acc:#8a6d3b;--acc2:#3b5bdb;--grn:#2e7d32;--amb:#a9791f;--red:#b23b3b;--panel:#fff;}
+@media (prefers-color-scheme:dark){:root{--ink:#e9ebef;--mut:#a3a9b4;--line:#2b2f38;--bg:#14161b;--panel:#1b1e25;--acc:#c9a25a;--acc2:#7d97ff;--grn:#5fbf7a;--amb:#d8b25a;--red:#e5646e;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.63 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Georgia,serif}
+.wrap{max-width:900px;margin:0 auto;padding:44px 40px 90px}
+.head{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:8px}
+.head h1{font-size:27px;margin:0 0 5px;letter-spacing:-.01em}
+.head .sub{color:var(--mut);font-size:14.5px;margin:0}
+.head .meta{margin-top:9px;font-size:11.5px;color:var(--acc);letter-spacing:.04em;text-transform:uppercase}
+h2{font-size:20px;margin:34px 0 6px;padding-top:10px;border-top:1px solid var(--line)}
+h2 .n{color:var(--acc);font-size:14px;margin-right:8px}
+h3{font-size:16px;margin:20px 0 4px}
+p{margin:9px 0} .mut{color:var(--mut)} .lead{font-size:16.5px}
+ul{margin:8px 0;padding-left:22px} li{margin:5px 0}
+.hl{background:color-mix(in srgb,var(--acc2) 8%,transparent);border-left:3px solid var(--acc2);border-radius:8px;padding:11px 16px;margin:12px 0;font-size:14.5px}
+.kpi{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.kpi .b{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:12.5px;color:var(--mut)}
+.kpi .b b{display:block;font-size:20px;color:var(--ink);font-family:inherit}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12.5px}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:color-mix(in srgb,var(--acc) 9%,transparent);font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--mut)}
+td.n,th.n{white-space:nowrap;text-align:center}
+b.k{color:var(--ink)}
+.pill{display:inline-block;font-size:10px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);font-weight:700}
+.g{color:var(--grn);border-color:var(--grn)} .a{color:var(--amb);border-color:var(--amb)} .r{color:var(--red);border-color:var(--red)}
+.step{display:grid;grid-template-columns:26px 1fr;gap:12px;margin:8px 0}
+.step .d{width:22px;height:22px;border-radius:50%;background:var(--acc);color:#fff;text-align:center;font-size:12px;line-height:22px;font-weight:700}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:10px 0}
+.card h4{margin:0 0 5px;font-size:15px}
+footer{color:var(--mut);font-size:11.5px;margin-top:34px;border-top:1px solid var(--line);padding-top:14px}
+code{background:color-mix(in srgb,var(--acc) 10%,transparent);border-radius:5px;padding:1px 5px;font-size:12px}
+</style></head><body><div class="wrap">
+
+<div class="head">
+<h1>The Visual Tagger &mdash; what it does, how it integrates, and where it stands</h1>
+<p class="sub">The image engine of the Cognitive&nbsp;+&nbsp;Wellness Code, its place in the Article&nbsp;Eater / Knowledge&nbsp;Atlas system, and the annotated-image library</p>
+<p class="meta">Clean account &middot; David Kirsh &middot; 21 July 2026</p>
+</div>
+
+<h2><span class="n">1</span>What the Visual Tagger does</h2>
+<p class="lead">The Visual Tagger reads a picture of a space — a photograph or, better, a render straight from the 3-D model
+with its materials — and returns a structured, evidence-grounded account of <b>where that space helps or hurts the people
+in it</b>: how easy it is to look at, how it will feel to move through, where a conversation stays private, where the light
+helps or glares, how safe each spot feels, how legible the path is. It turns a brief like "make it feel spectacular and
+welcoming" into something checkable while the design is still on the screen.</p>
+<p>Two things make it more than a filter bank. First, it <b>spatialises function</b>: instead of one number per room (one
+reverberation time, an "open-plan" label) it returns <em>fields</em> — a map over the whole floor of where speech carries,
+where the glass puts a person on display, where a group can gather unheard, how far a threat can be seen coming. It answers
+<em>where</em>, not merely <em>how much</em>. Second, every reading is <b>tiered for honesty and self-auditing</b>: each
+attribute declares how it was computed, carries a confidence, and — for the audited ones — ships a cryptographic
+"sufficient-statistic" signature so a checker can prove the number was produced by the declared method on the declared
+image and was not fabricated, stale, or run by the wrong pipeline. A space that can't be read honestly <em>abstains</em>
+rather than guessing.</p>
+
+<div class="kpi">
+<div class="b"><b>68</b>registered attributes</div>
+<div class="b"><b>28</b>with the M1′ audit signature</div>
+<div class="b"><b>19 / 49</b>mechanically GREEN / AMBER</div>
+<div class="b"><b>0</b>construct-validated yet*</div>
+</div>
+<p class="mut">*The single most important thing to understand about where we are: "GREEN" today means <b>mechanically</b>
+green — the procedure is deterministic, self-consistent, and audited — <b>not</b> that it has been proven to measure what it
+claims about human experience. That last step, construct validation against human (and later biosignal) data, is the corpus
+campaign described in §5–6 and has not yet run for any attribute.</p>
+
+<h2><span class="n">2</span>How it integrates with Article&nbsp;Eater and the Knowledge&nbsp;Atlas</h2>
+<p>The Tagger is the <b>measurement</b> half of a larger system whose other half is <b>evidence</b>. They are being brought
+together so that every attribute reading arrives already grounded in the research literature, with its warrant and its
+uncertainty attached.</p>
+<div class="hl"><b>The through-line.</b> <b>Article&nbsp;Finder</b> decides which papers are worth reading next; <b>Article&nbsp;Eater</b>
+reads them and structures each one, study by study, into a post-Quinean <b>web of belief</b> — nodes of claim joined by
+warrant links, organised into live debate clusters. That web <em>is</em> the <b>Knowledge&nbsp;Atlas</b>. The Visual Tagger
+then binds each of its 68 attributes to the Atlas nodes that justify it, so a reading is never a bare number: it is a number
+<em>plus</em> the vetted sources behind it, the strength of that science, and — where the Atlas can — a proposed neural
+mechanism. When the Atlas's value-of-information engine flags a gap the literature can't close, it proposes an experiment;
+that experiment is built in the <b>Experiment&nbsp;Maker</b>, run on stimuli drawn from the <b>image corpus</b>, and its
+human results feed back to <em>calibrate the Tagger</em> — closing the loop.</p>
+<p>Concretely, integration means the Tagger becomes a module inside the Article&nbsp;Eater ecosystem rather than a standalone
+tool, joined at four seams:</p>
+<div class="step"><div class="d">1</div><div><b>Attribute → evidence binding.</b> Each registry attribute (e.g. <code>prospect</code>,
+<code>feature_congestion</code>, <code>circadian_contrast</code>) carries a stable link to the Atlas belief-nodes and citations
+that license it. The tier the Tagger assigns and the confidence the Atlas assigns are shown together.</div></div>
+<div class="step"><div class="d">2</div><div><b>Grounded explanations.</b> The Tagger's question-driven composer (the part
+that turns a reading into a plain-language answer) pulls its <em>numbers</em> only from the measurement side and its
+<em>justifications</em> only from the Atlas — kept strictly separate so an explanation can never invent a statistic.</div></div>
+<div class="step"><div class="d">3</div><div><b>Gap → experiment → calibration.</b> Atlas research-gaps and the Tagger's
+un-validated (AMBER) attributes define the experiment queue; Experiment&nbsp;Maker + the corpus produce human labels; those
+labels fit the Tagger's thresholds and response constants and promote attributes from mechanically-green to
+validated-green.</div></div>
+<div class="step"><div class="d">4</div><div><b>Shared corpus &amp; index.</b> The annotated image library (§5) is the common
+substrate: stimuli for the experiments, exemplars for the Atlas's claims, and the searchable front door for everyone else.</div></div>
+<p class="mut">Atlas scale today (David's figures): ~760 papers structured into ~522 fields, ~1,900 belief nodes joined by
+~1,900 warrant links, ~38 live debate clusters, ~18 flagged research gaps, with a value-of-information engine choosing what
+to read next. The Tagger's registry has grown to 68 computed attributes.</p>
+
+<h2><span class="n">3</span>The visual attributes, grouped — and how far along each family is</h2>
+<p>The 68 attributes fall into seven families. "Computational" = a deterministic procedure exists and runs; "Audited (M1′)"
+= it ships the self-checking signature; "Tier" = mechanical status; "Validated" = proven against human data (none yet).</p>
+
+<table>
+<thead><tr><th>Family</th><th class="n">Preds</th><th class="n">M1′</th><th>Where it stands</th><th>What remains</th></tr></thead>
+<tbody>
+<tr><td><b class="k">Fluency / complexity / clutter</b><br><span class="mut">feature-congestion, subband-entropy, fractal dimension, spectral slope, edge/orientation, symmetry, palette entropy, proto-object &amp; multiscale clutter</span></td>
+<td class="n">16</td><td class="n">13</td>
+<td>Most mature family. The Rosenholtz clutter measures (feature-congestion, subband-entropy) are <b>faithfully ported and adjudicated to ~1e-7</b> against the reference; 5 are mechanically <span class="pill g">GREEN</span>.</td>
+<td>Construct-validate against human "busy/cluttered" ratings; install the faithful 2-D Penacchio–Wilkins discomfort metric (reference-gated); re-derive fractal-D from the amplitude spectrum; retire two uncorrelated legacy proxies. <b>Known caveat:</b> pixel clutter counts foliage/rich materials as clutter — the corpus must teach it the difference.</td></tr>
+
+<tr><td><b class="k">Light</b><br><span class="mut">brightness variance, glare, warm/cool, luminance-gradient, shadow softness, sun-patch &amp; spotlight geometry, dark-zone map, evening ambience, colour-temperature mismatch</span></td>
+<td class="n">11</td><td class="n">9</td>
+<td>Broad coverage; 9/11 audited; brightness, glare, warm/cool are mechanically <span class="pill g">GREEN</span>.</td>
+<td>Construct-validation; a scale anchor to un-cap the metric ones. <b>Honest limit:</b> circadian/melanopic light (the Wellness-Code variable that matters most) needs a spectral input the RGB Tagger can't see — it belongs to the POE instrument kit, not the pixel reader, and the two must be joined.</td></tr>
+
+<tr><td><b class="k">Geometry / space</b><br><span class="mut">prospect, enclosure, contour angularity, orderliness, verticality, ceiling openness, double-height, blind-corner, barrier permeability, threshold, choice-richness</span></td>
+<td class="n">11</td><td class="n">3</td>
+<td>All <span class="pill a">AMBER</span>. These ride an inferred 3-D plan reconstructed from a single view; the geometry chain works but amplifies pixel noise (~13% on the scale estimate).</td>
+<td>Re-ground <code>prospect</code> on isovist openness and <b>add a refuge operator</b> (today prospect is a floor-depth proxy and refuge is missing — so prospect-refuge can't yet validate); extend the audit to the plan-metrics; add a scale anchor and a robustness pass; then construct-validate.</td></tr>
+
+<tr><td><b class="k">Layout / wellbeing criteria (C-series)</b><br><span class="mut">visual integration, connectivity, intelligibility, wayfinding load, prospect-refuge, crowding, view equity, daylight proximity, thermal, circadian contrast, air quality, social connectedness, focus/speech privacy, …</span></td>
+<td class="n">26</td><td class="n">1</td>
+<td>The workplace-wellbeing layer, computed on the plan (some take declared value inputs). 10 are mechanically <span class="pill g">GREEN</span>. This family <b>is</b> the bridge to the Wellness Code and to POE.</td>
+<td>Audit them on fixed plan fixtures; harden the shared plan chain; then validate against real occupant outcomes — which is exactly what the POE pilot supplies. Several (air quality, thermal, circadian) are where the pixel Tagger hands off to measured wellness instruments.</td></tr>
+
+<tr><td><b class="k">Acoustic</b><br><span class="mut">street-noise intrusion, acoustic absorption</span></td>
+<td class="n">2</td><td class="n">0</td>
+<td><span class="pill a">AMBER</span>. A street-noise operator with a declared-input channel exists.</td>
+<td>Audit + validate; and recognise that true speech-transmission/privacy is a <em>measured</em> POE quantity (STI), not a pixel proxy — the Tagger estimates the geometry that shapes it, the instrument confirms it.</td></tr>
+
+<tr><td><b class="k">Material</b><br><span class="mut">texture density (→ biophilia, off-gassing)</span></td>
+<td class="n">1</td><td class="n">1</td>
+<td>A texture-density operator, audited but <span class="pill a">AMBER</span>.</td>
+<td>Build the detector-backed material/biophilia layer (real vegetation/wood/stone/water masks, not colour heuristics); the material <em>off-gassing</em> dimension is a Wellness-Code table, joined at the render's material list, not read from pixels.</td></tr>
+
+<tr><td><b class="k">Cognitive / salience</b><br><span class="mut">landmark salience</span></td>
+<td class="n">1</td><td class="n">1</td>
+<td>Mechanically <span class="pill g">GREEN</span> (visual conspicuity).</td>
+<td>Rename its claim: it measures what draws the eye, not wayfinding landmark-ness — don't let it validate against wayfinding.</td></tr>
+</tbody></table>
+
+<div class="hl"><b>The honest summary of "how far along."</b> The <b>machinery</b> is largely built: 68 attributes compute, 28 self-audit,
+the pipeline is deterministic and reproducible, and the honesty discipline (abstain rather than guess; tier rather than
+overclaim) is in place. The <b>proof</b> is the work ahead: not one attribute has yet been calibrated against human judgement,
+so every "GREEN" is a green <em>procedure</em>, not a green <em>measurement</em>. Converting the 49 AMBER "honest procedures"
+into validated measurements is the dominant remaining task, and it is the one thing that needs people at scale — the corpus
+campaign and the POE pilot.</div>
+
+<h2><span class="n">4</span>The correctness ladder</h2>
+<p>An attribute climbs four rungs; keeping them distinct is what keeps the system honest:</p>
+<div class="step"><div class="d">1</div><div><b>Computational</b> — a real, effective procedure exists (not a hand-wave). <span class="mut">All 68.</span></div></div>
+<div class="step"><div class="d">2</div><div><b>Audited (M1′)</b> — it emits a sufficient-statistic signature so a checker can prove the number is genuine, current, and produced by the declared method. <span class="mut">28 of 68; the rest queued.</span></div></div>
+<div class="step"><div class="d">3</div><div><b>Faithful</b> — where it ports a published algorithm, it is adjudicated against the reference to ~1e-6. <span class="mut">Done for the clutter core; the 2-D discomfort metric is next.</span></div></div>
+<div class="step"><div class="d">4</div><div><b>Validated</b> — its output correlates with human (and biosignal) judgement of the construct it claims, with the threshold fit to data and the measured validity number recorded. <span class="mut">Not yet reached by any attribute — this is the corpus + POE campaign.</span></div></div>
+
+<h2><span class="n">5</span>The annotated-image library — search &amp; visual display</h2>
+<p>Around the Tagger sits a growing library of real interior images, each one <b>annotated with its computed attribute
+profile, its tier, and its evidence links</b>, and browsable both as pictures and as data. The Tagger's layered viewer can
+overlay any reading on the image itself — the light field, the speech-privacy field, the prospect/refuge map, the honesty
+layer — so a person sees not just <em>that</em> a space scores a certain way but <em>where</em> and <em>why</em>. The goal is
+a searchable, explainable front door to the whole system: ask a question in ordinary language or by filter, get back real
+spaces that answer it, each with its annotated overlays and its grounding.</p>
+<p>How different people would use it:</p>
+<div class="card"><h4>A student designing an experiment</h4><p class="mut">"Show me real interiors that are high vs low on
+<em>prospect</em>, matched on brightness and clutter." The library returns a ready stimulus set with known, computed
+attribute values and licence-clean images — so the student starts from validated, controlled stimuli instead of hunting
+Google Images, and can hand the set straight to the Experiment Maker.</p></div>
+<div class="card"><h4>An architect chasing a psych/neuro objective</h4><p class="mut">"Find precedents that read as
+<em>restorative</em> and <em>legible</em> with strong daylight but low glare." They get exemplars that meet the objective,
+each with the attribute maps that explain it — or they drop in their own render and get its profile plus the cheapest fix
+named. Design ideas, evidenced.</p></div>
+<div class="card"><h4>An ordinary person</h4><p class="mut">"Which of these two rooms is calmer, and why?" The composer answers
+in plain language, points at the specific zones driving it (the glare pool, the exposed seating), and never quotes a number
+it can't back — a genuinely explainable second opinion on a space.</p></div>
+<div class="card"><h4>An ANFA member (neuroscience &amp; architecture)</h4><p class="mut">"For prospect-refuge, show the construct,
+its measured validity, the citations and the debate, the spaces that best exemplify it, and the neural mechanism the Atlas
+proposes." Here the three layers converge: the Atlas grounding, the Tagger's measurement, and the corpus exemplars — a
+research-grade, source-traceable view that a scientist can interrogate and a designer can act on.</p></div>
+
+<h2><span class="n">6</span>Where we are, in one paragraph, and what's next</h2>
+<p>The Visual Tagger is a working, self-auditing instrument with 68 computed attributes across seven families, roughly half
+of them already carrying the honesty signature, a faithfully-ported clutter core, a reproducible pipeline, and a first
+annotated image corpus with a searchable index and a layered viewer. What it is not yet is <em>validated</em>: no attribute
+has been calibrated against human experience, and several (prospect-refuge, biophilia, the wellness variables that need
+spectral or measured input) need re-grounding or a hand-off to instruments. The near-term programme is therefore clear —
+finish the audit coverage and the faithful ports (engineering), run the human-labelling campaign on the corpus and the POE
+pilot on real rooms (validation), and complete the binding to the Knowledge Atlas so every reading arrives with its evidence.
+That is what turns a set of honest procedures into a code you can stand behind.</p>
+
+<footer>Clean account, 21 July 2026. Attribute counts and tiers are from the live registry; Knowledge Atlas figures are
+David's. "GREEN" denotes mechanical (deterministic + audited) status, not construct-validation — no attribute is
+construct-validated yet. Built from the Image_Tagger registry + correctness program, the L6 corpus/index and viewer, and the
+Cognitive Code dossier.</footer>
+</div></body></html>
