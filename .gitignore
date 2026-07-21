@@ -55,3 +55,4 @@ corpus_L6/*
 *.pyc
 __pycache__/
 .DS_Store
+!corpus_L6/_provenance.csv
