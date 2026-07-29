@@ -1,0 +1,3 @@
+[2026-07-14 16:14:42] === bg_offload start (PID 28358) ===
+[2026-07-14 16:14:44] COPY Structured3D_annotation_3d.zip (39392097 bytes) from /Users/davidusa/REPOS/Image_Tagger_dk_latest/structured3d ...
+2026/07/14 16:14:44 NOTICE: gdrive: This remote uses rclone's shared Google Drive client_id, which is being retired and will stop working during 2026. Create your own client_id to avoid interruption: https://rclone.org/drive/#making-your-own-client-id
