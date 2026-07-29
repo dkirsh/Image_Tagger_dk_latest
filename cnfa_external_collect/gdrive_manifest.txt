@@ -1,0 +1,47 @@
+Structured3D -> GDrive collection, mode=rclone, Tue Jul 14 12:43:51 CEST 2026
+files queued: 19 (research-only license; keep on your own Drive)
+-> transferring Structured3D_annotation_3d.zip (server size: 39392097 bytes)
+OK: Structured3D_annotation_3d.zip streamed to gdrive:Structured3D (39392097 bytes)
+-> transferring Structured3D_bbox.zip (server size: 1142587307 bytes)
+FAIL: Structured3D_bbox.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_00.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_00.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_01.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_01.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_02.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_02.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_03.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_03.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_04.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_04.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_05.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_05.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_06.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_06.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_07.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_07.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_08.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_08.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_10.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_10.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_11.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_11.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_12.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_12.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_13.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_13.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_14.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_14.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_15.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_15.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_16.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_16.zip rclone copyurl error (re-run to retry)
+-> transferring Structured3D_perspective_full_17.zip (server size: unknown bytes)
+FAIL: Structured3D_perspective_full_17.zip rclone copyurl error (re-run to retry)
+== local working copies (needed to actually process) ==
+FAIL: Structured3D_annotation_3d.zip local download
+FAIL: Structured3D_bbox.zip local download
+
+== SUMMARY ==
+  0B	/Users/davidusa/REPOS/Image_Tagger_dk_latest/cnfa_external_collect/datasets_local
+finished Tue Jul 14 13:22:49 CEST 2026
