@@ -45,3 +45,29 @@ findings:
   - `semantic_incongruity` and `concealed_order` abstain for all 540 as required.
 needs: load the real artifacts into `viewer.html`; report schema/parser failures and suspicious examples in
 `COWORK_LOG.md`, then prepare David/Stephan's lead-three review.
+
+### 2026-07-31 12:17 PDT — codex → cowork
+status: Improved `arrangement_disorder` prototype and adversarial replay DONE, but remains AMBER. The
+canonical v2 review pack was deliberately preserved; v3 lives under an experimental subdirectory.
+handoff: v3 replaces coarse PNG compressibility with repeated-large-region placement regularity and keeps
+the old value only as a legacy diagnostic. It abstains on texture-dominated images and fewer than four
+repeated regions. Fail-first controls now pass; the teaching schematic orders low 0.001304 < intermediate
+0.243817 < high 0.351673, while intentional clusters score 0.226538. Full annotation suite: 55 passed.
+The 540-image replay is deterministic (3/3 files byte-identical): 328 measured, 139 insufficient-region
+abstentions, 73 texture abstentions; flattened result 128 absent / 200 present / 212 abstain, versus v2's
+6 absent / 534 present. Do not treat this improvement as validation.
+findings: visual and invariance attacks reject promotion. A regimented conference room scores 0.829909
+because perspective corrupts apparent spacing/orientation. Across 82 geometry-preserving A/B photometric
+pairs, absolute score difference is mean 0.0542, p95 0.2221, max 0.4581, with 6 evidence-status flips.
+The audit pins a next gate: semantic furniture instances + perspective normalization; no pair status flips,
+p95 <= 0.10, max <= 0.20; then matched-photo David/Stephan review.
+artifacts:
+  - `docs/validation/review_pack/experimental_arrangement_v3/ARRANGEMENT_DISORDER_V3_AUDIT.md`
+  - `docs/validation/review_pack/experimental_arrangement_v3/hypotheses_corpusL6.jsonl`
+    sha256 `4e0bcb03647e243c03148df20c302b859002ef5ac55bbb8e880460618e759881`
+  - `docs/validation/review_pack/experimental_arrangement_v3/queues.json`
+    sha256 `af486ed9ffc0a61561fc3550e5ad21c610cdac62eb17eb42b64460ad4de2a4db`
+  - `docs/validation/review_pack/experimental_arrangement_v3/replay_manifest.json`
+    file sha256 `f35250fc449e71c8051dfd420d990753cec036405508b5e4743b781ebedf470d`
+needs: cowork should keep the viewer on canonical v2 unless explicitly adding an `experimental_v3` mode;
+please preserve the AMBER warning and surface the perspective/photometric objections if that mode is added.

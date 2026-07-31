@@ -1,0 +1,533 @@
+{
+  "calibrated": false,
+  "corpus": "corpus_L6",
+  "files": {
+    "hypotheses_corpusL6.jsonl": {
+      "rows": 3240,
+      "sha256": "4e0bcb03647e243c03148df20c302b859002ef5ac55bbb8e880460618e759881"
+    },
+    "queues.json": {
+      "boundary_rows": 216,
+      "coverage_rows": 112,
+      "disagreement_rows": 0,
+      "sha256": "af486ed9ffc0a61561fc3550e5ad21c610cdac62eb17eb42b64460ad4de2a4db"
+    }
+  },
+  "filesystem_only": [
+    "interiors/mit_indoor67_airport_inside_air_8eed507ec6_airport_inside.png",
+    "interiors/mit_indoor67_children_room_pipp_d1f487ce65_children_room.png"
+  ],
+  "generated_commit": "623040cf",
+  "manifest_hash": "3fe5bf47a2289e0ca55d6f16076512a31143417d44a117e4a5df3dd7c9f9068f",
+  "manifest_missing_files": [],
+  "model_version": "complexity-species-proxy-v3",
+  "n_hypothesis_rows": 3240,
+  "n_images": 540,
+  "n_manifest_rows": 538,
+  "notes": [
+    "all filesystem images are included, including images absent from manifest.csv",
+    "image_id and path are corpus-relative paths; content duplicates remain distinct corpus items",
+    "presence and severity are uncalibrated tagger hypotheses, not answer keys",
+    "semantic_incongruity and concealed_order abstain from pixel-only scoring"
+  ],
+  "qa": {
+    "duplicate_content_groups": [
+      [
+        "interiors/mit_indoor67_airport_inside_air_0777bd9b54_airport_inside.png",
+        "pairs/gab_5e341296_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_airport_inside_air_27b7e3dd0e_airport_inside.png",
+        "pairs/gab_7bace5ea_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_airport_inside_air_398d011d24_airport_inside.png",
+        "pairs/gab_2a427403_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_airport_inside_air_4e76ec8266_airport_inside.png",
+        "pairs/gab_e8a69ee3_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_airport_inside_air_50772a7dd8_airport_inside.png",
+        "pairs/gab_63af0673_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_airport_inside_air_5440894b97_airport_inside.png",
+        "pairs/gab_e521b08a_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_airport_inside_air_7753933f7d_airport_inside.png",
+        "pairs/gab_665bd7ba_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_airport_inside_air_7b0db4b4f7_airport_inside.png",
+        "pairs/gab_c8b68b3a_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_airport_inside_air_8eed507ec6_airport_inside.png",
+        "pairs/gab_d173ab93_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_airport_inside_air_a631946870_airport_inside.png",
+        "pairs/gab_b63f5d46_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_airport_inside_air_bb8866cc61_airport_inside.png",
+        "pairs/gab_e9f25b1e_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_airport_inside_air_bf1fc39676_airport_inside.png",
+        "pairs/gab_6afcaf09_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_airport_inside_air_c4e09e1e2d_airport_inside.png",
+        "pairs/gab_69459084_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_airport_inside_air_c752963e6c_airport_inside.png",
+        "pairs/gab_565d791c_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_airport_inside_air_f7ef4f1e3e_airport_inside.png",
+        "pairs/gab_b7042487_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_auditorium_2100733_a086f550e2_auditorium.png",
+        "pairs/gab_2de3a5cf_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_auditorium_3344_au_66163eb9a6_auditorium.png",
+        "pairs/gab_5e7e1287_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_auditorium_5189643_c89c947395_auditorium.png",
+        "pairs/gab_abd7b086_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_0073_4dde63a866_bathroom.png",
+        "pairs/gab_0896239c_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_0074_0f4e3b5129_bathroom.png",
+        "pairs/gab_472b450e_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_0076_3199eb2069_bathroom.png",
+        "pairs/gab_efb81383_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_0999_08a31a87b5_bathroom.png",
+        "pairs/gab_b89c3134_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_1005_fcb69ca74e_bathroom.png",
+        "pairs/gab_263772f9_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_1084_925447b794_bathroom.png",
+        "pairs/gab_58a6cb04_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_1085_0c81db3f23_bathroom.png",
+        "pairs/gab_17541701_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_1252_c9d24646bb_bathroom.png",
+        "pairs/gab_5b05a8d5_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_1253_47f23f1600_bathroom.png",
+        "pairs/gab_47ae4b9f_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_1313_07beaa2695_bathroom.png",
+        "pairs/gab_2be0a1d4_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_1340_6b779a8d35_bathroom.png",
+        "pairs/gab_ad07e645_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_1341_9cb78a98d0_bathroom.png",
+        "pairs/gab_9575cba8_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_1343_ca788208d7_bathroom.png",
+        "pairs/gab_ede445a2_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_1559_26a0418977_bathroom.png",
+        "pairs/gab_0c646628_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_1560_1e8754dc84_bathroom.png",
+        "pairs/gab_df15f734_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_1701_bbf3f7701f_bathroom.png",
+        "pairs/gab_bf75a62b_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_1703_3a8d216597_bathroom.png",
+        "pairs/gab_906e3df6_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_1704_b529e0a032_bathroom.png",
+        "pairs/gab_007b080d_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_2332_74d342dfde_bathroom.png",
+        "pairs/gab_4c3242f1_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_2334_f6e589c33a_bathroom.png",
+        "pairs/gab_4af0aeb7_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_2335_fc2debd8b6_bathroom.png",
+        "pairs/gab_9981b3c8_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_2437_e665b86bca_bathroom.png",
+        "pairs/gab_743e4df7_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_2438_d307997778_bathroom.png",
+        "pairs/gab_9a225fc3_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_2439_1d4683995c_bathroom.png",
+        "pairs/gab_4bd6a173_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_2831_3d5798a8bb_bathroom.png",
+        "pairs/gab_2c3aabf8_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_3018_9ee57001bb_bathroom.png",
+        "pairs/gab_e5a99758_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_3024_a2846df3f6_bathroom.png",
+        "pairs/gab_5e963086_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_3208_f53561e0c5_bathroom.png",
+        "pairs/gab_16d8d6d4_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_3211_2b05235cf6_bathroom.png",
+        "pairs/gab_cda2fc1b_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_3270_99f58d93f4_bathroom.png",
+        "pairs/gab_e2629404_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_3272_217d644832_bathroom.png",
+        "pairs/gab_80e54fe2_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_3701_eb982674a3_bathroom.png",
+        "pairs/gab_5edb567b_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_3735_73baf310b4_bathroom.png",
+        "pairs/gab_e5df8f7a_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_3736_1ff79c8686_bathroom.png",
+        "pairs/gab_357edf44_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_4832_4c757c4736_bathroom.png",
+        "pairs/gab_6d50fc89_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_4833_d31c8852cb_bathroom.png",
+        "pairs/gab_ddfc3634_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_4834_fcd42c222b_bathroom.png",
+        "pairs/gab_7aee9211_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_5747_9b35f0039b_bathroom.png",
+        "pairs/gab_8c5e07b4_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_5748_37d2e7a6c2_bathroom.png",
+        "pairs/gab_a120cc89_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_5749_6904581335_bathroom.png",
+        "pairs/gab_f3bb4876_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bathroom_img_5785_cb397efa28_bathroom.png",
+        "pairs/gab_b78e050e_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_deluxe_roo_0a49c5a670_bedroom.png",
+        "pairs/gab_15114024_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_0025_171818cf83_bedroom.png",
+        "pairs/gab_4bf60a7f_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_0026_ff7304d410_bedroom.png",
+        "pairs/gab_c86b2b1a_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_0028_402ae99275_bedroom.png",
+        "pairs/gab_dcca64f6_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_0991_7c554878ee_bedroom.png",
+        "pairs/gab_5102b95f_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_0994_57332703e8_bedroom.png",
+        "pairs/gab_ccd4ede7_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_1078_339e4a1c68_bedroom.png",
+        "pairs/gab_a1c44cac_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_1079_d3ed38b16f_bedroom.png",
+        "pairs/gab_02a345b6_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_1080_16ab1efb82_bedroom.png",
+        "pairs/gab_d5a535b3_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_1081_fae183ab0c_bedroom.png",
+        "pairs/gab_60ebc7ad_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_1098_b06af76776_bedroom.png",
+        "pairs/gab_3b71049f_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_1245_8052010f9c_bedroom.png",
+        "pairs/gab_0b20629b_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_1246_3f82a25107_bedroom.png",
+        "pairs/gab_8b525a85_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_1247_b3003958e1_bedroom.png",
+        "pairs/gab_a251d891_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_1311_57417b6c15_bedroom.png",
+        "pairs/gab_421eb626_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_1337_dad48e3c7d_bedroom.png",
+        "pairs/gab_b38399e3_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_1551_3e0b6f8857_bedroom.png",
+        "pairs/gab_ecb16c4c_A_base.png"
+      ],
+      [
+        "interiors/mit_indoor67_bedroom_img_1555_49506500bc_bedroom.png",
+        "pairs/gab_f78774e2_A_base.png"
+      ],
+      [
+        "pairs/gab_b22cc0a7_A_base.png",
+        "pairs/gab_f0d40041_A_base.png"
+      ]
+    ],
+    "duplicate_content_summary": {
+      "other": 0,
+      "pair_only": 1,
+      "source_to_pair_base_reuse": 77
+    },
+    "findings": [
+      "variety: provisional presence classification is >=95% one class",
+      "1 pair-only duplicate-content groups require review"
+    ],
+    "species": {
+      "arrangement_disorder": {
+        "dominant_presence_fraction": 0.609756,
+        "highest_five": [
+          "interiors/mit_indoor67_fastfood_restauran_4789fac86f_fastfood_restaurant.png",
+          "interiors/sun397_conference_center__a3b0eef184_conference_center.png",
+          "interiors/mit_indoor67_office_img_0011_c83ea76263_office.png",
+          "pairs/gab_ede445a2_B_glare.png",
+          "pairs/gab_cda2fc1b_B_glare.png"
+        ],
+        "lowest_five": [
+          "pairs/gab_743e4df7_B_warmth.png",
+          "interiors/mit_indoor67_garage_insidegardo_0a3d44b774_garage.png",
+          "collections/sun397_clothing_store_88_6e66fde6d6_clothing_store.png",
+          "interiors/mit_indoor67_meeting_room_board_de67f8306f_meeting_room.png",
+          "interiors/sun397_cubicle_office_398_f93c4d1441_cubicle_office.png"
+        ],
+        "maximum": 0.835762,
+        "mean": 0.515078,
+        "median": 0.5,
+        "minimum": 0.014968,
+        "missing_values": 0,
+        "n_rows": 540,
+        "n_values": 540,
+        "near_one_count": 0,
+        "near_zero_count": 0,
+        "p05": 0.334393,
+        "p95": 0.69271,
+        "presence_counts": {
+          "absent": 128,
+          "abstain": 212,
+          "present": 200
+        },
+        "presence_status": "ok",
+        "status": "ok",
+        "unique_values_6dp": 290
+      },
+      "concealed_order": {
+        "n_rows": 540,
+        "n_values": 0,
+        "presence_counts": {
+          "absent": 0,
+          "abstain": 540,
+          "present": 0
+        },
+        "status": "delegated"
+      },
+      "semantic_incongruity": {
+        "n_rows": 540,
+        "n_values": 0,
+        "presence_counts": {
+          "absent": 0,
+          "abstain": 540,
+          "present": 0
+        },
+        "status": "delegated"
+      },
+      "surface_density": {
+        "dominant_presence_fraction": 0.538889,
+        "highest_five": [
+          "pairs/gab_d173ab93_B_contrast.png",
+          "pairs/gab_665bd7ba_A_base.png",
+          "interiors/mit_indoor67_fastfood_restauran_563ec6a8ef_fastfood_restaurant.png",
+          "interiors/mit_indoor67_airport_inside_air_7753933f7d_airport_inside.png",
+          "pairs/gab_63af0673_B_contrast.png"
+        ],
+        "lowest_five": [
+          "pairs/gab_b89c3134_B_daylight.png",
+          "pairs/gab_4bd6a173_B_daylight.png",
+          "pairs/gab_f3bb4876_B_daylight.png",
+          "pairs/gab_5b05a8d5_B_daylight.png",
+          "pairs/gab_c86b2b1a_B_daylight.png"
+        ],
+        "maximum": 1.0,
+        "mean": 0.523823,
+        "median": 0.520786,
+        "minimum": 0.078641,
+        "missing_values": 0,
+        "n_rows": 540,
+        "n_values": 540,
+        "near_one_count": 5,
+        "near_zero_count": 0,
+        "p05": 0.206554,
+        "p95": 0.849439,
+        "presence_counts": {
+          "absent": 249,
+          "abstain": 0,
+          "present": 291
+        },
+        "presence_status": "ok",
+        "status": "ok",
+        "unique_values_6dp": 456
+      },
+      "textural_discomfort": {
+        "dominant_presence_fraction": 0.846296,
+        "highest_five": [
+          "pairs/gab_63af0673_B_contrast.png",
+          "pairs/gab_69459084_A_base.png",
+          "interiors/mit_indoor67_airport_inside_air_c4e09e1e2d_airport_inside.png",
+          "pairs/gab_69459084_B_contrast.png",
+          "pairs/gab_63af0673_A_base.png"
+        ],
+        "lowest_five": [
+          "interiors/sun397_closet_33_8b5ae52970_closet.png",
+          "interiors/sun397_cubicle_office_395_96cb31401e_cubicle_office.png",
+          "interiors/sun397_conference_room_29_58ef522287_conference_room.png",
+          "interiors/sun397_closet_6_39d4a16fd0_closet.png",
+          "pairs/gab_007b080d_B_warmth.png"
+        ],
+        "maximum": 0.588158,
+        "mean": 0.452873,
+        "median": 0.447905,
+        "minimum": 0.315106,
+        "missing_values": 0,
+        "n_rows": 540,
+        "n_values": 540,
+        "near_one_count": 0,
+        "near_zero_count": 0,
+        "p05": 0.387563,
+        "p95": 0.53559,
+        "presence_counts": {
+          "absent": 457,
+          "abstain": 0,
+          "present": 83
+        },
+        "presence_status": "ok",
+        "status": "ok",
+        "unique_values_6dp": 458
+      },
+      "variety": {
+        "dominant_presence_fraction": 0.983333,
+        "highest_five": [
+          "interiors/sun397_coffee_shop_137_ebdc2fc1c6_coffee_shop.png",
+          "interiors/sun397_closet_15_2553621825_closet.png",
+          "interiors/mit_indoor67_casino_casino_0033_5e7e5f478a_casino.png",
+          "interiors/mit_indoor67_kindergarden_class_cbeb73e3c4_kindergarden.png",
+          "collections/mit_indoor67_grocerystore_100_0_19fdcae5b7_grocerystore.png"
+        ],
+        "lowest_five": [
+          "pairs/gab_c86b2b1a_B_daylight.png",
+          "pairs/gab_3b71049f_B_daylight.png",
+          "pairs/gab_b89c3134_B_daylight.png",
+          "pairs/gab_f3bb4876_B_daylight.png",
+          "pairs/gab_4bd6a173_B_daylight.png"
+        ],
+        "maximum": 0.943244,
+        "mean": 0.721779,
+        "median": 0.72806,
+        "minimum": 0.398205,
+        "missing_values": 0,
+        "n_rows": 540,
+        "n_values": 540,
+        "near_one_count": 0,
+        "near_zero_count": 0,
+        "p05": 0.573798,
+        "p95": 0.846671,
+        "presence_counts": {
+          "absent": 9,
+          "abstain": 0,
+          "present": 531
+        },
+        "presence_status": "highly_imbalanced",
+        "status": "ok",
+        "unique_values_6dp": 181
+      }
+    }
+  },
+  "schema_version": "cnfa.complexity-replay-manifest/v1",
+  "species": [
+    "surface_density",
+    "arrangement_disorder",
+    "variety",
+    "textural_discomfort",
+    "semantic_incongruity",
+    "concealed_order"
+  ]
+}
