@@ -22,7 +22,7 @@ from PIL import Image
 HYPOTHESIS_SCHEMA = "cnfa.complexity-species-hypotheses/v1"
 QUEUE_SCHEMA = "cnfa.complexity-selection-queues/v1"
 HANDOFF_SCHEMA = "cnfa.complexity-species-handoff/v1"
-MODEL_VERSION = "complexity-species-proxy-v1"
+MODEL_VERSION = "complexity-species-proxy-v2"
 
 SPECIES_CONTRACT: dict[str, dict[str, Any]] = {
     "surface_density": {
@@ -166,7 +166,7 @@ def _computed_species(
     failure_modes: Sequence[str],
 ) -> dict[str, Any]:
     severity = _clip01(severity)
-    provisional_threshold = 0.35
+    provisional_threshold = 0.50
     provisional_slope = 8.0
     presence = 1.0 / (1.0 + math.exp(-provisional_slope * (severity - provisional_threshold)))
     confidence, uncertainty = _confidence(species, presence)
@@ -235,7 +235,7 @@ def hypothesize_complexity_species(
     color_count = _color_variety(rgb)
     variety = _clip01(math.log1p(color_count) / math.log(513.0))
     spectral_raw = _spectral_discomfort(gray)
-    discomfort = _clip01(spectral_raw / 0.20)
+    discomfort = _clip01(spectral_raw)
 
     species = [
         _computed_species(
@@ -281,10 +281,10 @@ def hypothesize_complexity_species(
             "textural_discomfort",
             discomfort,
             "mid_high_spectral_energy_fraction_v1",
-            {"spectral_fraction_raw": spectral_raw, "provisional_scale_max": 0.20},
+            {"spectral_fraction_raw": spectral_raw},
             [
                 "spectral proxy is not a direct report of felt discomfort",
-                "normalisation is provisional until calibrated against comfort ratings",
+                "relation to human comfort remains uncalibrated",
             ],
         ),
         _delegated_species(

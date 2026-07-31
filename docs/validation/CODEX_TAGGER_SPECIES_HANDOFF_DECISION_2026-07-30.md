@@ -92,8 +92,8 @@ ground truth.
 All four image-computable values are labelled
 `calibration: engineering_proxy_uncalibrated`. A field named `presence_probability` is therefore a
 provisional 0–1 selection signal, not yet an empirically calibrated probability.
-It is kept distinct from severity by a disclosed provisional logistic mapping (severity threshold
-0.35, slope 8). Human data must replace that common mapping with a calibrated per-species model.
+It is kept distinct from severity by a disclosed provisional logistic mapping (neutral severity
+threshold 0.50, slope 8). Human data must replace that common mapping with a calibrated per-species model.
 
 `surface_density` wraps the supplied contrast-energy primitive at 256 and 64 pixels and retains both
 fine and coarse components. The supplied reference file did not itself contain a two-scale density

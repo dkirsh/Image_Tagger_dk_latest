@@ -239,8 +239,14 @@ def _audit(
         if near_zero / len(values) >= 0.25 or near_one / len(values) >= 0.25:
             status = "saturated"
             findings.append(f"{species}: >=25% of values saturated near 0 or 1")
+        classified = presence_counts["present"] + presence_counts["absent"]
+        presence_status = "ok"
+        if classified and max(presence_counts["present"], presence_counts["absent"]) == classified:
+            presence_status = "degenerate"
+            findings.append(f"{species}: provisional presence classification has one class")
         species_audit[species] = {
             "status": status,
+            "presence_status": presence_status,
             "n_rows": len(species_rows),
             "n_values": len(values),
             "missing_values": len(species_rows) - len(values),

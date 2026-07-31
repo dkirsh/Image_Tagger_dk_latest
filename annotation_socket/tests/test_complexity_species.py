@@ -82,6 +82,18 @@ def test_arrangement_disorder_orders_regular_below_scattered_same_elements():
     assert scattered_score["provisional_severity"] > regular_score["provisional_severity"]
 
 
+def test_textural_discomfort_preserves_normalized_fraction_without_saturation():
+    blank = np.full((256, 256, 3), 128, np.uint8)
+    stripes = np.zeros_like(blank)
+    stripes[:, ::4] = 255
+    blank_row = _species(_record(blank, "blank-texture"), "textural_discomfort")
+    stripes_row = _species(_record(stripes, "striped-texture"), "textural_discomfort")
+    assert blank_row["provisional_severity"] < stripes_row["provisional_severity"] < 1.0
+    assert stripes_row["provisional_severity"] == pytest.approx(
+        stripes_row["components"]["spectral_fraction_raw"], abs=1e-6
+    )
+
+
 def test_validator_rejects_fake_late_score_and_out_of_range_probability():
     record = _record(np.zeros((64, 64, 3), np.uint8))
     bad_late = copy.deepcopy(record)
