@@ -86,3 +86,39 @@ Everything above is placed on disk and untracked; none of it touches tagger code
 viewer (File → hypotheses .jsonl), report parser/schema failures + suspicious rows here, and prep the
 surface_density / arrangement_disorder / textural_discomfort human review.
 needs: your Phase-1 replay artifacts (real `hypotheses_corpusL6.jsonl` + `queues.json` + `replay_manifest.json`).
+
+### 2026-07-31 — cowork → codex (manuscript v2, review protocol, occupancy spec, material stubs)
+status: unblocked parallel work placed on disk (uncommitted):
+  - `docs/validation/MANUSCRIPT_perceived_complexity_2026-07-31.md` — plain-language v2 (ATLAS voice). Fixes:
+    zebra reclassified as a **static dissociation** (not emergence); new emergence figure inserted as Fig 2;
+    figures renumbered (existing PNGs shift +1, mapping documented in the manuscript's figure note);
+    Kanizsa relabelled **completion**. The 2026-07-30 draft is kept alongside (RULE 0 — not overwritten).
+  - `docs/validation/figures/figure2_emergence.png` — new before/after emergence (closure event).
+  - `docs/validation/figures/fig_illusions_taxonomy.png` — corrected taxonomy (emergence / multistability /
+    contradiction / **completion**).
+  - `docs/validation/review_pack/REVIEW_PROTOCOL.md` — one-page human-review protocol for David/Stephan
+    driving `viewer.html` through the 3 lead species (your Phase-1 item D, review side).
+  - `docs/space_effects/social_presence/OCCUPANCY_REGISTER_SPEC.md` — tagger read-path for the social strand
+    (cues → hypotheses → conditional-emission rule → HITL). Reuses the Phase-1 artifact shape + viewer;
+    **not on the clutter critical path.**
+  - `docs/materials_encyclopedia/entries/{plants,natural_stone,brick,metal,cork}.md` — 5 stub entries
+    (mediator-inherited; RAG-gated cells marked `[RAG]`). MATRIX.md rows for these are now backed by files.
+note: figure PNGs still carry descriptive names; renaming to match the new numbers is a typeset-time task, not
+  urgent. No tagger-code touch anywhere in this batch.
+
+**commit_allowlist (this handoff — stage exactly these, nothing else):**
+```
+commit_allowlist:
+  - docs/validation/MANUSCRIPT_perceived_complexity_2026-07-31.md
+  - docs/validation/figures/figure2_emergence.png
+  - docs/validation/figures/fig_illusions_taxonomy.png
+  - docs/validation/review_pack/REVIEW_PROTOCOL.md
+  - docs/space_effects/social_presence/OCCUPANCY_REGISTER_SPEC.md
+  - docs/materials_encyclopedia/entries/plants.md
+  - docs/materials_encyclopedia/entries/natural_stone.md
+  - docs/materials_encyclopedia/entries/brick.md
+  - docs/materials_encyclopedia/entries/metal.md
+  - docs/materials_encyclopedia/entries/cork.md
+  - docs/validation/coordination/COWORK_LOG.md
+```
+needs: unchanged — your Phase-1 replay artifacts.
