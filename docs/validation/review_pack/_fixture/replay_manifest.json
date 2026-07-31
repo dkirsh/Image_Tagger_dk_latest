@@ -1,0 +1,17 @@
+{
+  "corpus": "corpus_L6_FIXTURE",
+  "n_images": 42,
+  "n_manifest_rows": 42,
+  "filesystem_only": [],
+  "species": [
+    "surface_density",
+    "arrangement_disorder",
+    "variety",
+    "textural_discomfort",
+    "semantic_incongruity",
+    "concealed_order"
+  ],
+  "generated_commit": "fixture",
+  "notes": "Synthetic fixture matching the Phase-1 artifact contract. NOT real replay data.",
+  "manifest_hash": "3208b7e15cce6fdcb865ede96945bf815404a8559782d9175bb305ccec0c3450"
+}

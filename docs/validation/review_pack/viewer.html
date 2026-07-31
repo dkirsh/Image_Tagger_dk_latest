@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review-Pack Viewer — Phase 1 species hypotheses</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2b303b;
+    --ink:#e7ebf2; --dim:#9aa4b2; --accent:#5b9dff;
+    --accept:#39b37a; --reject:#e5615f; --uncertain:#e0a13a;
+    --tag:#2a3140;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink)}
+  header{padding:14px 18px;background:var(--panel);border-bottom:1px solid var(--line);
+         display:flex;flex-wrap:wrap;gap:14px;align-items:center;position:sticky;top:0;z-index:5}
+  header h1{font-size:15px;margin:0;font-weight:650;letter-spacing:.2px}
+  .muted{color:var(--dim)}
+  .banner{background:#3a2b12;color:#f0c674;border:1px solid #5a4420;border-radius:6px;
+          padding:3px 9px;font-size:12px;font-weight:600}
+  .grow{flex:1}
+  button,select,input[type=text]{font:inherit;color:var(--ink);background:var(--panel2);
+        border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+  button{cursor:pointer}
+  button:hover{border-color:var(--accent)}
+  .controls{padding:12px 18px;background:var(--panel);border-bottom:1px solid var(--line);
+            display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .controls label{color:var(--dim);font-size:12px;margin-right:4px}
+  .leadbtn.active{border-color:var(--accent);background:#25324a}
+  .count{margin-left:auto;color:var(--dim);font-size:13px}
+  main{padding:16px 18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:12px;display:flex;flex-direction:column;gap:8px}
+  .card.decided-accept{border-left:4px solid var(--accept)}
+  .card.decided-reject{border-left:4px solid var(--reject)}
+  .card.decided-uncertain{border-left:4px solid var(--uncertain)}
+  .path{font-size:12px;color:var(--dim);word-break:break-all}
+  .sp{font-weight:650}
+  .bar{height:8px;background:var(--panel2);border-radius:5px;overflow:hidden}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,#3a6fb0,var(--accent))}
+  .meta{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;color:var(--dim)}
+  .tag{background:var(--tag);border:1px solid var(--line);border-radius:20px;padding:1px 8px;font-size:11px}
+  .tag.boundary{color:#f0c674;border-color:#5a4420}
+  .tag.coverage{color:#7fd1c0;border-color:#2c5148}
+  .tag.abstain{color:#c9a0e8;border-color:#463055}
+  .tag.present{color:#8fd6a8}.tag.absent{color:#e59a99}
+  .actions{display:flex;gap:6px}
+  .actions button{flex:1;padding:6px 0;font-weight:600}
+  .b-accept.on{background:var(--accept);border-color:var(--accept);color:#04160e}
+  .b-reject.on{background:var(--reject);border-color:var(--reject);color:#1a0505}
+  .b-uncertain.on{background:var(--uncertain);border-color:var(--uncertain);color:#181203}
+  .row2{display:flex;gap:6px}
+  .row2 select{flex:1;font-size:12px;padding:5px 7px}
+  .row2 input{flex:2;font-size:12px;padding:5px 7px}
+  .empty{grid-column:1/-1;color:var(--dim);text-align:center;padding:40px}
+  .filehint{font-size:11px;color:var(--dim)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Review-Pack Viewer <span class="muted" style="font-weight:400">· Phase 1 species hypotheses</span></h1>
+  <span class="banner" id="calBanner">UNCALIBRATED · provisional severity</span>
+  <span class="muted" id="manLine"></span>
+  <span class="grow"></span>
+  <label class="filehint">Load real replay (hypotheses .jsonl):</label>
+  <input type="file" id="fileIn" accept=".jsonl,.json,.txt" style="max-width:220px">
+  <button id="exportBtn">Export reviews ↓</button>
+</header>
+
+<div class="controls">
+  <label>Species</label>
+  <span id="leadBtns"></span>
+  <select id="speciesSel"></select>
+  <label>Bin</label>
+  <select id="binSel">
+    <option value="all">all</option>
+    <option value="low">low (&lt;0.25)</option>
+    <option value="intermediate">intermediate (0.25–0.6)</option>
+    <option value="high">high (&gt;0.6)</option>
+    <option value="boundary">boundary queue</option>
+    <option value="coverage">coverage queue</option>
+    <option value="abstain">abstain (late species)</option>
+    <option value="undecided">undecided only</option>
+  </select>
+  <label>Sort</label>
+  <select id="sortSel">
+    <option value="value_desc">value ↓</option>
+    <option value="value_asc">value ↑</option>
+    <option value="unc_desc">uncertainty ↓</option>
+    <option value="path">path</option>
+  </select>
+  <span class="count" id="countLine"></span>
+</div>
+
+<main id="grid"></main>
+
+<script>
+// ---- data (embedded fixture; replaced when a real .jsonl is loaded) ----
+const EMBED_HYP = `{"image_id": "suprematism/fixture_000_suprematism.png", "path": "suprematism/fixture_000_suprematism.png", "species": "surface_density", "value": 0.618, "presence": "present", "uncertainty": 0.181, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_000_suprematism.png", "path": "suprematism/fixture_000_suprematism.png", "species": "arrangement_disorder", "value": 0.144, "presence": "absent", "uncertainty": 0.463, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_000_suprematism.png", "path": "suprematism/fixture_000_suprematism.png", "species": "variety", "value": 0.286, "presence": "present", "uncertainty": 0.24, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_000_suprematism.png", "path": "suprematism/fixture_000_suprematism.png", "species": "textural_discomfort", "value": 0.057, "presence": "absent", "uncertainty": 0.219, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_000_suprematism.png", "path": "suprematism/fixture_000_suprematism.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.532, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_000_suprematism.png", "path": "suprematism/fixture_000_suprematism.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.422, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_001_interiors.png", "path": "interiors/fixture_001_interiors.png", "species": "surface_density", "value": 0.001, "presence": "absent", "uncertainty": 0.092, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_001_interiors.png", "path": "interiors/fixture_001_interiors.png", "species": "arrangement_disorder", "value": 0.628, "presence": "present", "uncertainty": 0.066, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_001_interiors.png", "path": "interiors/fixture_001_interiors.png", "species": "variety", "value": 0.687, "presence": "present", "uncertainty": 0.385, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_001_interiors.png", "path": "interiors/fixture_001_interiors.png", "species": "textural_discomfort", "value": 0.512, "presence": "present", "uncertainty": 0.23, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_001_interiors.png", "path": "interiors/fixture_001_interiors.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.496, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_001_interiors.png", "path": "interiors/fixture_001_interiors.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.435, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_002_interiors.png", "path": "interiors/fixture_002_interiors.png", "species": "surface_density", "value": 0.396, "presence": "present", "uncertainty": 0.468, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_002_interiors.png", "path": "interiors/fixture_002_interiors.png", "species": "arrangement_disorder", "value": 0.999, "presence": "present", "uncertainty": 0.516, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_002_interiors.png", "path": "interiors/fixture_002_interiors.png", "species": "variety", "value": 0.071, "presence": "absent", "uncertainty": 0.283, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_002_interiors.png", "path": "interiors/fixture_002_interiors.png", "species": "textural_discomfort", "value": 0.873, "presence": "present", "uncertainty": 0.114, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_002_interiors.png", "path": "interiors/fixture_002_interiors.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.578, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_002_interiors.png", "path": "interiors/fixture_002_interiors.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.735, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_003_suprematism.png", "path": "suprematism/fixture_003_suprematism.png", "species": "surface_density", "value": 0.772, "presence": "present", "uncertainty": 0.416, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_003_suprematism.png", "path": "suprematism/fixture_003_suprematism.png", "species": "arrangement_disorder", "value": 0.231, "presence": "present", "uncertainty": 0.388, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_003_suprematism.png", "path": "suprematism/fixture_003_suprematism.png", "species": "variety", "value": 0.465, "presence": "present", "uncertainty": 0.162, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_003_suprematism.png", "path": "suprematism/fixture_003_suprematism.png", "species": "textural_discomfort", "value": 0.184, "presence": "present", "uncertainty": 0.177, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_003_suprematism.png", "path": "suprematism/fixture_003_suprematism.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.863, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_003_suprematism.png", "path": "suprematism/fixture_003_suprematism.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.744, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "scenes/fixture_004_scenes.png", "path": "scenes/fixture_004_scenes.png", "species": "surface_density", "value": 0.065, "presence": "absent", "uncertainty": 0.208, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "scenes/fixture_004_scenes.png", "path": "scenes/fixture_004_scenes.png", "species": "arrangement_disorder", "value": 0.713, "presence": "present", "uncertainty": 0.052, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "scenes/fixture_004_scenes.png", "path": "scenes/fixture_004_scenes.png", "species": "variety", "value": 0.881, "presence": "present", "uncertainty": 0.487, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "scenes/fixture_004_scenes.png", "path": "scenes/fixture_004_scenes.png", "species": "textural_discomfort", "value": 0.544, "presence": "present", "uncertainty": 0.058, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "scenes/fixture_004_scenes.png", "path": "scenes/fixture_004_scenes.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.857, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "scenes/fixture_004_scenes.png", "path": "scenes/fixture_004_scenes.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.684, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_005_objects.png", "path": "objects/fixture_005_objects.png", "species": "surface_density", "value": 0.515, "presence": "present", "uncertainty": 0.143, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_005_objects.png", "path": "objects/fixture_005_objects.png", "species": "arrangement_disorder", "value": 0.04, "presence": "absent", "uncertainty": 0.533, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_005_objects.png", "path": "objects/fixture_005_objects.png", "species": "variety", "value": 0.223, "presence": "present", "uncertainty": 0.103, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_005_objects.png", "path": "objects/fixture_005_objects.png", "species": "textural_discomfort", "value": 0.872, "presence": "present", "uncertainty": 0.452, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_005_objects.png", "path": "objects/fixture_005_objects.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.669, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_005_objects.png", "path": "objects/fixture_005_objects.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.774, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_006_objects.png", "path": "objects/fixture_006_objects.png", "species": "surface_density", "value": 0.839, "presence": "present", "uncertainty": 0.358, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_006_objects.png", "path": "objects/fixture_006_objects.png", "species": "arrangement_disorder", "value": 0.388, "presence": "present", "uncertainty": 0.598, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_006_objects.png", "path": "objects/fixture_006_objects.png", "species": "variety", "value": 0.512, "presence": "present", "uncertainty": 0.306, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_006_objects.png", "path": "objects/fixture_006_objects.png", "species": "textural_discomfort", "value": 0.341, "presence": "present", "uncertainty": 0.519, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_006_objects.png", "path": "objects/fixture_006_objects.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.476, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_006_objects.png", "path": "objects/fixture_006_objects.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.48, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_007_objects.png", "path": "objects/fixture_007_objects.png", "species": "surface_density", "value": 0.249, "presence": "present", "uncertainty": 0.366, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_007_objects.png", "path": "objects/fixture_007_objects.png", "species": "arrangement_disorder", "value": 0.762, "presence": "present", "uncertainty": 0.366, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_007_objects.png", "path": "objects/fixture_007_objects.png", "species": "variety", "value": 0.935, "presence": "present", "uncertainty": 0.166, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_007_objects.png", "path": "objects/fixture_007_objects.png", "species": "textural_discomfort", "value": 0.741, "presence": "present", "uncertainty": 0.415, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_007_objects.png", "path": "objects/fixture_007_objects.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.457, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_007_objects.png", "path": "objects/fixture_007_objects.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.842, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_008_suprematism.png", "path": "suprematism/fixture_008_suprematism.png", "species": "surface_density", "value": 0.63, "presence": "present", "uncertainty": 0.466, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_008_suprematism.png", "path": "suprematism/fixture_008_suprematism.png", "species": "arrangement_disorder", "value": 0.124, "presence": "absent", "uncertainty": 0.19, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_008_suprematism.png", "path": "suprematism/fixture_008_suprematism.png", "species": "variety", "value": 0.255, "presence": "present", "uncertainty": 0.022, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_008_suprematism.png", "path": "suprematism/fixture_008_suprematism.png", "species": "textural_discomfort", "value": 0.076, "presence": "absent", "uncertainty": 0.437, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_008_suprematism.png", "path": "suprematism/fixture_008_suprematism.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.886, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_008_suprematism.png", "path": "suprematism/fixture_008_suprematism.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.781, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_009_interiors.png", "path": "interiors/fixture_009_interiors.png", "species": "surface_density", "value": 0.961, "presence": "present", "uncertainty": 0.082, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_009_interiors.png", "path": "interiors/fixture_009_interiors.png", "species": "arrangement_disorder", "value": 0.575, "presence": "present", "uncertainty": 0.314, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_009_interiors.png", "path": "interiors/fixture_009_interiors.png", "species": "variety", "value": 0.632, "presence": "present", "uncertainty": 0.237, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_009_interiors.png", "path": "interiors/fixture_009_interiors.png", "species": "textural_discomfort", "value": 0.356, "presence": "present", "uncertainty": 0.573, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_009_interiors.png", "path": "interiors/fixture_009_interiors.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.861, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_009_interiors.png", "path": "interiors/fixture_009_interiors.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.859, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_010_suprematism.png", "path": "suprematism/fixture_010_suprematism.png", "species": "surface_density", "value": 0.346, "presence": "present", "uncertainty": 0.303, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_010_suprematism.png", "path": "suprematism/fixture_010_suprematism.png", "species": "arrangement_disorder", "value": 0.828, "presence": "present", "uncertainty": 0.231, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_010_suprematism.png", "path": "suprematism/fixture_010_suprematism.png", "species": "variety", "value": 0.128, "presence": "absent", "uncertainty": 0.488, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_010_suprematism.png", "path": "suprematism/fixture_010_suprematism.png", "species": "textural_discomfort", "value": 0.738, "presence": "present", "uncertainty": 0.16, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_010_suprematism.png", "path": "suprematism/fixture_010_suprematism.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.684, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_010_suprematism.png", "path": "suprematism/fixture_010_suprematism.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.439, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_011_suprematism.png", "path": "suprematism/fixture_011_suprematism.png", "species": "surface_density", "value": 0.737, "presence": "present", "uncertainty": 0.493, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_011_suprematism.png", "path": "suprematism/fixture_011_suprematism.png", "species": "arrangement_disorder", "value": 0.336, "presence": "present", "uncertainty": 0.329, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_011_suprematism.png", "path": "suprematism/fixture_011_suprematism.png", "species": "variety", "value": 0.36, "presence": "present", "uncertainty": 0.403, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_011_suprematism.png", "path": "suprematism/fixture_011_suprematism.png", "species": "textural_discomfort", "value": 0.221, "presence": "present", "uncertainty": 0.116, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_011_suprematism.png", "path": "suprematism/fixture_011_suprematism.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.664, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_011_suprematism.png", "path": "suprematism/fixture_011_suprematism.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.703, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_012_advertisements.png", "path": "advertisements/fixture_012_advertisements.png", "species": "surface_density", "value": 0.144, "presence": "absent", "uncertainty": 0.559, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_012_advertisements.png", "path": "advertisements/fixture_012_advertisements.png", "species": "arrangement_disorder", "value": 0.671, "presence": "present", "uncertainty": 0.42, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_012_advertisements.png", "path": "advertisements/fixture_012_advertisements.png", "species": "variety", "value": 0.824, "presence": "present", "uncertainty": 0.251, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_012_advertisements.png", "path": "advertisements/fixture_012_advertisements.png", "species": "textural_discomfort", "value": 0.547, "presence": "present", "uncertainty": 0.237, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_012_advertisements.png", "path": "advertisements/fixture_012_advertisements.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.85, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_012_advertisements.png", "path": "advertisements/fixture_012_advertisements.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.626, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_013_interiors.png", "path": "interiors/fixture_013_interiors.png", "species": "surface_density", "value": 0.4, "presence": "present", "uncertainty": 0.057, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_013_interiors.png", "path": "interiors/fixture_013_interiors.png", "species": "arrangement_disorder", "value": 0.001, "presence": "absent", "uncertainty": 0.341, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_013_interiors.png", "path": "interiors/fixture_013_interiors.png", "species": "variety", "value": 0.174, "presence": "present", "uncertainty": 0.024, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_013_interiors.png", "path": "interiors/fixture_013_interiors.png", "species": "textural_discomfort", "value": 0.923, "presence": "present", "uncertainty": 0.054, "queue": ["coverage"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_013_interiors.png", "path": "interiors/fixture_013_interiors.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.416, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_013_interiors.png", "path": "interiors/fixture_013_interiors.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.565, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_014_advertisements.png", "path": "advertisements/fixture_014_advertisements.png", "species": "surface_density", "value": 0.812, "presence": "present", "uncertainty": 0.182, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_014_advertisements.png", "path": "advertisements/fixture_014_advertisements.png", "species": "arrangement_disorder", "value": 0.368, "presence": "present", "uncertainty": 0.333, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_014_advertisements.png", "path": "advertisements/fixture_014_advertisements.png", "species": "variety", "value": 0.566, "presence": "present", "uncertainty": 0.532, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_014_advertisements.png", "path": "advertisements/fixture_014_advertisements.png", "species": "textural_discomfort", "value": 0.272, "presence": "present", "uncertainty": 0.161, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_014_advertisements.png", "path": "advertisements/fixture_014_advertisements.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.636, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_014_advertisements.png", "path": "advertisements/fixture_014_advertisements.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.604, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_015_art.png", "path": "art/fixture_015_art.png", "species": "surface_density", "value": 0.115, "presence": "absent", "uncertainty": 0.402, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_015_art.png", "path": "art/fixture_015_art.png", "species": "arrangement_disorder", "value": 0.717, "presence": "present", "uncertainty": 0.258, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_015_art.png", "path": "art/fixture_015_art.png", "species": "variety", "value": 0.958, "presence": "present", "uncertainty": 0.051, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_015_art.png", "path": "art/fixture_015_art.png", "species": "textural_discomfort", "value": 0.653, "presence": "present", "uncertainty": 0.055, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_015_art.png", "path": "art/fixture_015_art.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.764, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_015_art.png", "path": "art/fixture_015_art.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.8, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_016_interiors.png", "path": "interiors/fixture_016_interiors.png", "species": "surface_density", "value": 0.487, "presence": "present", "uncertainty": 0.131, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_016_interiors.png", "path": "interiors/fixture_016_interiors.png", "species": "arrangement_disorder", "value": 0.116, "presence": "absent", "uncertainty": 0.101, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_016_interiors.png", "path": "interiors/fixture_016_interiors.png", "species": "variety", "value": 0.219, "presence": "present", "uncertainty": 0.288, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_016_interiors.png", "path": "interiors/fixture_016_interiors.png", "species": "textural_discomfort", "value": 0.06, "presence": "absent", "uncertainty": 0.064, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_016_interiors.png", "path": "interiors/fixture_016_interiors.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.804, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_016_interiors.png", "path": "interiors/fixture_016_interiors.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.828, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_017_interiors.png", "path": "interiors/fixture_017_interiors.png", "species": "surface_density", "value": 0.856, "presence": "present", "uncertainty": 0.398, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_017_interiors.png", "path": "interiors/fixture_017_interiors.png", "species": "arrangement_disorder", "value": 0.486, "presence": "present", "uncertainty": 0.029, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_017_interiors.png", "path": "interiors/fixture_017_interiors.png", "species": "variety", "value": 0.575, "presence": "present", "uncertainty": 0.457, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_017_interiors.png", "path": "interiors/fixture_017_interiors.png", "species": "textural_discomfort", "value": 0.328, "presence": "present", "uncertainty": 0.256, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_017_interiors.png", "path": "interiors/fixture_017_interiors.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.641, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_017_interiors.png", "path": "interiors/fixture_017_interiors.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.832, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_018_interiors.png", "path": "interiors/fixture_018_interiors.png", "species": "surface_density", "value": 0.354, "presence": "present", "uncertainty": 0.115, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_018_interiors.png", "path": "interiors/fixture_018_interiors.png", "species": "arrangement_disorder", "value": 0.77, "presence": "present", "uncertainty": 0.246, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_018_interiors.png", "path": "interiors/fixture_018_interiors.png", "species": "variety", "value": 0.078, "presence": "absent", "uncertainty": 0.475, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_018_interiors.png", "path": "interiors/fixture_018_interiors.png", "species": "textural_discomfort", "value": 0.706, "presence": "present", "uncertainty": 0.424, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_018_interiors.png", "path": "interiors/fixture_018_interiors.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.765, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_018_interiors.png", "path": "interiors/fixture_018_interiors.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.792, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_019_objects.png", "path": "objects/fixture_019_objects.png", "species": "surface_density", "value": 0.686, "presence": "present", "uncertainty": 0.302, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_019_objects.png", "path": "objects/fixture_019_objects.png", "species": "arrangement_disorder", "value": 0.17, "presence": "present", "uncertainty": 0.146, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_019_objects.png", "path": "objects/fixture_019_objects.png", "species": "variety", "value": 0.309, "presence": "present", "uncertainty": 0.447, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_019_objects.png", "path": "objects/fixture_019_objects.png", "species": "textural_discomfort", "value": 0.04, "presence": "absent", "uncertainty": 0.202, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_019_objects.png", "path": "objects/fixture_019_objects.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.425, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_019_objects.png", "path": "objects/fixture_019_objects.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.638, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_020_objects.png", "path": "objects/fixture_020_objects.png", "species": "surface_density", "value": 0.097, "presence": "absent", "uncertainty": 0.328, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_020_objects.png", "path": "objects/fixture_020_objects.png", "species": "arrangement_disorder", "value": 0.519, "presence": "present", "uncertainty": 0.315, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_020_objects.png", "path": "objects/fixture_020_objects.png", "species": "variety", "value": 0.806, "presence": "present", "uncertainty": 0.06, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_020_objects.png", "path": "objects/fixture_020_objects.png", "species": "textural_discomfort", "value": 0.411, "presence": "present", "uncertainty": 0.52, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_020_objects.png", "path": "objects/fixture_020_objects.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.602, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_020_objects.png", "path": "objects/fixture_020_objects.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.871, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_021_advertisements.png", "path": "advertisements/fixture_021_advertisements.png", "species": "surface_density", "value": 0.411, "presence": "present", "uncertainty": 0.356, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_021_advertisements.png", "path": "advertisements/fixture_021_advertisements.png", "species": "arrangement_disorder", "value": 0.886, "presence": "present", "uncertainty": 0.068, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_021_advertisements.png", "path": "advertisements/fixture_021_advertisements.png", "species": "variety", "value": 0.145, "presence": "absent", "uncertainty": 0.348, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_021_advertisements.png", "path": "advertisements/fixture_021_advertisements.png", "species": "textural_discomfort", "value": 0.821, "presence": "present", "uncertainty": 0.171, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_021_advertisements.png", "path": "advertisements/fixture_021_advertisements.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.735, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_021_advertisements.png", "path": "advertisements/fixture_021_advertisements.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.557, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_022_advertisements.png", "path": "advertisements/fixture_022_advertisements.png", "species": "surface_density", "value": 0.732, "presence": "present", "uncertainty": 0.096, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_022_advertisements.png", "path": "advertisements/fixture_022_advertisements.png", "species": "arrangement_disorder", "value": 0.353, "presence": "present", "uncertainty": 0.285, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_022_advertisements.png", "path": "advertisements/fixture_022_advertisements.png", "species": "variety", "value": 0.559, "presence": "present", "uncertainty": 0.563, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_022_advertisements.png", "path": "advertisements/fixture_022_advertisements.png", "species": "textural_discomfort", "value": 0.141, "presence": "absent", "uncertainty": 0.38, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_022_advertisements.png", "path": "advertisements/fixture_022_advertisements.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.681, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_022_advertisements.png", "path": "advertisements/fixture_022_advertisements.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.45, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_023_interiors.png", "path": "interiors/fixture_023_interiors.png", "species": "surface_density", "value": 0.146, "presence": "absent", "uncertainty": 0.313, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_023_interiors.png", "path": "interiors/fixture_023_interiors.png", "species": "arrangement_disorder", "value": 0.641, "presence": "present", "uncertainty": 0.222, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_023_interiors.png", "path": "interiors/fixture_023_interiors.png", "species": "variety", "value": 0.791, "presence": "present", "uncertainty": 0.162, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_023_interiors.png", "path": "interiors/fixture_023_interiors.png", "species": "textural_discomfort", "value": 0.556, "presence": "present", "uncertainty": 0.274, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_023_interiors.png", "path": "interiors/fixture_023_interiors.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.672, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_023_interiors.png", "path": "interiors/fixture_023_interiors.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.551, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_024_advertisements.png", "path": "advertisements/fixture_024_advertisements.png", "species": "surface_density", "value": 0.587, "presence": "present", "uncertainty": 0.488, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_024_advertisements.png", "path": "advertisements/fixture_024_advertisements.png", "species": "arrangement_disorder", "value": 0.075, "presence": "absent", "uncertainty": 0.407, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_024_advertisements.png", "path": "advertisements/fixture_024_advertisements.png", "species": "variety", "value": 0.239, "presence": "present", "uncertainty": 0.56, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_024_advertisements.png", "path": "advertisements/fixture_024_advertisements.png", "species": "textural_discomfort", "value": 0.897, "presence": "present", "uncertainty": 0.529, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_024_advertisements.png", "path": "advertisements/fixture_024_advertisements.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.532, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_024_advertisements.png", "path": "advertisements/fixture_024_advertisements.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.845, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_025_objects.png", "path": "objects/fixture_025_objects.png", "species": "surface_density", "value": 0.919, "presence": "present", "uncertainty": 0.11, "queue": ["coverage"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_025_objects.png", "path": "objects/fixture_025_objects.png", "species": "arrangement_disorder", "value": 0.394, "presence": "present", "uncertainty": 0.219, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_025_objects.png", "path": "objects/fixture_025_objects.png", "species": "variety", "value": 0.63, "presence": "present", "uncertainty": 0.515, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_025_objects.png", "path": "objects/fixture_025_objects.png", "species": "textural_discomfort", "value": 0.331, "presence": "present", "uncertainty": 0.166, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_025_objects.png", "path": "objects/fixture_025_objects.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.854, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_025_objects.png", "path": "objects/fixture_025_objects.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.425, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_026_suprematism.png", "path": "suprematism/fixture_026_suprematism.png", "species": "surface_density", "value": 0.271, "presence": "present", "uncertainty": 0.501, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_026_suprematism.png", "path": "suprematism/fixture_026_suprematism.png", "species": "arrangement_disorder", "value": 0.737, "presence": "present", "uncertainty": 0.213, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_026_suprematism.png", "path": "suprematism/fixture_026_suprematism.png", "species": "variety", "value": 0.911, "presence": "present", "uncertainty": 0.588, "queue": ["coverage"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_026_suprematism.png", "path": "suprematism/fixture_026_suprematism.png", "species": "textural_discomfort", "value": 0.691, "presence": "present", "uncertainty": 0.429, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_026_suprematism.png", "path": "suprematism/fixture_026_suprematism.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.68, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_026_suprematism.png", "path": "suprematism/fixture_026_suprematism.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.456, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_027_suprematism.png", "path": "suprematism/fixture_027_suprematism.png", "species": "surface_density", "value": 0.691, "presence": "present", "uncertainty": 0.421, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_027_suprematism.png", "path": "suprematism/fixture_027_suprematism.png", "species": "arrangement_disorder", "value": 0.124, "presence": "absent", "uncertainty": 0.041, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_027_suprematism.png", "path": "suprematism/fixture_027_suprematism.png", "species": "variety", "value": 0.319, "presence": "present", "uncertainty": 0.34, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_027_suprematism.png", "path": "suprematism/fixture_027_suprematism.png", "species": "textural_discomfort", "value": 0.059, "presence": "absent", "uncertainty": 0.044, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_027_suprematism.png", "path": "suprematism/fixture_027_suprematism.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.582, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_027_suprematism.png", "path": "suprematism/fixture_027_suprematism.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.867, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_028_suprematism.png", "path": "suprematism/fixture_028_suprematism.png", "species": "surface_density", "value": 0.999, "presence": "present", "uncertainty": 0.043, "queue": ["coverage"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_028_suprematism.png", "path": "suprematism/fixture_028_suprematism.png", "species": "arrangement_disorder", "value": 0.579, "presence": "present", "uncertainty": 0.407, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_028_suprematism.png", "path": "suprematism/fixture_028_suprematism.png", "species": "variety", "value": 0.687, "presence": "present", "uncertainty": 0.345, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_028_suprematism.png", "path": "suprematism/fixture_028_suprematism.png", "species": "textural_discomfort", "value": 0.5, "presence": "present", "uncertainty": 0.585, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_028_suprematism.png", "path": "suprematism/fixture_028_suprematism.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.775, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_028_suprematism.png", "path": "suprematism/fixture_028_suprematism.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.863, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_029_advertisements.png", "path": "advertisements/fixture_029_advertisements.png", "species": "surface_density", "value": 0.318, "presence": "present", "uncertainty": 0.114, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_029_advertisements.png", "path": "advertisements/fixture_029_advertisements.png", "species": "arrangement_disorder", "value": 0.968, "presence": "present", "uncertainty": 0.123, "queue": ["coverage"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_029_advertisements.png", "path": "advertisements/fixture_029_advertisements.png", "species": "variety", "value": 0.029, "presence": "absent", "uncertainty": 0.556, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_029_advertisements.png", "path": "advertisements/fixture_029_advertisements.png", "species": "textural_discomfort", "value": 0.855, "presence": "present", "uncertainty": 0.259, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_029_advertisements.png", "path": "advertisements/fixture_029_advertisements.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.735, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_029_advertisements.png", "path": "advertisements/fixture_029_advertisements.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.768, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_030_art.png", "path": "art/fixture_030_art.png", "species": "surface_density", "value": 0.69, "presence": "present", "uncertainty": 0.112, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_030_art.png", "path": "art/fixture_030_art.png", "species": "arrangement_disorder", "value": 0.322, "presence": "present", "uncertainty": 0.242, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_030_art.png", "path": "art/fixture_030_art.png", "species": "variety", "value": 0.376, "presence": "present", "uncertainty": 0.293, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_030_art.png", "path": "art/fixture_030_art.png", "species": "textural_discomfort", "value": 0.132, "presence": "absent", "uncertainty": 0.553, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_030_art.png", "path": "art/fixture_030_art.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.575, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_030_art.png", "path": "art/fixture_030_art.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.81, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_031_objects.png", "path": "objects/fixture_031_objects.png", "species": "surface_density", "value": 0.159, "presence": "present", "uncertainty": 0.149, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_031_objects.png", "path": "objects/fixture_031_objects.png", "species": "arrangement_disorder", "value": 0.686, "presence": "present", "uncertainty": 0.251, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_031_objects.png", "path": "objects/fixture_031_objects.png", "species": "variety", "value": 0.785, "presence": "present", "uncertainty": 0.06, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_031_objects.png", "path": "objects/fixture_031_objects.png", "species": "textural_discomfort", "value": 0.594, "presence": "present", "uncertainty": 0.224, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_031_objects.png", "path": "objects/fixture_031_objects.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.655, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_031_objects.png", "path": "objects/fixture_031_objects.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.74, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_032_art.png", "path": "art/fixture_032_art.png", "species": "surface_density", "value": 0.525, "presence": "present", "uncertainty": 0.212, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_032_art.png", "path": "art/fixture_032_art.png", "species": "arrangement_disorder", "value": 0.001, "presence": "absent", "uncertainty": 0.529, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_032_art.png", "path": "art/fixture_032_art.png", "species": "variety", "value": 0.152, "presence": "present", "uncertainty": 0.357, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_032_art.png", "path": "art/fixture_032_art.png", "species": "textural_discomfort", "value": 0.997, "presence": "present", "uncertainty": 0.042, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_032_art.png", "path": "art/fixture_032_art.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.573, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "art/fixture_032_art.png", "path": "art/fixture_032_art.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.793, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_033_advertisements.png", "path": "advertisements/fixture_033_advertisements.png", "species": "surface_density", "value": 0.83, "presence": "present", "uncertainty": 0.591, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_033_advertisements.png", "path": "advertisements/fixture_033_advertisements.png", "species": "arrangement_disorder", "value": 0.339, "presence": "present", "uncertainty": 0.542, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_033_advertisements.png", "path": "advertisements/fixture_033_advertisements.png", "species": "variety", "value": 0.51, "presence": "present", "uncertainty": 0.046, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_033_advertisements.png", "path": "advertisements/fixture_033_advertisements.png", "species": "textural_discomfort", "value": 0.28, "presence": "present", "uncertainty": 0.322, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_033_advertisements.png", "path": "advertisements/fixture_033_advertisements.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.803, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "advertisements/fixture_033_advertisements.png", "path": "advertisements/fixture_033_advertisements.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.743, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "scenes/fixture_034_scenes.png", "path": "scenes/fixture_034_scenes.png", "species": "surface_density", "value": 0.28, "presence": "present", "uncertainty": 0.447, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "scenes/fixture_034_scenes.png", "path": "scenes/fixture_034_scenes.png", "species": "arrangement_disorder", "value": 0.722, "presence": "present", "uncertainty": 0.27, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "scenes/fixture_034_scenes.png", "path": "scenes/fixture_034_scenes.png", "species": "variety", "value": 0.999, "presence": "present", "uncertainty": 0.554, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "scenes/fixture_034_scenes.png", "path": "scenes/fixture_034_scenes.png", "species": "textural_discomfort", "value": 0.686, "presence": "present", "uncertainty": 0.092, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "scenes/fixture_034_scenes.png", "path": "scenes/fixture_034_scenes.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.85, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "scenes/fixture_034_scenes.png", "path": "scenes/fixture_034_scenes.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.654, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_035_visualization.png", "path": "visualization/fixture_035_visualization.png", "species": "surface_density", "value": 0.607, "presence": "present", "uncertainty": 0.209, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_035_visualization.png", "path": "visualization/fixture_035_visualization.png", "species": "arrangement_disorder", "value": 0.172, "presence": "present", "uncertainty": 0.342, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_035_visualization.png", "path": "visualization/fixture_035_visualization.png", "species": "variety", "value": 0.251, "presence": "present", "uncertainty": 0.406, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_035_visualization.png", "path": "visualization/fixture_035_visualization.png", "species": "textural_discomfort", "value": 0.011, "presence": "absent", "uncertainty": 0.454, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_035_visualization.png", "path": "visualization/fixture_035_visualization.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.487, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_035_visualization.png", "path": "visualization/fixture_035_visualization.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.685, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_036_visualization.png", "path": "visualization/fixture_036_visualization.png", "species": "surface_density", "value": 0.935, "presence": "present", "uncertainty": 0.504, "queue": ["coverage"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_036_visualization.png", "path": "visualization/fixture_036_visualization.png", "species": "arrangement_disorder", "value": 0.464, "presence": "present", "uncertainty": 0.476, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_036_visualization.png", "path": "visualization/fixture_036_visualization.png", "species": "variety", "value": 0.687, "presence": "present", "uncertainty": 0.207, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_036_visualization.png", "path": "visualization/fixture_036_visualization.png", "species": "textural_discomfort", "value": 0.391, "presence": "present", "uncertainty": 0.412, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_036_visualization.png", "path": "visualization/fixture_036_visualization.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.656, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_036_visualization.png", "path": "visualization/fixture_036_visualization.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.797, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_037_interiors.png", "path": "interiors/fixture_037_interiors.png", "species": "surface_density", "value": 0.394, "presence": "present", "uncertainty": 0.447, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_037_interiors.png", "path": "interiors/fixture_037_interiors.png", "species": "arrangement_disorder", "value": 0.905, "presence": "present", "uncertainty": 0.185, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_037_interiors.png", "path": "interiors/fixture_037_interiors.png", "species": "variety", "value": 0.059, "presence": "absent", "uncertainty": 0.074, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_037_interiors.png", "path": "interiors/fixture_037_interiors.png", "species": "textural_discomfort", "value": 0.842, "presence": "present", "uncertainty": 0.156, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_037_interiors.png", "path": "interiors/fixture_037_interiors.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.555, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "interiors/fixture_037_interiors.png", "path": "interiors/fixture_037_interiors.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.803, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_038_visualization.png", "path": "visualization/fixture_038_visualization.png", "species": "surface_density", "value": 0.634, "presence": "present", "uncertainty": 0.047, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_038_visualization.png", "path": "visualization/fixture_038_visualization.png", "species": "arrangement_disorder", "value": 0.327, "presence": "present", "uncertainty": 0.375, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_038_visualization.png", "path": "visualization/fixture_038_visualization.png", "species": "variety", "value": 0.453, "presence": "present", "uncertainty": 0.284, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_038_visualization.png", "path": "visualization/fixture_038_visualization.png", "species": "textural_discomfort", "value": 0.202, "presence": "present", "uncertainty": 0.354, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_038_visualization.png", "path": "visualization/fixture_038_visualization.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.759, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_038_visualization.png", "path": "visualization/fixture_038_visualization.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.592, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_039_visualization.png", "path": "visualization/fixture_039_visualization.png", "species": "surface_density", "value": 0.044, "presence": "absent", "uncertainty": 0.106, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_039_visualization.png", "path": "visualization/fixture_039_visualization.png", "species": "arrangement_disorder", "value": 0.65, "presence": "present", "uncertainty": 0.538, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_039_visualization.png", "path": "visualization/fixture_039_visualization.png", "species": "variety", "value": 0.838, "presence": "present", "uncertainty": 0.534, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_039_visualization.png", "path": "visualization/fixture_039_visualization.png", "species": "textural_discomfort", "value": 0.555, "presence": "present", "uncertainty": 0.147, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_039_visualization.png", "path": "visualization/fixture_039_visualization.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.802, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "visualization/fixture_039_visualization.png", "path": "visualization/fixture_039_visualization.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.748, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_040_objects.png", "path": "objects/fixture_040_objects.png", "species": "surface_density", "value": 0.424, "presence": "present", "uncertainty": 0.343, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_040_objects.png", "path": "objects/fixture_040_objects.png", "species": "arrangement_disorder", "value": 0.999, "presence": "present", "uncertainty": 0.09, "queue": ["coverage"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_040_objects.png", "path": "objects/fixture_040_objects.png", "species": "variety", "value": 0.144, "presence": "absent", "uncertainty": 0.328, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_040_objects.png", "path": "objects/fixture_040_objects.png", "species": "textural_discomfort", "value": 0.889, "presence": "present", "uncertainty": 0.204, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_040_objects.png", "path": "objects/fixture_040_objects.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.778, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "objects/fixture_040_objects.png", "path": "objects/fixture_040_objects.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.621, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_041_suprematism.png", "path": "suprematism/fixture_041_suprematism.png", "species": "surface_density", "value": 0.85, "presence": "present", "uncertainty": 0.537, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_041_suprematism.png", "path": "suprematism/fixture_041_suprematism.png", "species": "arrangement_disorder", "value": 0.348, "presence": "present", "uncertainty": 0.546, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_041_suprematism.png", "path": "suprematism/fixture_041_suprematism.png", "species": "variety", "value": 0.511, "presence": "present", "uncertainty": 0.112, "queue": ["boundary"], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_041_suprematism.png", "path": "suprematism/fixture_041_suprematism.png", "species": "textural_discomfort", "value": 0.308, "presence": "present", "uncertainty": 0.281, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_041_suprematism.png", "path": "suprematism/fixture_041_suprematism.png", "species": "semantic_incongruity", "value": null, "presence": "abstain", "uncertainty": 0.776, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+{"image_id": "suprematism/fixture_041_suprematism.png", "path": "suprematism/fixture_041_suprematism.png", "species": "concealed_order", "value": null, "presence": "abstain", "uncertainty": 0.82, "queue": [], "model_version": "L6-fixture-0", "calibrated": false}
+`;
+const EMBED_MAN = `{
+  "corpus": "corpus_L6_FIXTURE",
+  "n_images": 42,
+  "n_manifest_rows": 42,
+  "filesystem_only": [],
+  "species": [
+    "surface_density",
+    "arrangement_disorder",
+    "variety",
+    "textural_discomfort",
+    "semantic_incongruity",
+    "concealed_order"
+  ],
+  "generated_commit": "fixture",
+  "notes": "Synthetic fixture matching the Phase-1 artifact contract. NOT real replay data.",
+  "manifest_hash": "3208b7e15cce6fdcb865ede96945bf815404a8559782d9175bb305ccec0c3450"
+}`;
+const SPECIES = ["surface_density","arrangement_disorder","variety","textural_discomfort","semantic_incongruity","concealed_order"];
+const LEAD = ["surface_density","arrangement_disorder","textural_discomfort"];
+const OBJECTIONS = ["—","wrong-presence","wrong-degree","species-misdefined","image-quality","ambiguous-exemplar","other"];
+
+let ROWS = [];               // hypotheses
+let MAN = {};                // manifest
+const REVIEWS = {};          // key -> {decision, objection, note}
+let curSpecies = "surface_density";
+
+function keyOf(r){return r.image_id + "||" + r.species;}
+function parseJSONL(txt){
+  const out=[];
+  txt.split(/\r?\n/).forEach(l=>{l=l.trim();if(!l)return;try{out.push(JSON.parse(l));}catch(e){out._err=(out._err||0)+1;}});
+  return out;
+}
+function loadData(hypTxt, manTxt){
+  ROWS = parseJSONL(hypTxt);
+  try{MAN = manTxt?JSON.parse(manTxt):{};}catch(e){MAN={};}
+  const cal = ROWS.some(r=>r.calibrated===true);
+  document.getElementById('calBanner').style.display = cal? 'none':'inline-block';
+  document.getElementById('manLine').textContent =
+    (MAN.corpus? MAN.corpus+" · ":"") + (MAN.n_images? MAN.n_images+" images":ROWS.length+" rows") +
+    (MAN.filesystem_only&&MAN.filesystem_only.length? " · "+MAN.filesystem_only.length+" filesystem-only":"");
+  render();
+}
+function bin(r){
+  if(r.presence==="abstain") return "abstain";
+  if(r.value==null) return "abstain";
+  if(r.value<0.25) return "low";
+  if(r.value<=0.6) return "intermediate";
+  return "high";
+}
+function render(){
+  const binSel=document.getElementById('binSel').value;
+  const sort=document.getElementById('sortSel').value;
+  let list=ROWS.filter(r=>r.species===curSpecies);
+  list=list.filter(r=>{
+    if(binSel==="all")return true;
+    if(binSel==="boundary")return (r.queue||[]).includes("boundary");
+    if(binSel==="coverage")return (r.queue||[]).includes("coverage");
+    if(binSel==="undecided")return !REVIEWS[keyOf(r)];
+    return bin(r)===binSel;
+  });
+  list.sort((a,b)=>{
+    if(sort==="value_desc")return (b.value??-1)-(a.value??-1);
+    if(sort==="value_asc")return (a.value??2)-(b.value??2);
+    if(sort==="unc_desc")return (b.uncertainty??0)-(a.uncertainty??0);
+    return a.path<b.path?-1:1;
+  });
+  const grid=document.getElementById('grid');
+  grid.innerHTML="";
+  if(!list.length){grid.innerHTML='<div class="empty">No rows for this species / bin.</div>';}
+  list.forEach(r=>grid.appendChild(card(r)));
+  const decided=ROWS.filter(r=>r.species===curSpecies&&REVIEWS[keyOf(r)]).length;
+  const total=ROWS.filter(r=>r.species===curSpecies).length;
+  document.getElementById('countLine').textContent=
+    `${list.length} shown · ${decided}/${total} reviewed for ${curSpecies}`;
+}
+function card(r){
+  const k=keyOf(r); const rev=REVIEWS[k]||{};
+  const el=document.createElement('div');
+  el.className='card'+(rev.decision?(' decided-'+rev.decision):'');
+  const vtxt = r.value==null? '—' : r.value.toFixed(3);
+  const vpct = r.value==null? 0 : Math.round(r.value*100);
+  const qtags=(r.queue||[]).map(q=>`<span class="tag ${q}">${q}</span>`).join('');
+  el.innerHTML=`
+    <div class="path">${r.path}</div>
+    <div class="sp">${r.species} <span class="muted" style="font-weight:400">· value ${vtxt}</span></div>
+    <div class="bar"><i style="width:${vpct}%"></i></div>
+    <div class="meta">
+      <span class="tag ${r.presence}">${r.presence}</span>
+      <span>unc ${r.uncertainty??'—'}</span>
+      ${qtags}
+      <span class="tag">${r.calibrated?'calibrated':'uncalibrated'}</span>
+    </div>
+    <div class="actions">
+      <button class="b-accept ${rev.decision==='accept'?'on':''}">Accept</button>
+      <button class="b-reject ${rev.decision==='reject'?'on':''}">Reject</button>
+      <button class="b-uncertain ${rev.decision==='uncertain'?'on':''}">Uncertain</button>
+    </div>
+    <div class="row2">
+      <select class="obj"></select>
+      <input class="note" type="text" placeholder="reviewer note (optional)" value="${(rev.note||'').replace(/"/g,'&quot;')}">
+    </div>`;
+  const objSel=el.querySelector('.obj');
+  OBJECTIONS.forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o==='—'?'objection…':o;objSel.appendChild(op);});
+  objSel.value=rev.objection||'—';
+  const setDec=d=>{REVIEWS[k]={...(REVIEWS[k]||{}),decision:(REVIEWS[k]&&REVIEWS[k].decision===d)?null:d,
+      objection:objSel.value,note:el.querySelector('.note').value};
+      if(!REVIEWS[k].decision)delete REVIEWS[k]; render();};
+  el.querySelector('.b-accept').onclick=()=>setDec('accept');
+  el.querySelector('.b-reject').onclick=()=>setDec('reject');
+  el.querySelector('.b-uncertain').onclick=()=>setDec('uncertain');
+  objSel.onchange=()=>{if(REVIEWS[k]){REVIEWS[k].objection=objSel.value;}};
+  el.querySelector('.note').onchange=e=>{if(REVIEWS[k]){REVIEWS[k].note=e.target.value;}};
+  return el;
+}
+// ---- lead buttons + species select ----
+const leadWrap=document.getElementById('leadBtns');
+LEAD.forEach(sp=>{const b=document.createElement('button');b.className='leadbtn';b.textContent=sp;
+  b.onclick=()=>{curSpecies=sp;syncSpecies();render();};leadWrap.appendChild(b);});
+const sel=document.getElementById('speciesSel');
+SPECIES.forEach(sp=>{const o=document.createElement('option');o.value=sp;o.textContent=sp;sel.appendChild(o);});
+function syncSpecies(){sel.value=curSpecies;
+  [...leadWrap.children].forEach(b=>b.classList.toggle('active',b.textContent===curSpecies));}
+sel.onchange=()=>{curSpecies=sel.value;syncSpecies();render();};
+document.getElementById('binSel').onchange=render;
+document.getElementById('sortSel').onchange=render;
+// ---- file load (real replay) — never mutates source ----
+document.getElementById('fileIn').onchange=ev=>{
+  const f=ev.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{loadData(rd.result,EMBED_MAN);curSpecies="surface_density";syncSpecies();};
+  rd.readAsText(f);
+};
+// ---- export (download; source untouched) ----
+document.getElementById('exportBtn').onclick=()=>{
+  const out={generated:new Date().toISOString(),corpus:MAN.corpus||null,
+    model_version:(ROWS[0]||{}).model_version||null,
+    n_reviews:Object.keys(REVIEWS).length,
+    reviews:Object.entries(REVIEWS).map(([k,v])=>{const[image_id,species]=k.split("||");
+      return{image_id,species,decision:v.decision,objection_category:v.objection&&v.objection!=='—'?v.objection:null,note:v.note||null};})};
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='review_decisions.json';a.click();URL.revokeObjectURL(a.href);
+};
+// ---- boot with embedded fixture ----
+syncSpecies();
+loadData(EMBED_HYP, EMBED_MAN);
+</script>
+</body>
+</html>

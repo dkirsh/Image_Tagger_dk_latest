@@ -1,0 +1,25 @@
+{
+  "boundary": [
+    "advertisements/fixture_012_advertisements.png",
+    "art/fixture_032_art.png",
+    "interiors/fixture_001_interiors.png",
+    "interiors/fixture_016_interiors.png",
+    "interiors/fixture_017_interiors.png",
+    "interiors/fixture_023_interiors.png",
+    "objects/fixture_005_objects.png",
+    "objects/fixture_020_objects.png",
+    "scenes/fixture_004_scenes.png",
+    "suprematism/fixture_028_suprematism.png",
+    "visualization/fixture_036_visualization.png",
+    "visualization/fixture_039_visualization.png"
+  ],
+  "coverage": [
+    "advertisements/fixture_029_advertisements.png",
+    "interiors/fixture_013_interiors.png",
+    "objects/fixture_025_objects.png",
+    "objects/fixture_040_objects.png",
+    "suprematism/fixture_028_suprematism.png",
+    "visualization/fixture_036_visualization.png"
+  ],
+  "disagreement": []
+}
