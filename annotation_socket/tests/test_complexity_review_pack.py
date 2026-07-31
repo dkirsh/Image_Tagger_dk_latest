@@ -99,6 +99,8 @@ def test_duplicate_content_is_reported_but_items_remain_distinct(tmp_path: Path)
     image_ids = {row["image_id"] for row in rows}
     assert "collections/blank_copy.png" in image_ids
     assert "interiors/blank.png" in image_ids
+    assert manifest["qa"]["duplicate_content_summary"]["other"] == 1
+    assert any("uncategorized duplicate-content" in item for item in manifest["qa"]["findings"])
 
 
 def test_queue_membership_matches_queue_file(tmp_path: Path):

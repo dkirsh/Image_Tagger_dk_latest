@@ -241,9 +241,19 @@ def _audit(
             findings.append(f"{species}: >=25% of values saturated near 0 or 1")
         classified = presence_counts["present"] + presence_counts["absent"]
         presence_status = "ok"
-        if classified and max(presence_counts["present"], presence_counts["absent"]) == classified:
+        dominant_fraction = (
+            max(presence_counts["present"], presence_counts["absent"]) / classified
+            if classified
+            else 0.0
+        )
+        if dominant_fraction == 1.0:
             presence_status = "degenerate"
             findings.append(f"{species}: provisional presence classification has one class")
+        elif dominant_fraction >= 0.95:
+            presence_status = "highly_imbalanced"
+            findings.append(
+                f"{species}: provisional presence classification is >=95% one class"
+            )
         species_audit[species] = {
             "status": status,
             "presence_status": presence_status,
@@ -260,16 +270,38 @@ def _audit(
             "near_zero_count": near_zero,
             "near_one_count": near_one,
             "presence_counts": presence_counts,
+            "dominant_presence_fraction": round(dominant_fraction, 6),
             "lowest_five": [image_id for _, image_id in ranked[:5]],
             "highest_five": [image_id for _, image_id in ranked[-5:][::-1]],
         }
     duplicate_groups = [sorted(paths) for paths in content_hashes.values() if len(paths) > 1]
     duplicate_groups.sort()
-    if duplicate_groups:
-        findings.append(f"{len(duplicate_groups)} duplicate-content groups detected")
+    duplicate_summary = {
+        "source_to_pair_base_reuse": 0,
+        "pair_only": 0,
+        "other": 0,
+    }
+    for group in duplicate_groups:
+        has_source = any(path.startswith(("interiors/", "collections/")) for path in group)
+        has_pair = any(path.startswith("pairs/") for path in group)
+        if has_source and has_pair:
+            duplicate_summary["source_to_pair_base_reuse"] += 1
+        elif all(path.startswith("pairs/") for path in group):
+            duplicate_summary["pair_only"] += 1
+        else:
+            duplicate_summary["other"] += 1
+    if duplicate_summary["pair_only"]:
+        findings.append(
+            f'{duplicate_summary["pair_only"]} pair-only duplicate-content groups require review'
+        )
+    if duplicate_summary["other"]:
+        findings.append(
+            f'{duplicate_summary["other"]} uncategorized duplicate-content groups require review'
+        )
     return {
         "species": species_audit,
         "duplicate_content_groups": duplicate_groups,
+        "duplicate_content_summary": duplicate_summary,
         "findings": findings,
     }
 
