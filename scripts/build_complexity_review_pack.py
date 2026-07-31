@@ -381,7 +381,7 @@ def build_review_pack(
         "n_images": len(image_paths),
         "n_manifest_rows": len(listed_paths),
         "n_hypothesis_rows": len(rows),
-        "filesystem_only_images": filesystem_only,
+        "filesystem_only": filesystem_only,
         "manifest_missing_files": missing_files,
         "species": list(SPECIES_CONTRACT),
         "generated_commit": generated_commit or _git_commit(REPO_ROOT),

@@ -64,7 +64,7 @@ def test_review_pack_contract_counts_hashes_and_abstentions(tmp_path: Path):
     assert manifest["n_images"] == 4
     assert manifest["n_manifest_rows"] == 3
     assert manifest["n_hypothesis_rows"] == 4 * len(SPECIES_CONTRACT)
-    assert manifest["filesystem_only_images"] == ["collections/blank_copy.png"]
+    assert manifest["filesystem_only"] == ["collections/blank_copy.png"]
     rows = [
         json.loads(line)
         for line in (output / "hypotheses_corpusL6.jsonl").read_text().splitlines()
