@@ -1,0 +1,112 @@
+{
+  "$format": "cnfa.validation-ledger/v0",
+  "created_utc": "2026-07-30",
+  "engine_ref": { "repo": "dkirsh/Image_Tagger_dk_latest", "branch": "cnfa-algs-2026-07-14", "commit": "ee1f2a98", "note": "MODEL_VERSION string to be stamped from repo at run time" },
+  "entries": [
+    {
+      "entry_id": "los-primitive@ee1f2a98",
+      "predicate": "los.segment_is_free (supercover line-of-sight; the visibility primitive)",
+      "register": "configurational / visibility",
+      "tier": "objective",
+      "ground_truth": "analytic L0 self-test: open-space visibility, orthogonal wall occlusion, the S1 diagonal-wall guarantee, endpoint-exemption semantics, supercover superset",
+      "engine_version": "read from working tree @ ee1f2a98 (2026-07-30)",
+      "elicitation": null,
+      "result": { "metric": "analytic checks passed", "value": "7/7", "detail": { "leaks_through_diagonal_wall": 0 } },
+      "verdict": "validated",
+      "run": { "where": "cloud reproduction of los.py + analytic harness (2026-07-30)", "canonical_cmd": "python -m cnfa_algs.los", "created_utc": "2026-07-30" },
+      "notes": "Faithful reproduction run in cloud; all 7 checks pass incl. 0 diagonal-wall leaks. This is the CORRECT conservative primitive; the finding below is that isovist_fields does not use it."
+    },
+    {
+      "entry_id": "isovist-fields-analytic@ee1f2a98",
+      "predicate": "plan.isovist_fields — visibility model + field correctness on known geometry",
+      "register": "configurational / spatial openness",
+      "tier": "objective",
+      "ground_truth": "analytic known geometries (open room, axis-aligned partition+doorway, diagonal wall); reference visibility = validated los.segment_is_free; plus an enclosure-monotonicity check",
+      "engine_version": "read + run from working tree @ ee1f2a98 (2026-07-30)",
+      "elicitation": null,
+      "result": {
+        "field_runs_and_finite": true,
+        "enclosure_monotonicity": { "open_area_mean_radial_m": 0.825, "alcove_mean_radial_m": 0.651, "open_gt_alcove": true },
+        "visibility_vs_validated_LOS": {
+          "open_room": "1500/1500 agree",
+          "partition_doorway": "16/1499 disagree — all grazing leaks THROUGH the wall",
+          "diagonal_wall": "156/1500 disagree — all leaks THROUGH the diagonal wall"
+        }
+      },
+      "verdict": "validated-with-finding",
+      "run": { "where": "cloud run of real isovist_fields (run_isovist.py, 2026-07-30)", "canonical_cmd": "harness/run_isovist.py", "created_utc": "2026-07-30" },
+      "notes": "The FIELD computation is validated: it runs, is finite on all free cells, and is correctly monotone (open > enclosed). The VISIBILITY MODEL is flagged: isovist_fields uses a thin int()-truncation ray march that is NOT the supercover test, so it leaks through diagonal walls and grazing partition corners — the exact S1 defect los.segment_is_free fixes but which isovist_fields does not call. See FINDING_isovist_visibility_march_2026-07-30.md. Recommended fix: route the per-ray occlusion through segment_is_free (or a supercover step)."
+    },
+    {
+      "entry_id": "isovist-structured3d@ee1f2a98",
+      "predicate": "plan.isovist_fields on Structured3D ground-truth geometry (via structured3d_adapter.annotation_to_plangrid)",
+      "register": "configurational / spatial openness",
+      "tier": "objective",
+      "ground_truth": "real Structured3D annotation_3d.json scenes (exact GT geometry) -> annotation_to_plangrid -> isovist_fields; sanity + runtime",
+      "engine_version": "read + run from working tree @ ee1f2a98 (2026-07-30)",
+      "elicitation": null,
+      "result": {
+        "scenes": [
+          { "scene": "scene_00889", "cell_m": 0.0835, "free_frac": 0.412, "obst_frac": 0.218, "isovist_finite_on_free_frac": 1.0, "openness_median_m": 1.393, "ran_ok": true, "secs": 1.5 },
+          { "scene": "scene_00924", "cell_m": 0.0836, "free_frac": 0.402, "obst_frac": 0.230, "isovist_finite_on_free_frac": 1.0, "openness_median_m": 1.432, "ran_ok": true, "secs": 1.4 },
+          { "scene": "scene_03457", "cell_m": 0.0810, "free_frac": 0.422, "obst_frac": 0.225, "isovist_finite_on_free_frac": 1.0, "openness_median_m": 1.578, "ran_ok": true, "secs": 1.7 }
+        ]
+      },
+      "verdict": "validated",
+      "run": { "where": "cloud run over 3 extracted GT scenes (run_isovist.py, 2026-07-30)", "canonical_cmd": "harness/run_isovist.py", "created_utc": "2026-07-30" },
+      "notes": "Adapter -> PlanGrid -> isovist_fields runs correctly on real GT geometry: finite openness on 100% of free cells, plausible cell_m (~0.08 m) and free/obst fractions, fast (~1.5 s at grid_n=160). Caveat: Structured3D rooms are largely axis-aligned, so the visibility-march leak (previous entry) has small but nonzero impact here, concentrated at grazing corners; it would grow with diagonal/angled walls. Scale-up to more scenes is cheap."
+    },
+    {
+      "entry_id": "faithful-clutter-computation@ee1f2a98",
+      "predicate": "faithful_clutter (Rosenholtz feature-congestion / subband-entropy) — the COMPUTATION",
+      "register": "morphological / visual complexity",
+      "tier": "objective",
+      "ground_truth": "vendored Rosenholtz reference adjudicated vs real pyrtools (~1e-7) — done in-repo (S1, commit lineage 0c37cccc/4384e032)",
+      "engine_version": "in-repo 2026-07-19",
+      "elicitation": null,
+      "result": { "metric": "agreement vs pyrtools reference", "value": "~1e-7 (reported in-repo)" },
+      "verdict": "validated",
+      "run": { "where": "in-repo S1 adjudication", "canonical_cmd": "existing S1 adjudication harness", "created_utc": "2026-07-19" },
+      "notes": "COMPUTATION validated. Whether this tracks HUMAN perceived clutter is the separate perceptual entry below."
+    },
+    {
+      "entry_id": "perceived_clutter-2afc",
+      "predicate": "faithful_clutter vs human perceived clutter",
+      "register": "perceptual",
+      "tier": "perceptual",
+      "ground_truth": "human 2AFC latent scale (tagger-blind / flat prior)",
+      "engine_version": "@ ee1f2a98",
+      "elicitation": { "mode": "validation-flat-prior", "engine": "adaptive_2afc@v3.5.11", "n_subjects": 0, "n_comparisons": 0, "sampling": "random-holdout", "status": "protocol to draft" },
+      "result": { "metric": "spearman_r (tagger vs human)", "value": null },
+      "verdict": "candidate",
+      "run": { "where": "pending — 2AFC study", "canonical_cmd": null, "created_utc": null },
+      "notes": "STRONG data: corpus_L6 has 164 designed A/B pairs (pair_expected_better) purpose-built for complexity/clutter — usable as stimuli AND as a VLM dry-run ground truth."
+    },
+    {
+      "entry_id": "welcoming-2afc",
+      "predicate": "tagger 'welcoming' attribute vs human",
+      "register": "perceptual / affective",
+      "tier": "perceptual",
+      "ground_truth": "human 2AFC latent scale (tagger-blind)",
+      "engine_version": "@ ee1f2a98",
+      "elicitation": { "mode": "validation-flat-prior", "engine": "adaptive_2afc@v3.5.11", "status": "needs curated entrance stimuli" },
+      "result": { "metric": "spearman_r", "value": null },
+      "verdict": "candidate",
+      "run": { "where": "pending — needs stimulus curation first", "canonical_cmd": null, "created_utc": null },
+      "notes": "Data GAP: curate via L6 collector (Places365 entrance_hall/lobby/reception; MIT-Indoor67 lobby) — license-clean, cheap."
+    },
+    {
+      "entry_id": "good_for_meeting-2afc",
+      "predicate": "tagger 'good_for_meeting' affordance vs human",
+      "register": "affordance / evaluative",
+      "tier": "perceptual",
+      "ground_truth": "human 2AFC latent scale (tagger-blind)",
+      "engine_version": "@ ee1f2a98",
+      "elicitation": { "mode": "validation-flat-prior", "engine": "adaptive_2afc@v3.5.11", "status": "needs curated meeting-space stimuli" },
+      "result": { "metric": "spearman_r", "value": null },
+      "verdict": "candidate",
+      "run": { "where": "pending — needs stimulus curation first", "canonical_cmd": null, "created_utc": null },
+      "notes": "Data GAP: curate via L6 collector (Places365 conference_room; MIT-Indoor67 meeting_room). Bridges to SPACE_USE priority shared_focal_surface_access."
+    }
+  ]
+}

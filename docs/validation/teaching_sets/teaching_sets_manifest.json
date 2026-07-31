@@ -1,0 +1,96 @@
+{
+  "surface_density": {
+    "definition": "many small items / busy surfaces",
+    "hypothesis_measure": "contrast_energy",
+    "exemplars": {
+      "low": {
+        "file": "/home/claude/savoias/Images/Scenes/59.jpg",
+        "cat": "Scenes",
+        "value": 10.295
+      },
+      "intermediate": {
+        "file": "/home/claude/savoias/Images/Scenes/102.jpg",
+        "cat": "Scenes",
+        "value": 18.289
+      },
+      "high": {
+        "file": "/home/claude/savoias/Images/Scenes/141.jpg",
+        "cat": "Scenes",
+        "value": 27.189
+      },
+      "ambiguous": {
+        "file": "/home/claude/savoias/Images/Scenes/53.jpg",
+        "cat": "Scenes",
+        "value": 18.279
+      }
+    }
+  },
+  "arrangement_disorder": {
+    "definition": "big elements placed/oriented irregularly \u2014 furniture LAYOUT, not texture or colour",
+    "hypothesis_measure": "coarse compressibility (RETIRED for teaching \u2014 conflates natural texture with layout; needs element-segmentation + placement-regularity)",
+    "teaching_material": "arrangement_disorder_schematic.png \u2014 hand-built top-down layouts, same furniture, graded: low=regimented / intermediate=slightly off / high=scattered / ambiguous=clustered (two conversation groups: non-grid but intentional)",
+    "real_anchors_todo": "low = regimented real rooms (auditorium, conference_room \u2014 already in corpus); high = a genuinely disarranged room (curate with Stephan \u2014 few clean examples in current datasets)"
+  },
+  "variety": {
+    "definition": "many kinds of colours/materials",
+    "hypothesis_measure": "n_colors",
+    "exemplars": {
+      "low": {
+        "file": "/home/claude/savoias/Images/Interior Design/44.jpg",
+        "cat": "Interior Design",
+        "value": 52.0
+      },
+      "intermediate": {
+        "file": "/home/claude/savoias/Images/Scenes/47.jpg",
+        "cat": "Scenes",
+        "value": 113.0
+      },
+      "high": {
+        "file": "/home/claude/savoias/Images/Scenes/70.jpg",
+        "cat": "Scenes",
+        "value": 207.0
+      },
+      "ambiguous": {
+        "file": "/home/claude/savoias/Images/Scenes/139.jpg",
+        "cat": "Scenes",
+        "value": 115.0
+      }
+    }
+  },
+  "textural_discomfort": {
+    "definition": "dense high-frequency texture (1/f departure)",
+    "hypothesis_measure": "spectral_discomfort",
+    "exemplars": {
+      "low": {
+        "file": "/home/claude/savoias/Images/Scenes/54.jpg",
+        "cat": "Scenes",
+        "value": 0.42
+      },
+      "intermediate": {
+        "file": "/home/claude/savoias/Images/Scenes/49.jpg",
+        "cat": "Scenes",
+        "value": 0.486
+      },
+      "high": {
+        "file": "/home/claude/savoias/Images/Scenes/193.jpg",
+        "cat": "Scenes",
+        "value": 0.552
+      },
+      "ambiguous": {
+        "file": "/home/claude/savoias/Images/Scenes/196.jpg",
+        "cat": "Scenes",
+        "value": 0.488
+      }
+    }
+  },
+  "semantic_incongruity": {
+    "definition": "objects out of place (scene-grammar violation)",
+    "hypothesis_measure": "none (late/VLM)",
+    "exemplars": "MANUAL/SYNTHETIC \u2014 curate or composite an out-of-place object; no image-measure ranks this"
+  },
+  "concealed_order": {
+    "definition": "looks disordered but has hidden structure (model-relative)",
+    "hypothesis_measure": "none (observer-dependent)",
+    "exemplars": "FRAMING-BASED \u2014 same image, expert vs novice framing; not a measure"
+  }
+}
