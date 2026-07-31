@@ -22,7 +22,7 @@ from PIL import Image
 HYPOTHESIS_SCHEMA = "cnfa.complexity-species-hypotheses/v1"
 QUEUE_SCHEMA = "cnfa.complexity-selection-queues/v1"
 HANDOFF_SCHEMA = "cnfa.complexity-species-handoff/v1"
-MODEL_VERSION = "complexity-species-proxy-v2"
+MODEL_VERSION = "complexity-species-proxy-v3"
 
 SPECIES_CONTRACT: dict[str, dict[str, Any]] = {
     "surface_density": {
@@ -126,14 +126,226 @@ def _png_size(array: np.ndarray) -> int:
     return len(buf.getvalue())
 
 
-def _arrangement_disorder(gray: np.ndarray) -> tuple[float, int, int]:
-    """Coarse compressibility ratio from the supplied reference implementation."""
+def _legacy_arrangement_compressibility(gray: np.ndarray) -> tuple[float, int, int]:
+    """Retired texture-sensitive proxy retained only for audit comparison."""
     coarse = cv2.resize(gray, (48, 48), interpolation=cv2.INTER_AREA)
     compressed = _png_size(coarse)
     shuffled = coarse.ravel().copy()
     np.random.default_rng(0).shuffle(shuffled)
     shuffled_size = _png_size(shuffled.reshape(48, 48))
     return compressed / (shuffled_size + 1e-9), compressed, shuffled_size
+
+
+def _large_region_candidates(
+    gray: np.ndarray,
+) -> tuple[list[dict[str, float]], float, int]:
+    """Detect repeated, coarse edge-bounded regions without treating fine texture as objects."""
+    size = 256
+    work = cv2.resize(gray, (size, size), interpolation=cv2.INTER_AREA)
+    smooth = cv2.GaussianBlur(work, (5, 5), 0)
+    median = float(np.median(smooth))
+    low = max(20, int(0.45 * median))
+    high = max(low + 20, min(240, int(0.90 * median)))
+    edges = cv2.Canny(smooth, low, high)
+    edge_fraction = float(np.mean(edges > 0))
+    edges = cv2.morphologyEx(
+        edges,
+        cv2.MORPH_CLOSE,
+        np.ones((3, 3), dtype=np.uint8),
+    )
+    contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    image_area = float(size * size)
+    candidates = []
+    for contour in contours:
+        contour_area = float(cv2.contourArea(contour))
+        x, y, width, height = cv2.boundingRect(contour)
+        box_area = float(width * height)
+        if (
+            contour_area < 45.0
+            or box_area < 0.003 * image_area
+            or box_area > 0.08 * image_area
+            or min(width, height) < 7
+        ):
+            continue
+        moments = cv2.moments(contour)
+        if abs(moments["m00"]) < 1e-9:
+            continue
+        center_x = float(moments["m10"] / moments["m00"])
+        center_y = float(moments["m01"] / moments["m00"])
+        rotated = cv2.minAreaRect(contour)
+        rect_width, rect_height = rotated[1]
+        angle = float(rotated[2])
+        if rect_width < rect_height:
+            angle += 90.0
+        candidates.append(
+            {
+                "center_x": center_x,
+                "center_y": center_y,
+                "box_area": box_area,
+                "aspect_ratio": float(max(width, height) / min(width, height)),
+                "angle_degrees": angle % 180.0,
+                "contour_area": contour_area,
+            }
+        )
+
+    # Canny commonly returns the inner and outer edge of one object. Keep one.
+    candidates.sort(
+        key=lambda row: (
+            -row["contour_area"],
+            row["center_y"],
+            row["center_x"],
+        )
+    )
+    deduplicated: list[dict[str, float]] = []
+    for candidate in candidates:
+        duplicate = False
+        for accepted in deduplicated:
+            center_distance = math.hypot(
+                candidate["center_x"] - accepted["center_x"],
+                candidate["center_y"] - accepted["center_y"],
+            )
+            area_ratio = abs(
+                math.log((candidate["box_area"] + 1.0) / (accepted["box_area"] + 1.0))
+            )
+            if center_distance < 4.0 and area_ratio < 0.70:
+                duplicate = True
+                break
+        if not duplicate:
+            deduplicated.append(candidate)
+    return deduplicated, edge_fraction, len(contours)
+
+
+def _repeated_element_family(
+    candidates: Sequence[Mapping[str, float]],
+) -> list[Mapping[str, float]]:
+    """Select the largest family of similarly sized and shaped regions."""
+    best: list[Mapping[str, float]] = []
+    best_dispersion = float("inf")
+    for anchor in candidates:
+        family = [
+            candidate
+            for candidate in candidates
+            if abs(
+                math.log(
+                    (candidate["box_area"] + 1.0) / (anchor["box_area"] + 1.0)
+                )
+            )
+            <= 0.45
+            and abs(
+                math.log(
+                    (candidate["aspect_ratio"] + 0.01)
+                    / (anchor["aspect_ratio"] + 0.01)
+                )
+            )
+            <= 0.30
+        ]
+        log_areas = [math.log(candidate["box_area"] + 1.0) for candidate in family]
+        dispersion = float(np.std(log_areas)) if log_areas else float("inf")
+        if len(family) > len(best) or (
+            len(family) == len(best) and dispersion < best_dispersion
+        ):
+            best = family
+            best_dispersion = dispersion
+    return best
+
+
+def _placement_disorder(
+    family: Sequence[Mapping[str, float]],
+) -> tuple[float, dict[str, float]]:
+    """Score spacing, alignment, direction, and orientation irregularity."""
+    points = np.asarray(
+        [[row["center_x"], row["center_y"]] for row in family],
+        dtype=np.float64,
+    ) / 256.0
+    distances = np.linalg.norm(points[:, None, :] - points[None, :, :], axis=2)
+    np.fill_diagonal(distances, np.inf)
+    nearest_indices = distances.argmin(axis=1)
+    nearest_distances = distances[np.arange(len(points)), nearest_indices]
+    mean_nearest = float(np.mean(nearest_distances))
+    spacing_disorder = _clip01(
+        float(np.std(nearest_distances)) / (mean_nearest + 1e-9) / 0.75
+    )
+
+    nearest_vectors = points[nearest_indices] - points
+    nearest_angles = np.arctan2(nearest_vectors[:, 1], nearest_vectors[:, 0])
+    direction_disorder = _clip01(
+        1.0 - abs(np.mean(np.exp(4j * nearest_angles)))
+    )
+
+    centered = points - points.mean(axis=0)
+    _, _, axes = np.linalg.svd(centered, full_matrices=False)
+    principal = centered @ axes.T
+    alignment_residuals = []
+    for index, point in enumerate(principal):
+        others = np.delete(principal, index, axis=0)
+        coordinate_gaps = np.minimum(
+            np.abs(others[:, 0] - point[0]),
+            np.abs(others[:, 1] - point[1]),
+        )
+        alignment_residuals.append(float(np.min(coordinate_gaps)))
+    alignment_disorder = _clip01(
+        float(np.mean(alignment_residuals)) / (mean_nearest + 1e-9) / 0.40
+    )
+
+    element_angles = np.deg2rad([row["angle_degrees"] for row in family])
+    orientation_disorder = _clip01(
+        1.0 - abs(np.mean(np.exp(4j * element_angles)))
+    )
+    components = {
+        "alignment_disorder": alignment_disorder,
+        "spacing_disorder": spacing_disorder,
+        "direction_disorder": direction_disorder,
+        "orientation_disorder": orientation_disorder,
+    }
+    score = (
+        0.20 * alignment_disorder
+        + 0.35 * spacing_disorder
+        + 0.10 * direction_disorder
+        + 0.35 * orientation_disorder
+    )
+    return _clip01(score), components
+
+
+def _arrangement_disorder(gray: np.ndarray) -> tuple[float, float, dict[str, Any]]:
+    """Estimate placement disorder from a repeated family of coarse regions."""
+    candidates, edge_fraction, contour_count = _large_region_candidates(gray)
+    family = _repeated_element_family(candidates)
+    legacy_ratio, compressed_bytes, shuffled_bytes = _legacy_arrangement_compressibility(gray)
+    repeated_count = len(family)
+    texture_dominated = edge_fraction > 0.15 or contour_count > 300
+    if repeated_count < 4 or texture_dominated:
+        return 0.5, 0.0, {
+            "evidence_status": (
+                "texture_dominated_abstention"
+                if texture_dominated
+                else "insufficient_repeated_elements"
+            ),
+            "detected_region_count": len(candidates),
+            "repeated_element_count": repeated_count,
+            "edge_fraction": edge_fraction,
+            "raw_contour_count": contour_count,
+            "evidence_quality": 0.0,
+            "legacy_compressibility_ratio": legacy_ratio,
+            "legacy_compressed_bytes": compressed_bytes,
+            "legacy_shuffled_bytes": shuffled_bytes,
+        }
+
+    score, placement = _placement_disorder(family)
+    count_quality = min(1.0, (repeated_count - 3) / 5.0)
+    family_fraction = repeated_count / max(len(candidates), repeated_count)
+    evidence_quality = _clip01(count_quality * min(1.0, family_fraction / 0.50))
+    return score, evidence_quality, {
+        "evidence_status": "measured_repeated_elements",
+        "detected_region_count": len(candidates),
+        "repeated_element_count": repeated_count,
+        "edge_fraction": edge_fraction,
+        "raw_contour_count": contour_count,
+        "evidence_quality": evidence_quality,
+        **placement,
+        "legacy_compressibility_ratio": legacy_ratio,
+        "legacy_compressed_bytes": compressed_bytes,
+        "legacy_shuffled_bytes": shuffled_bytes,
+    }
 
 
 def _spectral_discomfort(gray: np.ndarray) -> float:
@@ -164,12 +376,16 @@ def _computed_species(
     measure: str,
     components: Mapping[str, Any],
     failure_modes: Sequence[str],
+    *,
+    confidence_scale: float = 1.0,
 ) -> dict[str, Any]:
     severity = _clip01(severity)
     provisional_threshold = 0.50
     provisional_slope = 8.0
     presence = 1.0 / (1.0 + math.exp(-provisional_slope * (severity - provisional_threshold)))
     confidence, uncertainty = _confidence(species, presence)
+    confidence = _clip01(confidence * _clip01(confidence_scale))
+    uncertainty = _clip01(1.0 - confidence)
     reported_components = dict(components)
     reported_components["presence_mapping"] = {
         "kind": "provisional_logistic",
@@ -230,8 +446,7 @@ def hypothesize_complexity_species(
     coarse = _clip01(coarse_raw / 32.0)
     density = 0.7 * fine + 0.3 * coarse
 
-    disorder_raw, png_bytes, shuffled_bytes = _arrangement_disorder(gray)
-    disorder = _clip01(disorder_raw)
+    disorder, disorder_evidence_quality, disorder_components = _arrangement_disorder(gray)
     color_count = _color_variety(rgb)
     variety = _clip01(math.log1p(color_count) / math.log(513.0))
     spectral_raw = _spectral_discomfort(gray)
@@ -256,16 +471,15 @@ def hypothesize_complexity_species(
         _computed_species(
             "arrangement_disorder",
             disorder,
-            "coarse_png_compressibility_ratio_v1",
-            {
-                "ratio": disorder_raw,
-                "compressed_bytes": png_bytes,
-                "shuffled_bytes": shuffled_bytes,
-            },
+            "large_element_placement_regularity_v1",
+            disorder_components,
             [
-                "WEAK: natural texture can be mistaken for layout disorder",
-                "compression is sensitive to image resampling and tonal noise",
+                "WEAK: edge-bounded regions are not semantic furniture segmentation",
+                "perspective and occlusion can alter apparent spacing and orientation",
+                "large repeated natural forms can still be mistaken for placed elements",
+                "intentional clusters require human interpretation and objection",
             ],
+            confidence_scale=disorder_evidence_quality,
         ),
         _computed_species(
             "variety",

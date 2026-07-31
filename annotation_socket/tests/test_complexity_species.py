@@ -58,7 +58,7 @@ def test_surface_density_orders_blank_below_dense_and_retains_two_scales():
     assert high["presence_probability"] != high["provisional_severity"]
 
 
-def test_arrangement_disorder_is_deterministic_and_weak():
+def test_arrangement_disorder_is_deterministic_and_discloses_weak_evidence():
     rng = np.random.default_rng(7)
     image = rng.integers(0, 256, size=(256, 256, 3), dtype=np.uint8)
     first = _species(_record(image, "one"), "arrangement_disorder")
@@ -67,19 +67,59 @@ def test_arrangement_disorder_is_deterministic_and_weak():
     assert first["components"] == second["components"]
     assert first["confidence"] <= 0.25
     assert any("WEAK" in item for item in first["failure_modes"])
+    assert first["measure"] == "large_element_placement_regularity_v1"
+    assert "legacy_compressibility_ratio" in first["components"]
+
+
+def test_arrangement_disorder_does_not_treat_fine_texture_as_placement_evidence():
+    texture = np.random.default_rng(11).integers(
+        0, 256, size=(256, 256, 3), dtype=np.uint8
+    )
+    row = _species(_record(texture, "fine-texture"), "arrangement_disorder")
+    assert row["components"]["evidence_status"] == "texture_dominated_abstention"
+    assert row["components"]["edge_fraction"] > 0.15
+    assert row["provisional_severity"] == 0.5
+    assert row["confidence"] == 0.0
+    assert row["uncertainty"] == 1.0
 
 
 def test_arrangement_disorder_orders_regular_below_scattered_same_elements():
     ordered = np.zeros((256, 256, 3), np.uint8)
-    for y in range(24, 232, 32):
-        for x in range(24, 232, 32):
-            ordered[y:y + 8, x:x + 8] = 255
+    for y in range(18, 226, 32):
+        for x in range(18, 226, 32):
+            ordered[y:y + 14, x:x + 14] = 255
     scattered = np.zeros_like(ordered)
-    for y, x in np.random.default_rng(3).integers(0, 248, size=(49, 2)):
-        scattered[y:y + 8, x:x + 8] = 255
+    for y, x in np.random.default_rng(3).integers(0, 242, size=(49, 2)):
+        scattered[y:y + 14, x:x + 14] = 255
     regular_score = _species(_record(ordered, "regular"), "arrangement_disorder")
     scattered_score = _species(_record(scattered, "scattered"), "arrangement_disorder")
     assert scattered_score["provisional_severity"] > regular_score["provisional_severity"]
+
+
+def test_arrangement_disorder_orders_the_teaching_schematic():
+    schematic_path = (
+        Path(__file__).resolve().parents[2]
+        / "docs/validation/teaching_sets/arrangement_disorder_schematic.png"
+    )
+    schematic = cv2.imread(str(schematic_path), cv2.IMREAD_COLOR)
+    assert schematic is not None
+    panels = {
+        "low": schematic[208:497, 262:629],
+        "intermediate": schematic[208:497, 675:1042],
+        "high": schematic[208:497, 1087:1454],
+        "ambiguous": schematic[208:497, 1500:1867],
+    }
+    scores = {
+        name: _species(_record(image, f"schematic-{name}"), "arrangement_disorder")
+        for name, image in panels.items()
+    }
+    assert (
+        scores["low"]["provisional_severity"]
+        < scores["intermediate"]["provisional_severity"]
+        < scores["high"]["provisional_severity"]
+    )
+    assert scores["ambiguous"]["provisional_severity"] < scores["high"]["provisional_severity"]
+    assert all(row["components"]["repeated_element_count"] >= 4 for row in scores.values())
 
 
 def test_textural_discomfort_preserves_normalized_fraction_without_saturation():
