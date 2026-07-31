@@ -7,12 +7,18 @@ Locks: (1) no tokens -> all 18 layout predicates ABSTAINED (not UNKNOWN, not cra
 Run: python3 annotation_socket/tests/test_cc3_layout_inputs.py
 """
 import sys
-sys.path.insert(0, "/home/claude")
-sys.path.insert(0, "/Users/davidusa/REPOS/Image_Tagger_dk_latest")
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT))
 import numpy as np
 from annotation_socket.annotator import annotate_image
 
-IMG = "/home/claude/cnfa_demo/batch_outputs/_in_Industrial_open_concept_office_project_b.png"
+IMG = str(
+    REPO_ROOT
+    / "Example Images"
+    / "Industrial-open-concept-office-project-by-Decorilla-1024x819.jpeg"
+)
 LAYOUT_PIDS = ["C5.collaborator_proximity", "C6.path_overlap", "C7.focus_speech_privacy",
                "C8.distraction_distance", "C9.view_equity", "C10.daylight_proximity",
                "C11.prospect_refuge", "C12.crowding_risk", "C14.focus_collab_separation",
