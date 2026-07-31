@@ -177,7 +177,10 @@ def _flatten(
     for hypothesis in sorted(hypotheses, key=lambda row: row["image_id"]):
         for species_row in hypothesis["species"]:
             severity = species_row["provisional_severity"]
-            if species_row["status"] == "delegated":
+            if (
+                species_row["status"] == "delegated"
+                or float(species_row["confidence"]) == 0.0
+            ):
                 presence = "abstain"
             else:
                 presence = (

@@ -76,6 +76,14 @@ def test_review_pack_contract_counts_hashes_and_abstentions(tmp_path: Path):
     assert all(isinstance(row["queue"], list) for row in rows)
     late = [row for row in rows if row["species"] in ("semantic_incongruity", "concealed_order")]
     assert all(row["presence"] == "abstain" and row["value"] is None for row in late)
+    texture_arrangement = next(
+        row
+        for row in rows
+        if row["image_id"] == "collections/noise.png"
+        and row["species"] == "arrangement_disorder"
+    )
+    assert texture_arrangement["presence"] == "abstain"
+    assert texture_arrangement["value"] == 0.5
 
     for filename in ("hypotheses_corpusL6.jsonl", "queues.json"):
         raw = (output / filename).read_bytes()
