@@ -6,8 +6,8 @@ through the trust chokepoint (derivation.py: SCORED-with-evidence / ABSTAINED-wi
 missing-inputs / UNKNOWN-fail-closed); gated by an independent mechanical-primary verify()
 (replay + evidence + dependency + abstention-audit + coverage); content-addressed.
 
-Run from the repo root (/Users/davidusa/REPOS/Image_Tagger_dk_latest):
+Run from the repository root:
     python3 -m annotation_socket.run_stage <stage_dir> <img1> <img2> <img3>
-Depends on the shared CPP library at /Users/davidusa/REPOS/_control/cpp (adopted, not
-reimplemented) and cnfa_algs/ in this repo. See SOCKET_CONFORMANCE.md.
+Depends on the shared CPP provider selected by annotation_socket._cpp_bootstrap (adopted,
+not reimplemented) and cnfa_algs/ in this repo. See SOCKET_CONFORMANCE.md.
 """

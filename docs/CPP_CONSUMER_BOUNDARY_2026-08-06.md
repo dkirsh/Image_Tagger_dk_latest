@@ -1,5 +1,20 @@
 # CPP consumer boundary — Image_Tagger (CLAUDE-M1-BUILD, 2026-08-06)
 
+## Independent attack amendment
+
+CODEX-CONTROL independently attacked commit `8c464795` after this build report was written. The
+original rule accepted any importable module named `cpp` before an explicit `CONTROL_ROOT`, and
+accepted any ambient `trusted_derivation` module exporting `UNKNOWN`. A temporary poisoned
+`PYTHONPATH` therefore executed the impostor `cpp.stage` and returned `POISONED_UNKNOWN` while a
+valid explicit provider root was present.
+
+The follow-up repair makes explicit `CONTROL_ROOT` authoritative, requires installed-package
+metadata to map packaged `cpp` to the declared `cnfa-cpp` distribution, and loads supervisor
+contract modules only from the resolved provider path. The attack then resolved the real
+`_control/cpp/stage.py`, returned `UNKNOWN`, and left the poison sentinel absent. The original
+evidence below is retained as author evidence for commit `8c464795`; it is not evidence for the
+independent follow-up.
+
 **Author:** claude-term-1
 **Worktree:** `/Users/davidusa/REPOS/Image_Tagger_worktrees/claude-m1`
 **Branch:** `codex/claude-m1-portable-cpp-2026-08` (base `49fac5033bcc3ba05c69e4bde9b29a794a6cc00a`)
@@ -98,8 +113,8 @@ resolution order, in precedence order, each clause covered by a test:
 
 | # | Mode | Rule |
 |---|------|------|
-| 1 | `packaged` | `import cpp` already resolves (installed distribution or embedder-supplied). Wins outright, and we then perform **no** `sys.path` mutation at all. |
-| 2 | `control_root_env` | An explicit `CONTROL_ROOT`. Honored **strictly**: when set it is the *only* candidate. A wrong value fails loudly; it never falls through to a guess. |
+| 1 | `control_root_env` | An explicit `CONTROL_ROOT`. Honored **strictly**: when set it is the *only* candidate. A wrong value fails loudly; it never falls through to ambient import state or a guess. |
+| 2 | `packaged` | `cpp` resolves and installed-package metadata assigns it to `cnfa-cpp`. Mere importability is rejected. No `sys.path` mutation is performed. |
 | 3 | `derived_local` | A bounded ancestor scan: `<ancestor>/_control` and `<ancestor>/_control_deps`, nearest ancestor first, at most 6 levels above this checkout and above the cwd. Derived at run time from `__file__`; no user, host, or container path is written down. |
 | 4 | `unresolved` | One `CppBootstrapError` naming the missing contract, the root and source tried, every candidate searched, and three remedies. |
 

@@ -54,13 +54,13 @@
       "current_state": {
         "transport": "resolved_local_source_tree",
         "resolution_order": [
-          "packaged: `import cpp` already resolves (installed distribution or embedder-supplied) — highest precedence, no sys.path mutation",
-          "explicit: CONTROL_ROOT environment variable, honored strictly as the sole candidate (no fallthrough to a guess)",
+          "explicit: CONTROL_ROOT environment variable, honored strictly as the sole candidate (no fallthrough to ambient import state or a guess)",
+          "packaged: `cpp` is importable and package metadata assigns it to the declared `cnfa-cpp` distribution — no sys.path mutation",
           "derived: bounded ancestor scan for <ancestor>/_control or <ancestor>/_control_deps, nearest first, at most 6 levels above this checkout or the cwd",
           "fail closed: one CppBootstrapError naming the contract, what was searched, and the remedies"
         ],
         "acceptance_markers": ["cpp/locate.py", "cpp/stage.py"],
-        "acceptance_rule": "content, not directory existence: both marker files must be real files",
+        "acceptance_rule": "local source requires both marker files; packaged mode additionally requires import metadata mapping `cpp` to `cnfa-cpp`; importability or attribute names alone are insufficient provenance",
         "provider_entry_point": "cpp.locate.bootstrap()",
         "provider_entry_point_note": "the consumer seeds sys.path with the resolved root only far enough to import cpp.locate, pins CONTROL_ROOT to that root so the provider's own built-in default root cannot fire, then delegates; it does not re-implement the provider's bootstrap semantics",
         "package_pinned": false,
@@ -148,11 +148,10 @@
         "transport": "resolved_local_source_tree",
         "acceptance_markers": ["supervisor/trusted_derivation.py"],
         "resolution_order": [
-          "an already-importable module that actually carries the contract attribute (UNKNOWN / classify_result)",
-          "otherwise loaded from <control_root>/supervisor/ under a private namespaced module name",
+          "loaded only from <control_root>/supervisor/ under a private namespaced module name",
           "fail closed: one CppBootstrapError naming the supervisor contract and the remedies"
         ],
-        "ambient_shadowing_guard": "an already-importable module is accepted only if it carries the required attribute — the unrelated PyPI `supervisor` process manager must not silently satisfy this contract",
+        "ambient_shadowing_guard": "ambient modules are never accepted: attributes such as UNKNOWN or classify_result are not provenance, so only the resolved provider path may satisfy this contract",
         "local_fallback_removed": "annotation_socket/derivation.py previously invented UNKNOWN = \"UNKNOWN\" when the provider import failed. That forked the trust vocabulary into a second sentinel that merely compared equal; it is removed, and the module now fails closed."
       },
 

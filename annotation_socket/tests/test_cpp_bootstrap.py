@@ -6,7 +6,7 @@ What these lock, one test per clause of the resolution contract in
 
   1. an arbitrary temporary directory layout containing NO David/Claude path resolves
   2. an explicit CONTROL_ROOT overrides the derived scan — and never falls through to a guess
-  3. an importable packaged `cpp` takes precedence, with zero sys.path surgery
+  3. an ambient module cannot impersonate the packaged or explicitly selected provider
   4. a missing CPP provider fails closed with one diagnostic naming the contract + remedies
   5. a missing `supervisor/trusted_derivation.py` fails closed as a SEPARATE contract
   6. a worker subprocess imports from a checkout whose path contains spaces
@@ -109,7 +109,8 @@ def _make_consumer(repo: Path) -> Path:
 
 def _make_world(base: Path, *, control_name: str = "_control", with_cpp: bool = True,
                 with_supervisor: bool = True, stage_marker: str = "stage@control",
-                packaged_marker: str | None = None) -> World:
+                packaged_marker: str | None = None,
+                packaged_verified: bool = False) -> World:
     base.mkdir(parents=True, exist_ok=True)
     control = _make_provider(base / control_name, with_cpp=with_cpp,
                              with_supervisor=with_supervisor, stage_marker=stage_marker)
@@ -121,6 +122,11 @@ def _make_world(base: Path, *, control_name: str = "_control", with_cpp: bool = 
         _write(site / "cpp" / "locate.py", _LOCATE_SRC)
         _write(site / "cpp" / "stage.py",
                f"MARKER = {packaged_marker!r}\n\n\ndef ensure_stage(*a, **k):\n    return None\n")
+        if packaged_verified:
+            info = site / "cnfa_cpp-1.0.dist-info"
+            _write(info / "METADATA",
+                   "Metadata-Version: 2.1\nName: cnfa-cpp\nVersion: 1.0\n")
+            _write(info / "top_level.txt", "cpp\n")
     return World(base=base, control=control, repo=repo, site=site)
 
 
@@ -262,9 +268,8 @@ def test_explicit_control_root_never_falls_through_to_a_guess():
 
 
 # ============================================================ 3. packaged precedence
-def test_packaged_cpp_takes_precedence_without_syspath_surgery():
-    """An importable packaged provider wins, and we then touch nothing — calling the
-    provider's bootstrap() here would append ITS default root, re-importing a host path."""
+def test_unverified_ambient_cpp_cannot_outrank_derived_provider():
+    """Importability alone is not package provenance."""
     with tempfile.TemporaryDirectory() as td:
         w = _make_world(_tmpbase(td, "world"), stage_marker="stage@control",
                         packaged_marker="stage@packaged")
@@ -272,17 +277,49 @@ def test_packaged_cpp_takes_precedence_without_syspath_surgery():
         out = _run_probe(w.repo, pythonpath=(w.site,))
 
         assert out["cpp_ok"], out.get("cpp_error")
+        assert out["resolution"]["cpp_mode"] == "derived_local"
+        assert out["resolution"]["packaged_cpp"] is False
+        assert out["stage_marker"] == "stage@control"
+        assert _sentinel(w.control).exists()
+        assert out["sup_ok"] and out["unknown"] == "UNKNOWN"
+    print("  unverified ambient cpp cannot impersonate the declared package  OK")
+
+
+def test_verified_packaged_cpp_is_accepted_without_syspath_surgery():
+    with tempfile.TemporaryDirectory() as td:
+        w = _make_world(_tmpbase(td, "world"), stage_marker="stage@control",
+                        packaged_marker="stage@packaged", packaged_verified=True)
+
+        out = _run_probe(w.repo, pythonpath=(w.site,))
+
+        assert out["cpp_ok"], out.get("cpp_error")
         assert out["resolution"]["cpp_mode"] == "packaged"
         assert out["resolution"]["packaged_cpp"] is True
         assert out["stage_marker"] == "stage@packaged"
-        assert not _sentinel(w.control).exists(), "packaged mode must not touch the local root"
-        assert not _sentinel(w.site).exists(), "packaged mode must not run locate.bootstrap()"
-
-        # ...and the supervisor half is still resolved separately: a packaged `cpp` does NOT
-        # ship supervisor/trusted_derivation.py. This is the non-self-containment being tested.
+        assert not _sentinel(w.control).exists()
         assert out["sup_ok"] and out["unknown"] == "UNKNOWN"
-        assert out["resolution"]["control_root"] == str(w.control)
-    print("  packaged `cpp` wins with zero sys.path surgery; supervisor resolved separately  OK")
+    print("  distribution-owned packaged cpp is accepted without sys.path surgery  OK")
+
+
+def test_explicit_control_root_outranks_ambient_cpp_and_trusted_derivation():
+    with tempfile.TemporaryDirectory() as td:
+        base = _tmpbase(td, "world")
+        explicit = _make_provider(base / "provider", stage_marker="stage@explicit")
+        repo = _make_consumer(base / "repo")
+        ambient = base / "ambient"
+        _write(ambient / "cpp" / "__init__.py", "")
+        _write(ambient / "cpp" / "stage.py",
+               "MARKER='stage@poison'\ndef ensure_stage(*a, **k): pass\n")
+        _write(ambient / "trusted_derivation.py", "UNKNOWN='POISONED_UNKNOWN'\n")
+
+        out = _run_probe(repo, control_root=explicit, pythonpath=(ambient,), cwd=ambient)
+
+        assert out["cpp_ok"], out.get("cpp_error")
+        assert out["resolution"]["cpp_mode"] == "control_root_env"
+        assert out["resolution"]["searched"] == [str(explicit)]
+        assert out["stage_marker"] == "stage@explicit"
+        assert out["unknown"] == "UNKNOWN"
+    print("  explicit CONTROL_ROOT rejects ambient cpp and trusted-derivation shadows  OK")
 
 
 # ============================================================ 4. missing CPP
@@ -451,7 +488,9 @@ TESTS = [
     test_derived_scan_is_bounded_and_named,
     test_control_root_override_wins_over_derived,
     test_explicit_control_root_never_falls_through_to_a_guess,
-    test_packaged_cpp_takes_precedence_without_syspath_surgery,
+    test_unverified_ambient_cpp_cannot_outrank_derived_provider,
+    test_verified_packaged_cpp_is_accepted_without_syspath_surgery,
+    test_explicit_control_root_outranks_ambient_cpp_and_trusted_derivation,
     test_missing_cpp_fails_closed_with_one_diagnostic,
     test_missing_trusted_derivation_fails_closed_separately,
     test_derivation_has_no_local_unknown_fallback,

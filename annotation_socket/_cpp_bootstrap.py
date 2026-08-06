@@ -18,13 +18,12 @@ are reported and diagnosed independently here so that gap can never be papered o
 
 RESOLUTION ORDER (explicit, ordered, testable — see tests/test_cpp_bootstrap.py):
 
-  1. PACKAGED       `import cpp` already works (installed distribution, or an embedder that
-                    put the provider on sys.path). Highest precedence, and we then perform NO
-                    sys.path surgery at all.
-  2. CONTROL_ROOT   an explicit `CONTROL_ROOT` environment variable. Honored STRICTLY: when it
+  1. CONTROL_ROOT   an explicit `CONTROL_ROOT` environment variable. Honored STRICTLY: when it
                     is set it is the ONLY candidate. A wrong explicit value fails loudly and
                     never falls through to a guess — a silent fallback past an operator's
                     declared root is precisely the failure mode this module exists to remove.
+  2. PACKAGED       `cpp` is importable AND distribution metadata assigns it to `cnfa-cpp`.
+                    Mere importability is rejected because cwd/PYTHONPATH are not provenance.
   3. DERIVED LOCAL  bounded local-development candidates derived from where THIS file lives
                     (and from the process cwd): `<ancestor>/_control` and
                     `<ancestor>/_control_deps`, nearest ancestor first, at most
@@ -46,6 +45,7 @@ default root can never fire behind our back and re-introduce a host path.
 from __future__ import annotations
 
 import importlib
+import importlib.metadata
 import importlib.util
 import os
 import sys
@@ -72,6 +72,7 @@ CPP_MARKERS: Tuple[str, ...] = ("cpp/locate.py", "cpp/stage.py")
 SUPERVISOR_MARKERS: Tuple[str, ...] = ("supervisor/trusted_derivation.py",)
 
 CONTROL_ROOT_ENV = "CONTROL_ROOT"
+CPP_DISTRIBUTION = "cnfa-cpp"
 
 #: Directory names a provider checkout is conventionally placed under, beside a consumer
 #: checkout. Names only — the containing directory is always DERIVED, never written down.
@@ -184,13 +185,24 @@ def candidate_roots(*, consumer_root: Optional[Path] = None,
     return out
 
 
+def _normalized_distribution_name(name: str) -> str:
+    return name.lower().replace("_", "-").replace(".", "-")
+
+
 def _packaged_cpp_available() -> bool:
-    """True when `import cpp` already resolves without us touching sys.path."""
-    if "cpp" in sys.modules:
-        return True
+    """True only for an importable ``cpp`` owned by the declared distribution.
+
+    Mere importability is not provenance: the current working directory or PYTHONPATH can
+    contain an unrelated package named ``cpp``. Packaged mode is therefore unavailable until
+    import metadata maps that package to the expected ``cnfa-cpp`` distribution.
+    """
     try:
-        return importlib.util.find_spec("cpp") is not None
-    except (ImportError, ValueError):
+        if importlib.util.find_spec("cpp") is None:
+            return False
+        owners = importlib.metadata.packages_distributions().get("cpp", ())
+        expected = _normalized_distribution_name(CPP_DISTRIBUTION)
+        return any(_normalized_distribution_name(owner) == expected for owner in owners)
+    except (ImportError, ValueError, OSError):
         return False
 
 
@@ -208,14 +220,17 @@ def resolve(*, refresh: bool = False) -> Resolution:
     if _RESOLUTION is not None and not refresh:
         return _RESOLUTION
 
-    packaged = _packaged_cpp_available()
     env_raw = os.environ.get(CONTROL_ROOT_ENV)
+    explicit = env_raw is not None and bool(env_raw.strip())
+    # An operator declaration outranks ambient import state. This also prevents a package or
+    # cwd shadow named ``cpp`` from bypassing an explicit provider root.
+    packaged = False if explicit else _packaged_cpp_available()
     searched: List[str] = []
 
     root: Optional[Path] = None
     root_source = "none"
 
-    if env_raw is not None and env_raw.strip():
+    if explicit:
         # Explicit beats derived, and explicit is FINAL: no fallthrough to a guess.
         root = _resolved(Path(env_raw))
         root_source = "env"
@@ -234,10 +249,12 @@ def resolve(*, refresh: bool = False) -> Resolution:
         if root is None and partial is not None:
             root, root_source = partial, "derived"
 
-    if packaged:
+    if explicit:
+        cpp_mode = "control_root_env" if _has_markers(root, CPP_MARKERS) else "unresolved"
+    elif packaged:
         cpp_mode = "packaged"
     elif _has_markers(root, CPP_MARKERS):
-        cpp_mode = "control_root_env" if root_source == "env" else "derived_local"
+        cpp_mode = "derived_local"
     else:
         cpp_mode = "unresolved"
 
@@ -383,24 +400,12 @@ def supervisor_dir() -> Path:
 
 
 def _load_provider_module(module_name: str, required_attr: str):
-    """Import a provider module, preferring an already-importable one — but only if it really
-    carries the attribute the contract is about.
+    """Load a supervisor contract module from the resolved provider, never ambient state.
 
-    The guard matters: `supervisor` is also the name of an unrelated PyPI process manager, and
-    silently accepting it would satisfy the import while breaking the contract. When the
-    ambient module fails the check we load the provider's file directly under a private,
-    namespaced module name rather than mutating `sys.modules[module_name]` out from under
-    whoever else imported it.
+    Attribute checks are not provenance checks. An unrelated or hostile module can export
+    ``UNKNOWN`` or ``classify_result``. The resolved supervisor directory is therefore the sole
+    authority until this contract has its own pinned distribution.
     """
-    ambient = sys.modules.get(module_name)
-    if ambient is None:
-        try:
-            ambient = importlib.import_module(module_name)
-        except Exception:
-            ambient = None
-    if ambient is not None and hasattr(ambient, required_attr):
-        return ambient
-
     private_name = f"{__name__}._provider_{module_name}"
     cached = sys.modules.get(private_name)
     if cached is not None and hasattr(cached, required_attr):
