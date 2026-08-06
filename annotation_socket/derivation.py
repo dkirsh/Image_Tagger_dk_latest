@@ -20,18 +20,17 @@ image -> geometry(vp, plane-conf) -> PlanGrid(grid_hash, cell_m) -> value.
 """
 from __future__ import annotations
 import hashlib
-import sys
 from typing import Any, Dict, FrozenSet, Optional
 
-sys.path.insert(0, "/home/claude/_control_deps/supervisor")
-try:
-    from trusted_derivation import UNKNOWN          # the shared sentinel — one trust vocabulary
-except Exception:                                   # repo fallback (Mac path)
-    sys.path.insert(0, "/Users/davidusa/REPOS/_control/supervisor")
-    try:
-        from trusted_derivation import UNKNOWN
-    except Exception:
-        UNKNOWN = "UNKNOWN"
+from ._cpp_bootstrap import trusted_unknown
+
+#: The shared sentinel — ONE trust vocabulary, owned by the provider's
+#: supervisor/trusted_derivation.py and taken from nowhere else. The former local fallback
+#: (`UNKNOWN = "UNKNOWN"` when the import failed) is deliberately gone: it forked the
+#: vocabulary into a second sentinel that merely happened to compare equal, which is exactly
+#: what a single chokepoint exists to prevent. Provider absent -> importing this module fails
+#: closed with the supervisor-contract diagnostic, rather than quietly running on a lookalike.
+UNKNOWN = trusted_unknown()
 
 SCORED, ABSTAINED = "SCORED", "ABSTAINED"
 

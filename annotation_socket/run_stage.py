@@ -15,9 +15,9 @@ from __future__ import annotations
 import copy, json, sys
 from pathlib import Path
 
-sys.path.insert(0, "/home/claude/_control_deps")
-sys.path.insert(0, "/Users/davidusa/REPOS/_control")
-from cpp import stage
+from ._cpp_bootstrap import import_stage   # the ONE fail-closed CPP resolution point
+
+stage = import_stage()
 
 from . import registry as R
 from . import derivation as D

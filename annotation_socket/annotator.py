@@ -12,14 +12,13 @@ already carrying a verdict or accepted output is skipped BEFORE claiming (zero r
 work on re-run).
 """
 from __future__ import annotations
-import hashlib, json, sys, time
+import hashlib, json, time
 from pathlib import Path
 from typing import Dict, FrozenSet, List
 
-sys.path.insert(0, "/home/claude/_control_deps")     # cpp library (sandbox vendored copy)
-sys.path.insert(0, "/home/claude")                    # cnfa_algs
-sys.path.insert(0, "/Users/davidusa/REPOS/_control")  # cpp library (Mac path)
-from cpp import stage
+from ._cpp_bootstrap import import_stage   # the ONE fail-closed CPP resolution point
+
+stage = import_stage()                     # cpp library; also makes cnfa_algs importable
 
 from . import registry as R
 from . import derivation as D

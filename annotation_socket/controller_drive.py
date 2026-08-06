@@ -19,19 +19,20 @@ The tick (verbatim from the CPP spec, no pipeline-specific fields):
 The controller keeps NO in-memory authoritative state: everything is reconstructed from
 the stage artifacts each tick (CPP hard-part 4 — stateless-recoverable).
 
-Run:  CONTROL_ROOT=... python3 -m annotation_socket.controller_drive <stage_dir> <image>...
+Run:  python3 -m annotation_socket.controller_drive <stage_dir> <image>...
+      CONTROL_ROOT is OPTIONAL: set it only to override the derived provider scan
+      (see annotation_socket/_cpp_bootstrap.py for the full resolution order).
 """
 from __future__ import annotations
-import json, os, subprocess, sys, time
+import json, subprocess, sys, time
 from pathlib import Path
 
-os.environ.setdefault("CONTROL_ROOT", "/home/claude/_control_deps"
-                      if Path("/home/claude/_control_deps").exists()
-                      else "/Users/davidusa/REPOS/_control")
-sys.path.insert(0, os.environ["CONTROL_ROOT"])
-from cpp import stage
-sys.path.insert(0, str(Path(os.environ["CONTROL_ROOT"]) / "supervisor"))
-import supervisor as sup
+# The ONE fail-closed resolution point for both provider contracts. CPP and the supervisor are
+# separate contracts and are diagnosed separately: `cpp/` does not ship the supervisor.
+from ._cpp_bootstrap import import_stage, import_supervisor, worker_env
+
+stage = import_stage()
+sup = import_supervisor()
 
 from .annotator import unit_id_for
 from .verify import run_checker
@@ -41,14 +42,21 @@ CLAIM_STALE_S = 3600
 
 
 # ------------------------------------------------------------------ supervised worker spawn
+#: The child's whole contract, and it carries NO path: `annotation_socket` must be importable
+#: (supplied via PYTHONPATH by worker_env) and the stage directory arrives as argv[1] rather
+#: than interpolated into source, so a directory containing quotes or spaces is just data.
+#: Under `python -c CODE ARG`, sys.argv == ['-c', ARG], hence sys.argv[1].
+WORKER_CODE = ("import json, sys; "
+               "from annotation_socket.annotator import run_worker; "
+               "print(json.dumps(run_worker(sys.argv[1])))")
+
+
 def spawn_worker(stage_dir: str) -> tuple[str, str]:
     """Spawn the annotator as a headless subprocess; OWN stdout+stderr+exit; classify with
     the supervisor's classifier (output-grep dominates exit code)."""
-    code = ("import sys, json; sys.path.insert(0, '/home/claude'); "
-            "from annotation_socket.annotator import run_worker; "
-            f"print(json.dumps(run_worker({stage_dir!r})))")
-    proc = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True,
-                          timeout=1800, env={**os.environ})
+    proc = subprocess.run([sys.executable, "-c", WORKER_CODE, str(stage_dir)],
+                          capture_output=True, text=True,
+                          timeout=1800, env=worker_env())
     death = sup.classify_result(proc.returncode, proc.stdout, proc.stderr)
     return death.value, proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else ""
 

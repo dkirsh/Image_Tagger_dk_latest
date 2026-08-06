@@ -28,13 +28,13 @@ Tiering (declared as data, CPP property 8):
   GREEN  all mechanical checks pass, tier_hint GREEN, confidence >= 0.6
 """
 from __future__ import annotations
-import json, sys
+import json
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-sys.path.insert(0, "/home/claude/_control_deps")
-sys.path.insert(0, "/Users/davidusa/REPOS/_control")
-from cpp import stage
+from ._cpp_bootstrap import import_stage   # the ONE fail-closed CPP resolution point
+
+stage = import_stage()
 
 from . import registry as R
 from . import derivation as D

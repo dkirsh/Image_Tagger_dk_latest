@@ -23,8 +23,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-sys.path.insert(0, "/Users/davidusa/REPOS/_control")
-from cpp import stage
+from ._cpp_bootstrap import import_stage   # the ONE fail-closed CPP resolution point
+
+stage = import_stage()
 
 from .annotator import run_worker, unit_id_for
 from .verify import run_checker, CHECKER_ID  # the pipeline's worker + checker, unchanged

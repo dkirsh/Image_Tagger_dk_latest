@@ -1,0 +1,188 @@
+{
+  "schema_version": "image_tagger_repo_interface.v1",
+  "repo_id": "Image_Tagger_dk_latest",
+  "declared_on": "2026-08-06",
+  "declared_by": "claude-term-1 (CLAUDE-M1-BUILD charge, branch codex/claude-m1-portable-cpp-2026-08)",
+  "certification": "DECLARED, NOT CERTIFIED. This file records the boundary as built and independently observable; it is not a self-certification of repair. An independent reviewer attacks the commit before adoption.",
+
+  "policy": {
+    "dependency_graph": "code dependencies must be acyclic and point at an equally or more stable provider; Image_Tagger -> cpp is a one-way dependency on a published protocol library, not a cycle",
+    "foreign_access": "foreign repository internals may be reached only through a declared interface resolved at one place",
+    "absolute_paths": "absolute paths naming a foreign repository, a host user, or a container sandbox are forbidden in active Python sources",
+    "single_resolution_point": "every runtime module obtains the provider through annotation_socket/_cpp_bootstrap.py; no module performs its own sys.path surgery",
+    "fail_closed": "an unsatisfied provider contract raises one diagnostic naming the contract and the remedies; it never degrades to a local lookalike",
+    "self_certification": "declared or provisional interfaces do not satisfy release readiness"
+  },
+
+  "repositories": [
+    {
+      "id": "Image_Tagger_dk_latest",
+      "role": "consumer",
+      "relative_path": ".",
+      "stability_rank": 60,
+      "identity_marker": "annotation_socket/_cpp_bootstrap.py"
+    },
+    {
+      "id": "cnfa_cpp",
+      "role": "provider",
+      "resolved_as": "the cpp/ subtree of the _control provider checkout",
+      "stability_rank": 100,
+      "identity_marker_current": "cpp/locate.py + cpp/stage.py",
+      "identity_marker_target": "pyproject.toml",
+      "identity_marker_target_present": false
+    },
+    {
+      "id": "control_supervisor",
+      "role": "provider",
+      "resolved_as": "the supervisor/ subtree of the _control provider checkout",
+      "stability_rank": 100,
+      "identity_marker_current": "supervisor/trusted_derivation.py",
+      "identity_marker_target": "pyproject.toml",
+      "identity_marker_target_present": false
+    }
+  ],
+
+  "interfaces": [
+    {
+      "id": "cnfa_cpp.stage.v1",
+      "provider": "cnfa_cpp",
+      "consumer": "Image_Tagger_dk_latest",
+      "dependency_kind": "code",
+      "status": "local_source_bootstrap",
+      "status_meaning": "resolved from a local provider checkout at run time; NOT an installed, version-pinned distribution",
+
+      "current_state": {
+        "transport": "resolved_local_source_tree",
+        "resolution_order": [
+          "packaged: `import cpp` already resolves (installed distribution or embedder-supplied) — highest precedence, no sys.path mutation",
+          "explicit: CONTROL_ROOT environment variable, honored strictly as the sole candidate (no fallthrough to a guess)",
+          "derived: bounded ancestor scan for <ancestor>/_control or <ancestor>/_control_deps, nearest first, at most 6 levels above this checkout or the cwd",
+          "fail closed: one CppBootstrapError naming the contract, what was searched, and the remedies"
+        ],
+        "acceptance_markers": ["cpp/locate.py", "cpp/stage.py"],
+        "acceptance_rule": "content, not directory existence: both marker files must be real files",
+        "provider_entry_point": "cpp.locate.bootstrap()",
+        "provider_entry_point_note": "the consumer seeds sys.path with the resolved root only far enough to import cpp.locate, pins CONTROL_ROOT to that root so the provider's own built-in default root cannot fire, then delegates; it does not re-implement the provider's bootstrap semantics",
+        "package_pinned": false,
+        "provider_contract_file": null,
+        "consumer_contract_file": null,
+        "consumer_bootstrap": "annotation_socket/_cpp_bootstrap.py"
+      },
+
+      "target_state": {
+        "transport": "immutable_python_package",
+        "package_name": "cnfa-cpp",
+        "provider_contract": "pyproject.toml",
+        "consumer_contract": "requirements.txt",
+        "status": "not_reached",
+        "pin_present": false,
+        "blocking": [
+          "the provider ships no pyproject.toml: /Users/davidusa/REPOS/_control/cpp/pyproject.toml and /Users/davidusa/REPOS/_control/pyproject.toml are both absent (verified 2026-08-06)",
+          "no distribution is importable: importlib.util.find_spec('cpp') and find_spec('cnfa_cpp') both returned None (verified 2026-08-06)",
+          "this repository has no requirements.txt entry to pin, because there is nothing yet to pin to"
+        ],
+        "note": "Article_Eater declares the same interface id with status pending_remote_pin and provider_commit f882af953c82e60bf90366b863b21b04c7f341c2. That entry names a pyproject.toml that does not exist in the provider checkout observed here. This repository therefore does NOT claim a pin; when the provider is genuinely packaged, both consumers move to target_state together."
+      },
+
+      "provider_observation": {
+        "observed_on": "2026-08-06",
+        "observed_control_root": "/Users/davidusa/REPOS/_control",
+        "observed_provider_head": "20d3c8e3cb843d62e2a31dd8969cd83f0e653b86",
+        "observed_cpp_subtree_commit": "e03d7ebf10d3b35d9fd9f4457a602485cc89d366",
+        "enforced": false,
+        "enforcement_note": "these commits are an OBSERVATION of the provider checkout at declaration time, not a pin. Nothing in this repository verifies them at run time, and the resolver will happily adopt a different provider revision. Treat as provenance, never as a guarantee."
+      },
+
+      "consumer_evidence": "annotation_socket/tests/test_cpp_bootstrap.py",
+      "source_files": [
+        "annotation_socket/_cpp_bootstrap.py",
+        "annotation_socket/annotator.py",
+        "annotation_socket/verify.py",
+        "annotation_socket/controller_drive.py",
+        "annotation_socket/run_stage.py",
+        "annotation_socket/controller.py"
+      ],
+      "symbols_used": [
+        "cpp.locate.bootstrap",
+        "cpp.stage.ensure_stage",
+        "cpp.stage.enqueue",
+        "cpp.stage.read_queue_units",
+        "cpp.stage.claim",
+        "cpp.stage.claimed_units",
+        "cpp.stage.reset_claim",
+        "cpp.stage.read_claims",
+        "cpp.stage.emit_event",
+        "cpp.stage.event_counts",
+        "cpp.stage.terminal_event_units",
+        "cpp.stage.write_quarantine",
+        "cpp.stage.read_quarantine",
+        "cpp.stage.quarantine_unit_ids",
+        "cpp.stage.write_verdict",
+        "cpp.stage.verdict_by_unit",
+        "cpp.stage.accept_output",
+        "cpp.stage.accepted_units",
+        "cpp.stage.unit_by_id",
+        "cpp.stage.audit",
+        "cpp.stage.read_audit",
+        "cpp.stage.digest_line",
+        "cpp.stage.read_digest",
+        "cpp.stage.now_ms",
+        "cpp.stage.StagePaths",
+        "cpp.stage.BoundaryError",
+        "cpp.stage.worker_attempt_control",
+        "cpp.stage.worker_attempt_accept"
+      ]
+    },
+
+    {
+      "id": "control_supervisor.trusted_derivation.v1",
+      "provider": "control_supervisor",
+      "consumer": "Image_Tagger_dk_latest",
+      "dependency_kind": "code",
+      "status": "local_source_bootstrap",
+      "status_meaning": "resolved from the same local provider checkout; a SEPARATE contract from cnfa_cpp.stage.v1",
+
+      "why_separate": "cpp/ is not self-contained at run time. cpp/worker_shim.py reuses the supervisor's classification and progress-watchdog primitives, and this repository takes its UNKNOWN trust sentinel from supervisor/trusted_derivation.py. A cnfa-cpp wheel that shipped only cpp/ would satisfy cnfa_cpp.stage.v1 and leave this contract unsatisfied, so the two are resolved, reported, and diagnosed independently.",
+
+      "current_state": {
+        "transport": "resolved_local_source_tree",
+        "acceptance_markers": ["supervisor/trusted_derivation.py"],
+        "resolution_order": [
+          "an already-importable module that actually carries the contract attribute (UNKNOWN / classify_result)",
+          "otherwise loaded from <control_root>/supervisor/ under a private namespaced module name",
+          "fail closed: one CppBootstrapError naming the supervisor contract and the remedies"
+        ],
+        "ambient_shadowing_guard": "an already-importable module is accepted only if it carries the required attribute — the unrelated PyPI `supervisor` process manager must not silently satisfy this contract",
+        "local_fallback_removed": "annotation_socket/derivation.py previously invented UNKNOWN = \"UNKNOWN\" when the provider import failed. That forked the trust vocabulary into a second sentinel that merely compared equal; it is removed, and the module now fails closed."
+      },
+
+      "target_state": {
+        "transport": "immutable_python_package",
+        "status": "not_reached",
+        "pin_present": false,
+        "blocking": [
+          "the provider ships no packaging metadata for supervisor/ (verified 2026-08-06)",
+          "no decision recorded on whether supervisor/ ships inside cnfa-cpp or as a separate distribution — this is a provider-side (_control) question, not a consumer-side one"
+        ]
+      },
+
+      "consumer_evidence": "annotation_socket/tests/test_cpp_bootstrap.py",
+      "source_files": [
+        "annotation_socket/_cpp_bootstrap.py",
+        "annotation_socket/derivation.py",
+        "annotation_socket/controller_drive.py"
+      ],
+      "symbols_used": [
+        "trusted_derivation.UNKNOWN",
+        "supervisor.classify_result"
+      ]
+    }
+  ],
+
+  "not_claimed": [
+    "That the provider's internal correctness (the [W:] boundary, O_EXCL claims, accepted/ content addressing) was verified. It was not; only the consumption boundary was.",
+    "That any package pin exists. None does, in either direction.",
+    "That the observed provider commits are enforced. They are provenance only.",
+    "That this repository's full annotation pipeline was end-to-end re-run against real images as part of this declaration. See docs/CPP_CONSUMER_BOUNDARY_2026-08-06.md for exactly which commands were run and which were not."
+  ]
+}
