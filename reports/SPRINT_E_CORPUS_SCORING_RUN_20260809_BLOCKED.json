@@ -1,0 +1,71 @@
+{
+  "abstention_rows": 0,
+  "annotator_available": false,
+  "annotator_blocker": {
+    "detail": "ModuleNotFoundError: No module named 'cpp'",
+    "hint": "annotation_socket/annotator.py imports the external CPP control library (`from cpp import stage`, expected at /Users/davidusa/REPOS/_control/cpp). It is not present in this checkout. Vendor or path-add that library to enable real scoring; do not stub it \u2014 it enforces the [W:] write boundary.",
+    "reason": "cannot import annotation_socket.annotator (missing module: cpp)"
+  },
+  "attributes_scored_count": 0,
+  "corpus_dir": "corpus_L6",
+  "dry_run": false,
+  "elapsed_s": 0.241,
+  "environment": {
+    "argv": [
+      "scripts/score_corpus_L6.py",
+      "--corpus-dir",
+      "corpus_L6",
+      "--out",
+      "corpus_L6/scores.csv",
+      "--limit",
+      "5",
+      "--resume",
+      "--report-path",
+      "reports/SPRINT_E_CORPUS_SCORING_RUN_20260809_BLOCKED.json"
+    ],
+    "cwd": "/Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest",
+    "determinism": {
+      "cv2_imported": true,
+      "cv2_threads_set": true,
+      "cv2_version": "4.11.0",
+      "env": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "VECLIB_MAXIMUM_THREADS": "1"
+      }
+    },
+    "git_branch": "tanishq-sprint-a-corpus-db-v2",
+    "git_commit": "fb85ee1b2f38a06a9e8e78631fae220bf8b54598",
+    "platform": "macOS-15.5-arm64-arm-64bit-Mach-O",
+    "python_version": "3.13.3",
+    "repo_root": "/Users/tanishqsingh/Documents/GitHub/Image_Tagger_dk_latest"
+  },
+  "failures": [],
+  "finished_utc": "2026-08-09T14:57:30+00:00",
+  "images_failed": 0,
+  "images_missing_file": 5,
+  "images_not_png": 0,
+  "images_scored": 0,
+  "images_seen": 5,
+  "images_skipped_existing": 0,
+  "limit": 5,
+  "manifest": "corpus_L6/manifest.csv",
+  "manifest_rows": 538,
+  "missing_files_sample": [
+    "interiors/industrial_open_office.png",
+    "interiors/classroom_complex_corridor.png",
+    "interiors/office_grade_1.png",
+    "interiors/balancedcare_corridor.png",
+    "nature_glass/farnsworth_foliage_through_glazing.png"
+  ],
+  "note": "BLOCKED: real annotator unavailable; scores.csv NOT written and NOT modified. No fake scores were produced.",
+  "rebuild_db": null,
+  "resume": true,
+  "schema_warning": null,
+  "score_rows_written": 0,
+  "scores_csv": "corpus_L6/scores.csv",
+  "sprint": "E",
+  "started_utc": "2026-08-09T14:57:30+00:00"
+}
