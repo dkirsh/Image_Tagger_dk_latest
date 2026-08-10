@@ -120,3 +120,12 @@ intended-activity per zone condition the appropriateness verdict. These jobs bui
 | (a) skimage-present 3-image stage smoke | 07-20 | 3 units AMBER, 42/42 scored, unknown=0, replayed, problems=[]; FC/SE (gabor/congestion/feature_congestion/subband) RED->cleared; neg-control RED; idempotent; docs/SMOKE_SKIMAGE_RERUN_2026-07-20.md |
 | CC-4 wave-2 geometry (W2.2-W2.5,W2.8 built; W2.1/W2.6 registered) | 07-20 | commit 90bd03e9; all AMBER, abstain-with-evidence; 68 preds; module+socket tests + 68-pred smoke (AMBER x3, unknown=0, neg-control RED) |
 | VIEW-3 question-driven composer (advisory-only, score-separated) | 07-20 | commit 743d0d6a; acceptance 'street noise on foyer' PASS; rogue-LLM number redacted; noise/clutter/biophilia/wayfinding/privacy templates; docs/VIEW3_QUESTION_COMPOSER_2026-07-20.md |
+
+---
+
+## Governance Module (cross-repo · IN DESIGN — Fable, added 2026-08-01)
+
+| ID | Task | Owner | Status | Notes |
+|----|------|-------|--------|-------|
+| GOV-1 | Design + prototype a repo-installable governance module (governance-as-code; detects process screw-ups) | FABLE | **BUILT (Phase 4): 16 checks, selftest 21/21, installed at /Users/davidusa/REPOS/_governance/ — AWAITING COLD ≠-MIND REVIEW before pilot installs** | Prompt: `/Users/davidusa/REPOS/Image_Tagger_dk_latest/docs/governance/FABLE_GOVERNANCE_MODULE_PROMPT_2026-08-01.md`. 4 phases: variance audit → best-practices/lessons → design (STOP for David sign-off) → prototype+installer+self-test. |
+| GOV-0 | (DONE 2026-08-01) Build Ledger convention added to root CLAUDE.md; propagated to all 9 repos via `propagate_root_conventions.sh` (idempotent) | cowork | COMPLETED | Precursor to GOV-1. |

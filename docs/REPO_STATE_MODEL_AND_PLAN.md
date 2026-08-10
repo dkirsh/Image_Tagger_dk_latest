@@ -7,6 +7,17 @@
 - `VERIFIED_BY: scripts/refresh_state_model.py` (re-derives every number in §5 by execution)
 - `MEASURED_ON: python3.14.2 darwin · numpy=yes cv2=yes PIL=yes skimage=yes scipy=yes pytest=yes`
 - `MEASUREMENT_QUORUM: 13/13 measurements returned a value (0 ABSENT or ERROR)`
+- `JUDGED_REVIEWED: 2026-08-05`
+- `JUDGED_REVIEW_INTERVAL_DAYS: 90`
+
+> **Why the last two lines exist, and why they are hand-maintained.** The six generated lines above
+> watch content that is *derived* — numbers a script can re-execute. They cannot watch §1–§4 and §7,
+> which are **judgements**: what the system is for, which traps matter, what the parts are really
+> trying to achieve. Judgements rot with the world rather than with the repository, so a repo could
+> pass its freshness check indefinitely while §1 described a system it had stopped being. Until this
+> pair was added, `scripts/prevention/state_model_freshness_check.py` reported this document STALE for
+> exactly that reason and no other. The refresher does not emit these fields; a person re-reads §1–§4
+> and §7 and re-stamps the date. *Added 2026-08-05.*
 
 > **`MEASURED_ON` is load-bearing, not decoration.** Several §5 figures are *environment-dependent*
 > — the socket test tallies change depending on whether `skimage`, `scipy` and `pytest` are importable.
