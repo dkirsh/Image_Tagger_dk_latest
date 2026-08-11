@@ -17,7 +17,9 @@ class DetectedElement(pydantic.BaseModel):
     confidence: float
 
 class ImageAnalysis(pydantic.BaseModel):
+    primary_room_type_id: Optional[str]
     elements: List[DetectedElement]
+    spatial_attributes_ids: List[str]
 
 class TaxonomyBuilder:
     def __init__(self):
@@ -48,12 +50,15 @@ class TaxonomyBuilder:
         
         # Build prompt incorporating the canonical ontology
         prompt = f"""
-        Analyze this image and identify all architectural and spatial elements.
+        Analyze this image and identify the primary functional room type, all architectural/furniture elements, and spatial attributes.
         Map them to the following canonical IDs if they fit perfectly.
-        If they do not fit, propose a novel classification string (dot-separated) and set mapped_canonical_id to null.
+        Enforce a SINGLE primary room type (from archetypal_rooms).
+        Extract multiple elements (from architectural_elements, furniture, and biophilic_and_natural_elements).
+        Extract multiple spatial attributes (from spatial_attributes).
+        If an element does not fit the ontology, propose a novel classification string (dot-separated) and set mapped_canonical_id to null.
         
         Canonical Ontology:
-        {json.dumps(self.canonical_ontology.get('architectural_elements', {}), indent=2)}
+        {{json.dumps(self.canonical_ontology, indent=2)}}
         """
 
         config = LocalAgentConfig(
@@ -67,11 +72,13 @@ class TaxonomyBuilder:
                 response = await agent.chat([prompt, image])
                 data = await response.structured_output()
                 
-                if data and "elements" in data:
-                    print(f"VLM Output:\n{json.dumps(data['elements'], indent=2)}")
-                    for elem in data["elements"]:
-                        if elem.get("novel_classification"):
-                            novel_id = elem["novel_classification"]
+                if data:
+                    print(f"VLM Output:\nPrimary Room: {data.primary_room_type_id}")
+                    print(f"Attributes: {data.spatial_attributes_ids}")
+                    print(f"Elements: {len(data.elements)} found.")
+                    for elem in data.elements:
+                        if elem.novel_classification:
+                            novel_id = elem.novel_classification
                             print(f"[*] Discovered NOVEL architectural feature: {novel_id}")
                             
                             # Add to registry if not already present
@@ -79,7 +86,7 @@ class TaxonomyBuilder:
                                 self.dynamic_registry.append({
                                     "id": novel_id,
                                     "source": "vlm_discovery",
-                                    "confidence_threshold": elem.get("confidence", 0.8)
+                                    "confidence_threshold": getattr(elem, "confidence", 0.8)
                                 })
                     self._save_dynamic_registry()
                     print(f"Updated Dynamic Registry Size: {len(self.dynamic_registry)}")
@@ -94,8 +101,8 @@ class TaxonomyBuilder:
 
 if __name__ == "__main__":
     builder = TaxonomyBuilder()
-    # Dummy mock path to test the syntax without hitting the model on a missing file
-    if os.path.exists("/dummy/path/to/target_office_01.jpg"):
-        builder.scan_image("/dummy/path/to/target_office_01.jpg")
+    test_image = os.path.join(os.path.dirname(os.path.dirname(__file__)), "Example Images", "Industrial-open-concept-office-project-by-Decorilla-1024x819.jpeg")
+    if os.path.exists(test_image):
+        builder.scan_image(test_image)
     else:
-        print("TaxonomyBuilder initialized successfully. Ready to process real images.")
+        print(f"TaxonomyBuilder initialized successfully. Test image not found at {test_image}.")
