@@ -5,23 +5,100 @@
 # 
 # Purpose: Define the 'Equivalence Classes' for Wave 3 Semantic Localization.
 # The VLM Taxonomy Builder must map its dynamic discoveries to these base classes first.
+# Layman terms (synonyms) are mapped strictly to standard architectural terminology.
+#
+# Note: At this stage, focus is strictly on semantic classifications. Sub-classifications
+# may include metric dimensions as children where appropriate.
 
 archetypal_rooms:
+  # Alexander Patterns
   - id: room.entrance_transition
     source: "Alexander (Pattern 112: Entrance Transition)"
     description: "The space bridging the outside and the inside."
-  - id: room.light_on_two_sides
-    source: "Alexander (Pattern 159: Light on Two Sides of Every Room)"
-    description: "A room structured to have natural light from at least two directions."
-  - id: room.workspace_enclosure
-    source: "Alexander (Pattern 183: Workspace Enclosure)"
-    description: "A semi-private or private space dedicated to focused work."
-  - id: room.half_hidden_garden
-    source: "Alexander (Pattern 111: Half-Hidden Garden)"
-    description: "An indoor-outdoor space partially visible from the interior."
+    vlm_synonyms: ["foyer", "entryway", "lobby", "vestibule"]
+  - id: room.intimacy_gradient
+    source: "Alexander (Pattern 127: Intimacy Gradient)"
+    description: "A sequence of spaces moving from highly public to highly private."
+    vlm_synonyms: ["layered space", "public to private space"]
+  - id: room.indoor_sunlight
+    source: "Alexander (Pattern 128: Indoor Sunlight)"
+    description: "A room configured specifically to capture direct indoor sunlight."
+    vlm_synonyms: ["sunroom", "sunlit room", "bright room", "conservatory"]
+  - id: room.sequence_of_sitting_spaces
+    source: "Alexander (Pattern 142: Sequence of Sitting Spaces)"
+    description: "Multiple discrete sitting areas within a larger room or sequence of rooms."
+    vlm_synonyms: ["sitting areas", "grouped seating", "multiple lounges"]
   - id: room.communal_eating
     source: "Alexander (Pattern 147: Communal Eating)"
     description: "A space scaled for group dining and social assembly."
+    vlm_synonyms: ["dining room", "cafeteria", "mess hall", "eating area"]
+  - id: room.light_on_two_sides
+    source: "Alexander (Pattern 159: Light on Two Sides of Every Room)"
+    description: "A room structured to have natural light from at least two directions."
+    vlm_synonyms: ["corner room", "multi-window room", "brightly lit room"]
+  - id: room.window_place
+    source: "Alexander (Pattern 180: Window Place)"
+    description: "An alcove, seat, or distinctly articulated space directly adjacent to a window."
+    vlm_synonyms: ["window seat", "bay window", "window nook"]
+  - id: room.workspace_enclosure
+    source: "Alexander (Pattern 183: Workspace Enclosure)"
+    description: "A semi-private or private space dedicated to focused work."
+    vlm_synonyms: ["private office", "enclosed workspace", "study"]
+  - id: room.ceiling_height_variety
+    source: "Alexander (Pattern 190: Ceiling Height Variety)"
+    description: "A space characterized by distinct changes in ceiling height to define sub-zones."
+    vlm_synonyms: ["split ceiling height", "varied ceiling", "dropped ceiling zone"]
+  - id: room.shape_of_indoor_space
+    source: "Alexander (Pattern 191: The Shape of Indoor Space)"
+    description: "A room with a distinct volumetric shape, typically vaulted or non-rectilinear, making it a cohesive container."
+    vlm_synonyms: ["vaulted room", "shaped room", "sculpted space"]
+  - id: room.flow_through_rooms
+    source: "Alexander (Pattern 131: The Flow Through Rooms)"
+    description: "Movement paths that pass directly from room to room without a dedicated hallway."
+    vlm_synonyms: ["enfilade", "connected rooms", "open flow"]
+  # Places365 Functional Rooms
+  - id: room.conference_room
+    source: "Places365"
+    description: "A room used for business meetings and conferences."
+    vlm_synonyms: ["conference_room", "boardroom", "meeting room"]
+  - id: room.living_room
+    source: "Places365"
+    description: "A room in a home used for relaxing and entertaining guests."
+    vlm_synonyms: ["living_room", "lounge", "sitting room"]
+  - id: room.classroom
+    source: "Places365"
+    description: "A room in a school or college where classes are taught."
+    vlm_synonyms: ["classroom", "lecture hall"]
+  - id: room.lobby
+    source: "Places365"
+    description: "A room providing a space out of which one or more other rooms or corridors lead, typically one near the entrance of a public building."
+    vlm_synonyms: ["lobby", "reception area"]
+  - id: room.cafeteria
+    source: "Places365"
+    description: "A restaurant or dining room in a school or a business in which customers serve themselves or are served from a counter."
+    vlm_synonyms: ["cafeteria", "canteen"]
+  - id: room.auditorium
+    source: "Places365"
+    description: "The part of a theater, concert hall, or other public building in which the audience sits."
+    vlm_synonyms: ["auditorium", "theater", "lecture theater"]
+
+  # Neufert Typologies
+  - id: room.sanitary_washroom
+    source: "Neufert"
+    description: "Spaces dedicated to personal hygiene, toilets, and washing."
+    vlm_synonyms: ["bathroom", "restroom", "lavatory", "washroom", "wc"]
+  - id: room.office_open_plan
+    source: "Neufert"
+    description: "A standardized large open work grid with multiple workstations."
+    vlm_synonyms: ["open office", "bullpen", "cubicle farm", "open workspace"]
+  - id: room.office_cellular
+    source: "Neufert"
+    description: "Individual, enclosed office rooms arranged along a corridor."
+    vlm_synonyms: ["cellular office", "corridor office", "enclosed offices"]
+  - id: room.utility_core
+    source: "Neufert"
+    description: "Centralized or discreet zones for building services, mechanical, and janitorial."
+    vlm_synonyms: ["utility room", "mechanical room", "service core", "janitor closet"]
 
 architectural_elements:
   doors:
@@ -41,8 +118,12 @@ architectural_elements:
       source: "Neufert"
       description: "A door that slides into a concealed wall compartment."
       vlm_synonyms: ["pocket door", "hidden sliding door"]
+    - id: door.solid_with_glass
+      source: "Alexander (Pattern 237: Solid Doors with Glass)"
+      description: "A sturdy door featuring a small glazed pane to reveal activity beyond."
+      vlm_synonyms: ["door with window", "glazed door", "half-glass door"]
 
-  windows:
+  windows_and_glazing:
     - id: window.standard_casement
       source: "Neufert"
       description: "Window that opens on a side hinge."
@@ -59,12 +140,36 @@ architectural_elements:
       source: "Alexander (Pattern 223: Deep Reveals)"
       description: "A window with a deep sill that affords sitting or placing objects."
       vlm_synonyms: ["window sill", "deep window", "window seat"]
+    - id: window.mullioned_curtain
+      source: "Neufert"
+      description: "A non-structural outer covering of a building enclosing glass in an aluminum frame."
+      vlm_synonyms: ["glass facade", "curtain wall", "mullion", "full glass wall"]
+    - id: window.skylight
+      source: "Neufert"
+      description: "A window installed in a roof or ceiling."
+      vlm_synonyms: ["roof window", "skylight", "ceiling light", "zenithal light"]
+    - id: window.transom
+      source: "Neufert"
+      description: "A window set above the transom of a door or larger window."
+      vlm_synonyms: ["transom window", "over-door window"]
+    - id: window.louvered
+      source: "Neufert"
+      description: "A window composed of parallel glass, acrylic, or wooden louvers set in a frame."
+      vlm_synonyms: ["jalousie window", "louver window", "slatted window"]
+    - id: window.internal_lightwell
+      source: "Neufert"
+      description: "An unroofed external space provided within the volume of a large building to allow light and air to reach what would otherwise be dark or unventilated."
+      vlm_synonyms: ["lightwell", "air shaft", "atrium skylight"]
+    - id: window.filtered_light
+      source: "Alexander (Pattern 238: Filtered Light)"
+      description: "A window or opening where light passes through a screen, lattice, or foliage to create dappled light."
+      vlm_synonyms: ["dappled light", "screened window", "lattice window"]
 
   partitions_and_walls:
     - id: wall.full_height_solid
       source: "Neufert"
       description: "Standard structural or partition wall extending floor to ceiling."
-      vlm_synonyms: ["wall", "drywall", "plaster wall"]
+      vlm_synonyms: ["wall", "drywall", "plaster wall", "partition"]
     - id: wall.half_height_partition
       source: "Alexander (Pattern 183: Workspace Enclosure)"
       description: "A partition that provides seated privacy but open visual space above."
@@ -72,7 +177,89 @@ architectural_elements:
     - id: wall.glazed_partition
       source: "Neufert"
       description: "Interior glass wall dividing spaces while transmitting light."
-      vlm_synonyms: ["glass wall", "glass partition", "internal window"]
+      vlm_synonyms: ["glass wall", "glass partition", "internal window", "storefront system"]
+    - id: wall.half_open
+      source: "Alexander (Pattern 193: Half-Open Wall)"
+      description: "A wall that is partially open (e.g. arched openings, interior columns replacing a solid wall)."
+      vlm_synonyms: ["archway", "open wall", "room divider", "screen"]
+
+  finishes_and_details:
+    - id: element.baseboard
+      source: "ADE20K"
+      description: "A narrow wooden board running along the base of an interior wall."
+      vlm_synonyms: ["baseboard", "skirting board", "molding"]
+    - id: element.windowpane
+      source: "ADE20K"
+      description: "A pane of glass in a window."
+      vlm_synonyms: ["windowpane", "glass pane"]
+
+  structural_and_ceiling:
+    - id: structural.column_exposed
+      source: "Neufert"
+      description: "Visible load-bearing vertical pillar (steel, concrete, or timber)."
+      vlm_synonyms: ["column", "pillar", "post", "support"]
+    - id: structural.column_decorative
+      source: "Neufert"
+      description: "Non-load-bearing vertical pillar used for aesthetic or space-defining purposes."
+      vlm_synonyms: ["decorative column", "pilaster", "faux pillar"]
+    - id: structural.beam_exposed
+      source: "Neufert"
+      description: "Visible load-bearing horizontal span."
+      vlm_synonyms: ["beam", "joist", "girder", "truss"]
+    - id: structural.beam_dropped
+      source: "Neufert"
+      description: "A beam that protrudes downwards from the ceiling plane."
+      vlm_synonyms: ["dropped beam", "soffit beam", "protruding beam"]
+    - id: ceiling.suspended_acoustic
+      source: "Neufert"
+      description: "A secondary ceiling hung below the main structural ceiling, often with grid tiles."
+      vlm_synonyms: ["drop ceiling", "acoustic tiles", "t-bar ceiling", "office ceiling"]
+    - id: ceiling.vaulted_or_pitched
+      source: "Neufert"
+      description: "A non-flat ceiling rising to an apex or curve."
+      vlm_synonyms: ["vaulted ceiling", "slanted ceiling", "pitched roof", "high ceiling"]
+    - id: structural.raised_floor
+      source: "Neufert"
+      description: "An elevated structural floor above a solid substrate to create a hidden void for passage of mechanical and electrical services."
+      vlm_synonyms: ["access floor", "raised flooring", "computer floor"]
+
+  circulation_and_stairs:
+    - id: circulation.corridor
+      source: "Neufert"
+      description: "A narrow hallway providing access to rooms."
+      vlm_synonyms: ["hallway", "corridor", "passageway"]
+    - id: circulation.stair_flight_straight
+      source: "Neufert"
+      description: "A continuous series of steps in a single straight line."
+      vlm_synonyms: ["straight stairs", "straight flight", "staircase", "steps"]
+    - id: circulation.stair_spiral
+      source: "Neufert"
+      description: "A stairway winding continuously around a central axis."
+      vlm_synonyms: ["spiral staircase", "helical stairs", "winding stairs"]
+    - id: circulation.open_stairs
+      source: "Alexander (Pattern 158: Open Stairs)"
+      description: "A stairway visually connected to the main social space rather than enclosed in a shaft."
+      vlm_synonyms: ["open staircase", "floating stairs", "feature stair"]
+    - id: circulation.staircase_as_a_stage
+      source: "Alexander (Pattern 133: Staircase as a Stage)"
+      description: "A stair wide and inviting enough to be used as seating or a social focal point."
+      vlm_synonyms: ["grand staircase", "seating stairs", "bleacher stairs"]
+    - id: circulation.landing
+      source: "Neufert"
+      description: "A level area between flights of stairs."
+      vlm_synonyms: ["stair landing", "platform"]
+    - id: circulation.handrail
+      source: "Neufert"
+      description: "A rail designed to be grasped by the hand so as to provide stability or support."
+      vlm_synonyms: ["railing", "banister", "balustrade"]
+    - id: circulation.ramp
+      source: "Neufert"
+      description: "An inclined plane installed in addition to or instead of stairs."
+      vlm_synonyms: ["ramp", "incline", "sloped floor"]
+    - id: circulation.elevator
+      source: "Neufert"
+      description: "A vertical transport vehicle that moves people or goods between floors."
+      vlm_synonyms: ["lift", "elevator", "elevator doors"]
 
   cabinetry_and_storage:
     - id: storage.built_in_cabinetry
@@ -83,6 +270,28 @@ architectural_elements:
       source: "Alexander (Pattern 197: Thick Walls)"
       description: "Deep structural walls that house storage, niches, or alcoves."
       vlm_synonyms: ["niche", "wall alcove", "inset shelf"]
+
+  mechanical_and_fixtures:
+    - id: mechanical.hvac_vent
+      source: "Neufert"
+      description: "Visible grilles or diffusers for air conditioning and heating."
+      vlm_synonyms: ["vent", "air conditioning", "ac vent", "diffuser", "grille"]
+    - id: mechanical.recessed_lighting_grid
+      source: "Neufert"
+      description: "Light fixtures installed directly into a hollow opening in a ceiling, often in a grid pattern."
+      vlm_synonyms: ["can light", "recessed light", "downlight", "grid lighting"]
+    - id: mechanical.pendant_lighting
+      source: "Neufert"
+      description: "A lone light fixture that hangs from the ceiling usually suspended by a cord, chain, or metal rod."
+      vlm_synonyms: ["hanging light", "pendant light", "chandelier"]
+    - id: mechanical.surface_conduit
+      source: "Neufert"
+      description: "Visible electrical or plumbing piping running along walls or ceilings."
+      vlm_synonyms: ["exposed pipes", "conduit", "ductwork", "surface mounted wire"]
+    - id: mechanical.sanitary_fixture
+      source: "Neufert"
+      description: "Plumbing fixtures connected to the sanitary drainage system."
+      vlm_synonyms: ["sink", "toilet", "urinal", "washbasin", "plumbing fixture"]
 
   furniture:
     - id: furniture.standard_work_surface
@@ -101,6 +310,14 @@ architectural_elements:
       source: "Alexander (Pattern 147: Communal Eating)"
       description: "Large table acting as a social center of gravity."
       vlm_synonyms: ["dining table", "conference table", "large table"]
+    - id: furniture.wardrobe
+      source: "ADE20K"
+      description: "A large, tall cabinet in which clothes may be hung or stored."
+      vlm_synonyms: ["wardrobe", "closet", "armoire"]
+    - id: furniture.shelf
+      source: "ADE20K"
+      description: "A flat length of wood or rigid material, attached to a wall or forming part of a piece of furniture."
+      vlm_synonyms: ["shelf", "bookshelf", "shelving"]
 
 biophilic_and_natural_elements:
   - id: nature.indoor_vegetation
@@ -115,3 +332,29 @@ biophilic_and_natural_elements:
     source: "Alexander (Pattern 64: Pools and Streams)"
     description: "Indoor or immediately visible outdoor water."
     vlm_synonyms: ["water", "pool", "fountain", "aquarium"]
+
+spatial_attributes:
+  - id: attribute.natural_light
+    source: "SUN Attribute Dataset"
+    description: "The space is predominantly illuminated by natural sunlight."
+    vlm_synonyms: ["natural_light", "sunlit", "daylight"]
+  - id: attribute.man_made_light
+    source: "SUN Attribute Dataset"
+    description: "The space is predominantly illuminated by artificial lighting."
+    vlm_synonyms: ["man_made_light", "artificial lighting", "electric light"]
+  - id: attribute.cluttered
+    source: "SUN Attribute Dataset"
+    description: "The space is densely filled with objects or exhibits a lack of organization."
+    vlm_synonyms: ["cluttered", "messy", "crowded"]
+  - id: attribute.symmetric
+    source: "SUN Attribute Dataset"
+    description: "The space exhibits strong formal symmetry in its layout or architecture."
+    vlm_synonyms: ["symmetric", "symmetrical", "balanced"]
+  - id: attribute.enclosed_area
+    source: "SUN Attribute Dataset"
+    description: "The space feels bounded, constrained, or heavily walled off."
+    vlm_synonyms: ["enclosed_area", "confined", "bounded"]
+  - id: attribute.open_area
+    source: "SUN Attribute Dataset"
+    description: "The space feels expansive, with long sightlines or minimal boundaries."
+    vlm_synonyms: ["open_area", "spacious", "unbounded"]
