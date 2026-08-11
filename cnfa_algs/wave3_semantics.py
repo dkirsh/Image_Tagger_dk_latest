@@ -53,13 +53,13 @@ class Wave3Localizer:
             urllib.request.urlretrieve("https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth", sam_weights)
 
         print("[Wave3] Loading Grounding DINO...")
-        # (Assuming config exists in the repo or is downloaded similarly)
-        # self.gdino_model = load_model(gdino_config, gdino_weights)
+        # Grounding DINO SwinT config is usually fetched alongside the model, assuming it's available:
+        self.gdino_model = load_model(gdino_config, gdino_weights)
         
         print("[Wave3] Loading Segment Anything Model (SAM)...")
-        # sam = sam_model_registry["vit_h"](checkpoint=sam_weights)
-        # sam.to(device=self.device)
-        # self.sam_predictor = SamPredictor(sam)
+        sam = sam_model_registry["vit_h"](checkpoint=sam_weights)
+        sam.to(device=self.device)
+        self.sam_predictor = SamPredictor(sam)
         print(f"[Wave3] Models successfully loaded into {self.device} memory!")
 
     def _load_canonical(self) -> Dict[str, Any]:
@@ -108,28 +108,26 @@ class Wave3Localizer:
         print(f"[Wave3] Search query length: {len(search_terms)} terms")
         
         # 1. Load Image
-        # image_source, image = load_image(image_path)
+        image_source, image = load_image(image_path)
         
         # 2. Run Grounding DINO to get bounding boxes
-        # boxes, logits, phrases = predict(self.gdino_model, image, text_prompt, box_threshold=0.3, text_threshold=0.25)
+        boxes, logits, phrases = predict(self.gdino_model, image, text_prompt, box_threshold=0.3, text_threshold=0.25)
         
         # 3. Run SAM on the bounding boxes to get pixel-perfect masks
-        # image_rgb = cv2.cvtColor(image_source, cv2.COLOR_BGR2RGB)
-        # self.sam_predictor.set_image(image_rgb)
-        # transformed_boxes = self.sam_predictor.transform.apply_boxes_torch(boxes, image_rgb.shape[:2])
-        # masks, _, _ = self.sam_predictor.predict_torch(point_coords=None, point_labels=None, boxes=transformed_boxes, multimask_output=False)
+        image_rgb = cv2.cvtColor(image_source, cv2.COLOR_BGR2RGB)
+        self.sam_predictor.set_image(image_rgb)
+        transformed_boxes = self.sam_predictor.transform.apply_boxes_torch(boxes, image_rgb.shape[:2])
+        masks, _, _ = self.sam_predictor.predict_torch(point_coords=None, point_labels=None, boxes=transformed_boxes, multimask_output=False)
         
         # Assemble Results
         final_results = []
-        # for i, (box, phrase, logit, mask) in enumerate(zip(boxes, phrases, logits, masks)):
-        #     final_results.append({
-        #         "term": phrase,
-        #         "bbox": box.tolist(),
-        #         "confidence": float(logit),
-        #         "mask_polygon": "POLYGON_STUB" # Real implementation would extract contour from mask
-        #     })
-            
-        print("[Wave3] (Note: Inference is commented out to prevent execution crashes during syntax verification without full PyTorch setup)")
+        for i, (box, phrase, logit, mask) in enumerate(zip(boxes, phrases, logits, masks)):
+            final_results.append({
+                "term": phrase,
+                "bbox": box.tolist(),
+                "confidence": float(logit),
+                "mask_polygon": "POLYGON_STUB" # Real implementation would extract contour from mask
+            })
         return final_results
 
 if __name__ == "__main__":
