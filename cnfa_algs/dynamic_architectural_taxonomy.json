@@ -1,0 +1,8 @@
+[
+  {
+    "id": "fixture.ceiling_suspended_metallic_appendage",
+    "source": "VLM_Dynamic_Discovery",
+    "description": "A bizarre floating metallic appendage hanging from the ceiling",
+    "first_seen_in": "target_office_01.jpg"
+  }
+]

@@ -114,7 +114,7 @@ already lists.
 |---|---|---|---|---|
 | V1 | `contour_angularity_index` | SHARED | V1 contour; edge_clarity/V13 | **DONE+EXT (AMBER, built)** |
 | V2 | `spectral_discomfort_deviation` | WB | V2 spectral_slope; V2 | **DONE+EXT (AMBER, built)** |
-| V3 | `visible_vegetation_fraction` | WB | (none — new); C9/C10/prospect | SPEC+PLAN |
+| V3 | `visible_vegetation_fraction` | WB | handled by Wave 3 semantics | **DONE+INT (Wave 3)** |
 | V4 | `mystery_occlusivity` | SHARED | C19 restoration; (none — new); (none — new isovist) | SPEC+PLAN (needs input) |
 | V5 | `window_view_layer_content` | SHARED | brightness_variance/glare; prospect/daylight; C9/C10/prospect | SPEC+PLAN |
 | V6 | `subband_entropy_clutter` | SHARED | processing_load/V6/V7; V6; palette_entropy/V6 | **DONE+EXT (AMBER, built)** |
@@ -123,7 +123,7 @@ already lists.
 | V9 | `fractal_mid_d_band_score` | SHARED | fractal_dimension/V9 | **DONE+EXT (AMBER, built)** |
 | V10 | `landmark_differentiation` | COG | landmark_salience | SPEC+PLAN |
 | V11 | `route_angular_continuity` | COG | V1 contour; C6 path_overlap; C4 wayfinding | SPEC+PLAN (AMBER) |
-| V12 | `natural_material_fraction` | WB | materials cues (attributes); material coverage | SPEC+PLAN (AMBER) |
+| V12 | `natural_material_fraction` | WB | handled by Wave 3 semantics | **DONE+INT (Wave 3)** |
 | V13 | `edge_orientation_entropy` | SHARED | V13 orient_entropy; edge_clarity/V13; palette_entropy/V6 | **DONE+EXT (AMBER, built)** |
 | V14 | `luminance_histogram_shape` | WB | brightness_variance/glare; C9/C10/prospect | SPEC+PLAN (AMBER) |
 | V15 | `spatial_contrast_composition` | COG | brightness_variance/glare; C10 daylight | SPEC+PLAN (AMBER) |
@@ -164,10 +164,10 @@ already lists.
 | V50 | `spectral_openness` | SHARED | V2 spectral_slope; prospect/daylight | SPEC+PLAN (AMBER) |
 | V51 | `spectral_mean_depth` | SHARED | V2 spectral_slope; C19 restoration; depth (geometry) | SPEC+PLAN (AMBER) |
 | V52 | `size_hierarchy_exponent` | COG | (new — no existing fraction) | REJECTED |
-| V53 | `water_feature_presence` | WB | V7 | SPEC+PLAN (needs input) |
+| V53 | `water_feature_presence` | WB | handled by Wave 3 semantics | **DONE+INT (Wave 3)** |
 | V54 | `facade_pareidolia_salience` | COG | landmark_salience | REJECTED |
 | V55 | `floor_guidance_continuity` | COG | edge_clarity/V13; C6 path_overlap | SPEC+PLAN (AMBER) |
-| V56 | `patina_wear_index` | WB | C19/materials | REJECTED |
+| V56 | `patina_wear_index` | WB | handled by Wave 3 semantics | **DONE+INT (Wave 3)** |
 
 ---
 
