@@ -2,4 +2,6 @@ torch>=2.0.0
 torchvision
 opencv-python
 segment-anything
+pydantic
+google-antigravity
 git+https://github.com/IDEA-Research/GroundingDINO.git
