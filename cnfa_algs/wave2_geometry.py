@@ -457,6 +457,33 @@ def threshold_emphasized(img_bgr, planes) -> AttributeResult:
                        "material change is proxied by luminance only (no material classifier here)"])
 
 
+# ================================================================ W2.9 wayfinding_sightlines_hough
+def wayfinding_sightlines_hough(img_bgr) -> AttributeResult:
+    """v2a_074 — Wayfinding legibility / straight sightlines.
+    Calls estimate_vanishing_point. If confidence is high, there are strong structural lines 
+    converging to a single vanishing point (e.g., deep corridor/street), providing high legibility.
+    """
+    try:
+        from cnfa_algs.geometry import estimate_vanishing_point
+    except Exception:
+        from geometry import estimate_vanishing_point # type: ignore
+        
+    vx, vy, vconf = estimate_vanishing_point(img_bgr)
+    
+    H, W = img_bgr.shape[:2]
+    # estimate_vanishing_point returns (W/2, H*0.42, 0.2) as a weak prior when it fails to find lines
+    if abs(vconf - 0.2) < 1e-5 and abs(vx - W/2.0) < 1e-5:
+        return AttributeResult(key="cnfa.geometry.wayfinding_legibility", scalar=None, confidence=0.0, method="No lines or no vanishing point found")
+        
+    scalar = float(np.clip(vconf, 0.0, 1.0))
+    return AttributeResult(
+        key="cnfa.geometry.wayfinding_legibility", scalar=scalar, confidence=0.6,
+        method="Geometric vanishing point convergence strength",
+        extras={"vp_x": float(vx), "vp_y": float(vy), "vp_conf": float(vconf)},
+        failure_modes=["A brick wall photographed straight-on will have strong orthogonal lines but zero depth"]
+    )
+
+
 # --------------------------------------------------------------------------- self-test
 if __name__ == "__main__":
     print("wave2_geometry self-test\n" + "-" * 56)
@@ -564,8 +591,22 @@ if __name__ == "__main__":
     assert bl_tiny.scalar is None, bl_tiny.method
     assert bl_L.scalar is not None and bl_S.scalar is not None
     assert bl_L.scalar > bl_S.scalar, (bl_L.scalar, bl_L.extras, bl_S.scalar, bl_S.extras)
+    assert bl_L.scalar > bl_S.scalar, (bl_L.scalar, bl_L.extras, bl_S.scalar, bl_S.extras)
     print(f"W2.4 blind corner: L-corridor {bl_L.scalar:.3f} (blind {bl_L.extras['n_blind']}/"
           f"{bl_L.extras['n_corners']}) > straight {bl_S.scalar:.3f}; tiny->abstain  OK")
+
+    # W2.9: wayfinding_sightlines_hough (v2a_074)
+    blank_bgr = mk(np.full((H, W, 3), 128.0))
+    w_blank = wayfinding_sightlines_hough(blank_bgr)
+    corridor = np.full((H, W, 3), 255.0)
+    cv2.line(corridor, (10, 10), (W//2, H//2), (0, 0, 0), 2)
+    cv2.line(corridor, (W-10, 10), (W//2, H//2), (0, 0, 0), 2)
+    cv2.line(corridor, (10, H-10), (W//2, H//2), (0, 0, 0), 2)
+    cv2.line(corridor, (W-10, H-10), (W//2, H//2), (0, 0, 0), 2)
+    w_corr = wayfinding_sightlines_hough(mk(corridor))
+    assert w_blank.scalar is None, "Blank image should abstain"
+    assert w_corr.scalar is not None and w_corr.scalar > 0.0, "Corridor should have legibility > 0"
+    print(f"W2.9 wayfinding legibility: corridor {w_corr.scalar:.2f} > blank (abstain)  OK")
 
     # determinism x2 (old + new)
     assert verticality_cues(mk(np.stack([col] * 3, -1))).scalar == vc.scalar

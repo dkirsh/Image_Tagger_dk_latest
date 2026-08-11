@@ -194,8 +194,73 @@ limitations. Parameters without citations are marked honestly.
 | Default style | Heatmap (TURBO colormap) | Project convention, no published source | Heatmaps are less likely to confuse VLM models than figurative representations (stick figures could be mistaken for real people) | No empirical comparison of VLM performance across rendering styles |
 | Overlay alpha | 0.45 | Project convention, no published source | Balances visibility of both the original image and the overlay | Subjective aesthetic choice |
 
+## Light & Color Primitives (Phase 2 Batch 1)
+
+### v2a_007: Flicker/modulation risk cues
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| Banding amplitude | FFT peak | Wilkins et al. 2010, "LED lighting flicker and potential health concerns" | LEDs on PWM dimmers cause visible horizontal banding in rolling-shutter CMOS cameras (common in smartphones). High-frequency row-wise luminance oscillation is a proxy for invisible temporal light modulation. | Depends on camera shutter speed; mechanical shutters or long exposures hide the effect. False positives can occur from physical horizontal blinds. |
+
+### v2a_008: Color/saturation rendering
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| Saturation variance | HSV S-channel mean/variance | Project convention (Proxy for Color Fidelity Index) | Environments with poor Color Rendering Index (CRI) collapse color variance, causing materials to appear washed out. High saturation variance implies full-spectrum lighting. | Heavily confounded by interior design (a monochromatic gray room under 100 CRI sunlight still has near-zero saturation variance). |
+
+## Geometry & Aesthetics (Phase 2 Batch 2)
+
+### v2a_074: Wayfinding legibility / straight sightlines
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| Convergence | VP confidence | Kaplan & Kaplan 1989, "The Experience of Nature" (Legibility) | A space with a strong, single-point perspective vanishing point implies a clear path, whereas chaotic lines imply poor wayfinding. | A brick wall photographed straight-on will have strong orthogonal lines but zero depth. |
+
+### v2a_082: Curvature vs sharp angles
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| Curved ratio | Contour approx | Vartanian et al. 2013, "Impact of contour on aesthetic judgments..." | Humans show aesthetic preference for curvilinear environments over sharp-angled ones. | Cannot distinguish architectural curves from circular objects (plates, lamps) without semantics. |
+
+### v2a_091: Visual complexity gradients
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| Edge density variance | Grid Canny std dev | Stamps 2003, "Advances in visual diversity and entropy" | High variance implies some zones are quiet while others are active (a gradient). | Extremely sparse environments have low variance (all zero) exactly like extremely cluttered ones. |
+
+## Aesthetics, Clutter & Textures (Phase 2 Batch 3)
+*Note: All BUILD items in this batch are pre-existing primitives mapped to the new `v2a_` codes per the "Reuse before you build" directive.*
+
+### v2a_083: Symmetry and regularity
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| Horizontal symmetry | `symmetry_score_horizontal` | Hagerhall et al. 2004, "Fractal dimension of landscape silhouette outlines..." | Symmetry contributes strongly to perceptual fluency and positive aesthetic appraisals. | Does not account for radial symmetry or vertical symmetry (e.g. looking down at a floor). |
+
+### v2a_084: Fractal self similar edge statistics
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| Box-counting D | `fractal_dimension` | Joye 2007, "Architectural lessons from environmental psychology: The case of biophilic architecture" | Scenes with mid-band fractal dimension (D ≈ 1.3-1.5) are processed more fluently and deemed more restorative. | Scale-dependent; varies greatly with image resolution and Canny threshold choices. |
+
+### v2a_085: Clutter disorder object density
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| Subband entropy | `processing_load` / V6 / V7 | Rosenholtz et al. 2007, "Measuring visual clutter" | High visual clutter correlates with longer search times and higher cognitive load. | Does not distinguish between "organized" complexity (like a bookshelf) and chaotic mess. |
+
+### v2a_087: Color diversity and saturation
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| HSV histogram | `color_palette_entropy` | Stamps 2003, "Advances in visual diversity and entropy" | Color variety directly informs the perceived visual richness and complexity of a space. | A room with many colors that clash may have the same entropy as a harmoniously balanced polychrome room. |
+
+### v2a_088: Texture density
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| Local micro-texture | `texture_density` | Kaplan & Kaplan 1989, "The Experience of Nature" | Textural gradients aid in depth perception and differentiate material surfaces from flat voids. | Sensor noise in low-light environments is often misidentified as structural texture. |
+
+## Nature & Biophilia (Phase 2 Batch 4)
+*Note: Most attributes in this batch require semantic VLM adaptation. Only `v2a_100` is a pre-existing geometry primitive.*
+
+### v2a_100: Prospect to distant views
+| Parameter | Value | Citation | Rationale | Limitations |
+|-----------|-------|----------|-----------|-------------|
+| Free visual space | `prospect` | Appleton 1975, "The Experience of Landscape" | Humans prefer environments offering an unimpeded opportunity to see (prospect) from a secure vantage. | Depth heuristics on 2D images often mistake smooth surfaces (like blank walls) for open voids without semantic cues. |
+
 ```
 Table authored: 2026-07-14
-Last updated: 2026-07-15
+Last updated: 2026-08-10
 ```
 

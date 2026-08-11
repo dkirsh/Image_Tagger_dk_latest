@@ -1,0 +1,117 @@
+# Canonical Architectural Ontology
+# Sources: 
+# - Ernst & Peter Neufert: Architects' Data
+# - Christopher Alexander: A Pattern Language
+# 
+# Purpose: Define the 'Equivalence Classes' for Wave 3 Semantic Localization.
+# The VLM Taxonomy Builder must map its dynamic discoveries to these base classes first.
+
+archetypal_rooms:
+  - id: room.entrance_transition
+    source: Alexander (Pattern 112: Entrance Transition)
+    description: "The space bridging the outside and the inside."
+  - id: room.light_on_two_sides
+    source: Alexander (Pattern 159: Light on Two Sides of Every Room)
+    description: "A room structured to have natural light from at least two directions."
+  - id: room.workspace_enclosure
+    source: Alexander (Pattern 183: Workspace Enclosure)
+    description: "A semi-private or private space dedicated to focused work."
+  - id: room.half_hidden_garden
+    source: Alexander (Pattern 111: Half-Hidden Garden)
+    description: "An indoor-outdoor space partially visible from the interior."
+  - id: room.communal_eating
+    source: Alexander (Pattern 147: Communal Eating)
+    description: "A space scaled for group dining and social assembly."
+
+architectural_elements:
+  doors:
+    - id: door.standard_swing
+      source: Neufert
+      description: "Standard hinged door, solid or hollow core."
+      vlm_synonyms: ["door", "hinged door", "wooden door", "room door"]
+    - id: door.sliding_glass
+      source: Neufert
+      description: "Glass panels that slide horizontally, typically to the exterior."
+      vlm_synonyms: ["sliding door", "glass sliding door", "patio door"]
+    - id: door.french
+      source: Neufert
+      description: "Double doors with glass panes extending most of their length."
+      vlm_synonyms: ["french doors", "double glass doors"]
+    - id: door.pocket
+      source: Neufert
+      description: "A door that slides into a concealed wall compartment."
+      vlm_synonyms: ["pocket door", "hidden sliding door"]
+
+  windows:
+    - id: window.standard_casement
+      source: Neufert
+      description: "Window that opens on a side hinge."
+      vlm_synonyms: ["window", "opening window", "casement window"]
+    - id: window.picture_fixed
+      source: Neufert
+      description: "Large fixed pane window framing a view, no ventilation."
+      vlm_synonyms: ["fixed window", "picture window", "large pane"]
+    - id: window.clerestory
+      source: Alexander (Pattern 225: Frames as Thickened Edges)
+      description: "High windows above eye level for daylighting."
+      vlm_synonyms: ["high window", "clerestory", "top light"]
+    - id: window.deep_reveal_sill
+      source: Alexander (Pattern 223: Deep Reveals)
+      description: "A window with a deep sill that affords sitting or placing objects."
+      vlm_synonyms: ["window sill", "deep window", "window seat"]
+
+  partitions_and_walls:
+    - id: wall.full_height_solid
+      source: Neufert
+      description: "Standard structural or partition wall extending floor to ceiling."
+      vlm_synonyms: ["wall", "drywall", "plaster wall"]
+    - id: wall.half_height_partition
+      source: Alexander (Pattern 183: Workspace Enclosure)
+      description: "A partition that provides seated privacy but open visual space above."
+      vlm_synonyms: ["cubicle wall", "half wall", "office partition", "low wall"]
+    - id: wall.glazed_partition
+      source: Neufert
+      description: "Interior glass wall dividing spaces while transmitting light."
+      vlm_synonyms: ["glass wall", "glass partition", "internal window"]
+
+  cabinetry_and_storage:
+    - id: storage.built_in_cabinetry
+      source: Alexander (Pattern 253: Things from Your Life)
+      description: "Storage permanently affixed to the architecture (e.g. kitchen cabinets, built-in shelves)."
+      vlm_synonyms: ["built-in cabinets", "kitchen cabinets", "wall shelves", "millwork"]
+    - id: storage.thick_walls
+      source: Alexander (Pattern 197: Thick Walls)
+      description: "Deep structural walls that house storage, niches, or alcoves."
+      vlm_synonyms: ["niche", "wall alcove", "inset shelf"]
+
+  furniture:
+    - id: furniture.standard_work_surface
+      source: Neufert
+      description: "Standard desk or table (72-76cm height)."
+      vlm_synonyms: ["desk", "table", "workstation", "office desk"]
+    - id: furniture.task_seating
+      source: Neufert
+      description: "Ergonomic chair for work."
+      vlm_synonyms: ["office chair", "desk chair", "task chair"]
+    - id: furniture.lounge_seating
+      source: Neufert
+      description: "Low, relaxed seating (sofas, armchairs)."
+      vlm_synonyms: ["sofa", "couch", "armchair", "lounge chair"]
+    - id: furniture.communal_table
+      source: Alexander (Pattern 147: Communal Eating)
+      description: "Large table acting as a social center of gravity."
+      vlm_synonyms: ["dining table", "conference table", "large table"]
+
+biophilic_and_natural_elements:
+  - id: nature.indoor_vegetation
+    source: Alexander (Pattern 118: Roof Garden / General Biophilia)
+    description: "Potted plants, living walls, or internal planters."
+    vlm_synonyms: ["plant", "potted plant", "indoor tree", "greenery"]
+  - id: nature.natural_materials
+    source: Alexander (Pattern 207: Good Materials)
+    description: "Visible expanses of wood, stone, or brick."
+    vlm_synonyms: ["wood paneling", "stone wall", "brick wall", "timber"]
+  - id: nature.water_feature
+    source: Alexander (Pattern 64: Pools and Streams)
+    description: "Indoor or immediately visible outdoor water."
+    vlm_synonyms: ["water", "pool", "fountain", "aquarium"]

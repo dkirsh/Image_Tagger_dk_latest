@@ -56,7 +56,16 @@ already lists.
 | `cnfa.fluency.grayscale_gabor_entropy_proxy` | AMBER | DONE+EXT (AMBER proxy) |
 | `cnfa.fluency.local_congestion_proxy` | AMBER | DONE+EXT (AMBER proxy) |
 | `cnfa.fluency.fractal_mid_d_band` | AMBER | DONE+EXT (AMBER proxy) |
-
+| `cnfa.light.flicker_banding` | AMBER | DONE+EXT (Codex AMBER proxy) |
+| `cnfa.light.color_rendering_proxy` | AMBER | DONE+EXT (Codex AMBER proxy) |
+| `cnfa.geometry.wayfinding_legibility` | AMBER | DONE+EXT (Codex AMBER proxy) |
+| `cnfa.fluency.curvature_vs_sharp` | AMBER | DONE+EXT (Codex AMBER proxy) |
+| `cnfa.fluency.complexity_gradient` | AMBER | DONE+EXT (Codex AMBER proxy) |
+| `cnfa.fluency.symmetry_score_horizontal` | AMBER | DONE+EXT (Codex AMBER proxy) |
+| `cnfa.fractal_dimension` | AMBER | DONE+EXT (Codex AMBER proxy) |
+| `cnfa.fluency.processing_load` | AMBER | DONE+EXT (Codex AMBER proxy) |
+| `cnfa.fluency.color_palette_entropy` | AMBER | DONE+EXT (Codex AMBER proxy) |
+| `cnfa.material.texture_density` | AMBER | DONE+EXT (Codex AMBER proxy) |
 ### Plan metrics from inferred plan
 
 | id | tier | state |

@@ -478,6 +478,150 @@ def orderliness_alignment(img_bgr) -> AttributeResult:
                        "abstains below 20 segments — no imputed order"])
 
 
+def flicker_banding(img_bgr: np.ndarray) -> AttributeResult:
+    """v2a_007 — flicker/modulation risk via rolling shutter banding (M1).
+    Reads the high-frequency row-wise luminance oscillation. Returns scalar 0-1
+    where 1 is strong banding (high flicker risk). Abstains on tiny images or 
+    if there's zero variation."""
+    gray = _gray01(img_bgr)
+    H, W = gray.shape
+    if H < 100:
+        return AttributeResult(key="cnfa.light.flicker_banding", scalar=None, 
+            confidence=0.0, method="flicker_banding", failure_modes=["Image too short for banding"])
+    
+    row_means = gray.mean(axis=1)
+    
+    # Apply hanning window to reduce edge effects
+    window = np.hanning(H)
+    row_means_detrend = row_means - np.mean(row_means)
+    f = np.abs(np.fft.fft(row_means_detrend * window))[:H//2]
+    
+    # Frequencies: cycles per image height (banding from PWM usually > 10 cycles)
+    if H//2 <= 10:
+        band_energy = 0.0
+    else:
+        band_energy = float(np.sum(f[10:])) / H
+        
+    scalar = float(np.clip(band_energy * 20.0, 0.0, 1.0))
+    
+    return AttributeResult(
+        key="cnfa.light.flicker_banding", scalar=scalar, confidence=0.6,
+        method="Row-wise luminance FFT high-frequency energy (proxy for PWM rolling shutter)",
+        extras={"band_energy": round(band_energy, 4), "fft_max": round(float(np.max(f[10:]) if H//2 > 10 else 0), 4)},
+        failure_modes=["Confounded by physical horizontal blinds", "Only works if shutter speed is fast enough"]
+    )
+
+
+def color_rendering_proxy(img_bgr: np.ndarray) -> AttributeResult:
+    """v2a_008 — Color/saturation rendering proxy (M1).
+    Measures the HSV saturation channel variance and median.
+    Low variance/median implies poor color rendering (washed out, monochromatic)."""
+    hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    S = hsv[:, :, 1].astype(np.float32) / 255.0
+    V = hsv[:, :, 2].astype(np.float32) / 255.0
+    
+    # Only consider pixels that are not entirely black or clipped white
+    mask = (V > 0.05) & (V < 0.95)
+    valid_S = S[mask]
+    
+    if len(valid_S) < 100:
+        return AttributeResult(key="cnfa.light.color_rendering_proxy", scalar=None, confidence=0.0, 
+            method="HSV Saturation variance", failure_modes=["Not enough valid pixels (too dark/bright)"])
+            
+    s_med = float(np.median(valid_S))
+    s_std = float(np.std(valid_S))
+    
+    scalar = float(np.clip(s_std * 4.0, 0.0, 1.0))
+    
+    return AttributeResult(
+        key="cnfa.light.color_rendering_proxy", scalar=scalar, confidence=0.5,
+        method="HSV Saturation channel standard deviation (proxy for CRI variance)",
+        extras={"s_median": round(s_med, 4), "s_std": round(s_std, 4), "valid_px_ratio": round(len(valid_S)/(H*W), 3)},
+        failure_modes=["Confounded by monochromatic interior design (gray rooms)"]
+    )
+
+
+# ================================================================ W1.12 curvature_vs_sharp_angles
+def curvature_vs_sharp_angles(img_bgr) -> AttributeResult:
+    """v2a_082 — Curvature vs sharp angles.
+    Extracts Canny edges, finds contours, and uses approxPolyDP. Contours tightly approximated by 
+    few points are 'sharp/rectilinear'. Contours requiring many points are 'curved'.
+    """
+    g8 = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+    H, W = g8.shape
+    
+    if np.std(g8) < 2.0:
+        return AttributeResult(key="cnfa.fluency.curvature_vs_sharp", scalar=None, confidence=0.0, method="Flat/empty image")
+        
+    edges = cv2.Canny(g8, 50, 150)
+    contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if not contours:
+        return AttributeResult(key="cnfa.fluency.curvature_vs_sharp", scalar=0.0, confidence=0.1, method="No contours found")
+        
+    total_len = 0.0
+    curved_len = 0.0
+    
+    for cnt in contours:
+        L = cv2.arcLength(cnt, True)
+        if L < 10:
+            continue
+        total_len += L
+        epsilon = 0.02 * L
+        approx = cv2.approxPolyDP(cnt, epsilon, True)
+        if len(approx) > 5:
+            curved_len += L
+            
+    if total_len < 10:
+        return AttributeResult(key="cnfa.fluency.curvature_vs_sharp", scalar=0.0, confidence=0.1, method="Very few contours")
+        
+    scalar = float(np.clip(curved_len / total_len, 0.0, 1.0))
+    return AttributeResult(
+        key="cnfa.fluency.curvature_vs_sharp", scalar=scalar, confidence=0.6,
+        method="Canny contour approxPolyDP vertex count",
+        extras={"total_contour_len": round(total_len, 1), "curved_len": round(curved_len, 1)},
+        failure_modes=["Cannot distinguish architectural curves from circular objects"]
+    )
+
+
+# ================================================================ W1.13 visual_complexity_gradients
+def visual_complexity_gradients(img_bgr) -> AttributeResult:
+    """v2a_091 — Visual complexity gradients.
+    Computes Canny edge map and divides into 4x4 grid. Returns the standard deviation 
+    of edge density across the grid cells (normalized). High variance = complexity gradient.
+    """
+    g8 = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+    H, W = g8.shape
+    
+    if np.std(g8) < 2.0:
+        return AttributeResult(key="cnfa.fluency.complexity_gradient", scalar=None, confidence=0.0, method="Flat/empty image")
+        
+    edges = cv2.Canny(g8, 50, 150)
+    grid_rows, grid_cols = 4, 4
+    h_step = H // grid_rows
+    w_step = W // grid_cols
+    
+    densities = []
+    for r in range(grid_rows):
+        for c in range(grid_cols):
+            cell = edges[r*h_step:(r+1)*h_step, c*w_step:(c+1)*w_step]
+            if cell.size > 0:
+                densities.append(np.sum(cell > 0) / cell.size)
+            
+    if not densities:
+        return AttributeResult(key="cnfa.fluency.complexity_gradient", scalar=0.0, confidence=0.1, method="Empty grid")
+        
+    d_std = float(np.std(densities))
+    scalar = float(np.clip(d_std * 2.0, 0.0, 1.0))
+    
+    return AttributeResult(
+        key="cnfa.fluency.complexity_gradient", scalar=scalar, confidence=0.6,
+        method="4x4 grid Canny edge density standard deviation",
+        extras={"d_std": round(d_std, 4), "d_mean": round(float(np.mean(densities)), 4)},
+        failure_modes=["Extremely sparse environments score the same as extremely cluttered ones"]
+    )
+
+
 ALL_WAVE1 = {
     "cnfa.light.luminance_gradient_contrast": luminance_gradient_contrast,
     "cnfa.light.shadow_softness": shadow_softness,
@@ -486,8 +630,12 @@ ALL_WAVE1 = {
     "cnfa.light.temperature_mismatch": temperature_mismatch,
     "cnfa.light.spotlight_pool_geometry": spotlight_pool_geometry,
     "cnfa.light.dark_zone_map": dark_zone_map,
+    "cnfa.light.flicker_banding": flicker_banding,
+    "cnfa.light.color_rendering_proxy": color_rendering_proxy,
     "cnfa.material.texture_density": texture_density,
     "cnfa.geometry.orderliness_alignment": orderliness_alignment,
+    "cnfa.fluency.curvature_vs_sharp": curvature_vs_sharp_angles,
+    "cnfa.fluency.complexity_gradient": visual_complexity_gradients,
 }
 
 
@@ -596,10 +744,58 @@ if __name__ == "__main__":
     print(f"W1.9 grid order {og.scalar:.2f} > random {orr.scalar:.2f}; blank->abstain; "
           f"alignment {og.extras['alignment_2mode']:.2f} > {orr.extras['alignment_2mode']:.2f}  OK")
 
+    # W1.10: flicker_banding (v2a_007)
+    banding = np.full((H, W), 128.0)
+    y_coords = np.arange(H).reshape(-1, 1)
+    banding += 40.0 * np.sin(2 * np.pi * y_coords / 15.0)  # Period of 15 pixels
+    banding_bgr = mk(np.stack([banding] * 3, -1))
+    fb_band = flicker_banding(banding_bgr)
+    fb_flat = flicker_banding(flat)
+    assert fb_flat.scalar is not None and fb_flat.scalar == 0.0, "Flat image should have 0 banding"
+    assert fb_band.scalar is not None and fb_band.scalar > 0.5, "Banding image should have high banding score"
+    print(f"W1.10 flicker banding: {fb_band.scalar:.2f} > flat {fb_flat.scalar:.2f}  OK")
+    
+    # W1.11: color_rendering_proxy (v2a_008)
+    colorful = np.zeros((H, W, 3))
+    colorful[:, :W//3] = [200, 50, 50]     # S = 0.75
+    colorful[:, W//3:2*W//3] = [200, 200, 50] # S = 0.75, but let's change V or S:
+    colorful[:, 2*W//3:] = [200, 150, 150] # S = 0.25
+    cr_color = color_rendering_proxy(mk(colorful))
+    cr_gray = color_rendering_proxy(flat)
+    assert cr_gray.scalar is not None and cr_gray.scalar == 0.0, "Grayscale image should have 0 color rendering score"
+    assert cr_color.scalar is not None and cr_color.scalar > 0.0, "Colorful image should have > 0 color rendering score"
+    print(f"W1.11 color rendering proxy: {cr_color.scalar:.2f} > flat {cr_gray.scalar:.2f}  OK")
+
+    # W1.12: curvature_vs_sharp_angles (v2a_082)
+    circles = np.full((H, W, 3), 255.0)
+    cv2.circle(circles, (W//2, H//2), 40, (0, 0, 0), -1)
+    rects = np.full((H, W, 3), 255.0)
+    cv2.rectangle(rects, (W//2-40, H//2-40), (W//2+40, H//2+40), (0, 0, 0), -1)
+    c_circ = curvature_vs_sharp_angles(mk(circles))
+    c_rect = curvature_vs_sharp_angles(mk(rects))
+    c_flat = curvature_vs_sharp_angles(flat)
+    assert c_flat.scalar is None, "Flat should abstain"
+    assert c_circ.scalar is not None and c_rect.scalar is not None
+    assert c_circ.scalar > c_rect.scalar, "Circle should have more curvature than rectangle"
+    print(f"W1.12 curvature: circles {c_circ.scalar:.2f} > rects {c_rect.scalar:.2f}  OK")
+
+    # W1.13: visual_complexity_gradients (v2a_091)
+    grad_img = np.full((H, W, 3), 255.0)
+    grad_img[:, :W//2] = 128 + 40 * rng.randn(H, W//2, 3)
+    uniform_img = np.full((H, W, 3), 255.0)
+    uniform_img[:, :] = 128 + 40 * rng.randn(H, W, 3)
+    cg_grad = visual_complexity_gradients(mk(grad_img))
+    cg_uni = visual_complexity_gradients(mk(uniform_img))
+    cg_flat = visual_complexity_gradients(flat)
+    assert cg_flat.scalar is None, "Flat should abstain"
+    assert cg_grad.scalar is not None and cg_uni.scalar is not None
+    assert cg_grad.scalar > cg_uni.scalar, "Gradient complexity should have higher variance"
+    print(f"W1.13 complexity gradient: half {cg_grad.scalar:.2f} > uniform {cg_uni.scalar:.2f}  OK")
+
     # determinism x2 across all operators on one busy synthetic
     busy = mk(np.stack([128 + 40 * rng.randn(H, W)] * 3, -1))
     for key, fn in ALL_WAVE1.items():
         a, b = fn(busy), fn(busy)
         assert (a.scalar is None and b.scalar is None) or abs(a.scalar - b.scalar) < 1e-12, key
-    print("determinism x2: all 9 operators  OK")
+    print(f"determinism x2: all {len(ALL_WAVE1)} operators  OK")
     print("-" * 56 + "\nwave1_ops self-test: PASS")
