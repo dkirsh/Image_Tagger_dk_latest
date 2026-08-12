@@ -8,10 +8,10 @@
 **Provenance convention:** **[verified]** = read out of this repository or produced by a command recorded
 in the state model. **[open]** = intended, not yet built. No number appears here without one of those tags.
 
-- `STATE_AS_OF: 2026-08-05T23:40Z`
+- `STATE_AS_OF: 2026-08-12` *(relation to New_VR_Platform added §5; repository counts not re-derived — see the state model)*
 - `HEAD: 49fac503`
 - `STALE_AFTER_DAYS: 30`
-- `JUDGED_REVIEWED: 2026-08-05`
+- `JUDGED_REVIEWED: 2026-08-12`
 - `JUDGED_REVIEW_INTERVAL_DAYS: 90`
 
 ---
@@ -128,6 +128,20 @@ work **[verified]**.
   (`POE_Cognitive_Code_v1_2026-07-09.md`) **[verified]**. Say it this way: *that repository holds the
   argument; this one holds the instrument.* The operational POE pilot — protocol, sensor list, IRB outline —
   is in **this** repository's `docs/`, not that one.
+- **New_VR_Platform** is the newest and most concrete tie, and it runs in the *opposite* direction from the
+  others: the VR platform consumes this tagger as a measurement instrument. Its 2026-08-12 attribute charter
+  splits every attribute into a **structural** layer (the architectural facts that define a VR model's
+  semantic spec) and a **proximal** layer (the perceptual constructs), and it gives this repository two named
+  jobs — a *structural extractor* that reads a room's elements into the platform's room vocabulary, and
+  *witness-3*, the measurement-on-renders leg that can corroborate a scientific claim. The boundary the
+  platform enforces matches this repository's own discipline exactly: our GREEN/AMBER tiers report
+  *measurement faithfulness*, and the platform treats them as such — a GREEN measure is **not** thereby a
+  validated cause and cannot serve as a confirmatory witness until the platform's own calibration gate
+  promotes it. The interface is a single machine-readable `measure_registry.json` that this repository will
+  author and the platform will pin by content hash. **The platform side is built and reviewed; this
+  repository's side — the structural extractor and the registry — is specified and agreed, not yet built**
+  **[open]**. The full division of labor is in the platform's
+  `docs/ATTRIBUTE_ARCHITECTURE_AND_DIVISION_OF_LABOR.md`.
 - **Article_Eater / Knowledge_Atlas** are the literature-grounding layer. The intended tie is that every
   attribute's literature anchor is grounded in the corpus. **The mechanical pipe does not exist yet**
   **[verified]** — the tagger does not auto-query the Atlas for its citations.
@@ -237,4 +251,9 @@ two-engine fact, the abstention example, the well-equipped-machine paradox and t
 `corpus_L6/manifest.csv` and `_provenance.csv`. The absence of a `BN_graphical` reference was established by
 search, not assumed. **No claim is made here about how this system compares to others, because no such
 comparison has been run in this repository.** Structure and the `[verified]`/`[open]` convention follow
-`Article_Eater_PostQuinean_v1_recovery/docs/ATLAS_SYSTEM_DESCRIPTION_AND_WORKPLAN_2026-07-21.md`.
+`Article_Eater_PostQuinean_v1_recovery/docs/ATLAS_SYSTEM_DESCRIPTION_AND_WORKPLAN_2026-07-21.md`. The
+2026-08-12 §5 addition (the New_VR_Platform seam — the structural/proximal split, the structural-extractor
+and witness-3 roles, the GREEN/AMBER-is-not-calibration boundary, and the `measure_registry.json` interface)
+is read from that platform's `constraints/attribute_charter.json`, `src/vr_condition_audit/attribute_map.py`,
+and `docs/ATTRIBUTE_ARCHITECTURE_AND_DIVISION_OF_LABOR.md`; this repository's own extractor and registry are
+`[open]`. No repository count above was re-derived on 2026-08-12.

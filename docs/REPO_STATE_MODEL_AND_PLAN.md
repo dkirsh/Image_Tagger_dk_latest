@@ -515,6 +515,22 @@ you know they exist and know they are unverified at this HEAD, not so you can ci
 - `TASKS.md` (stamped "Last updated: 2026-07-19 late") is the live queue: Sprint COMP-CORRECT rows
   CC-1…CC-10, Sprint VIEW (VIEW-3 DONE, VIEW-4, VIEW-5), Sprint NEW-ATTR legibility, ENV-PHYSICS rows
   ACO-1 and LUM-1, and a DAVID-only block (DK-1 corpus export gating all of L6, DK-4 recurring push).
+- **New_VR_Platform seam (recorded 2026-08-12, read from the platform repo — NOT re-derived here).** The
+  `New_VR_Platform` repository added a two-layer *attribute charter* on branch `vr-impl/perception-lane`
+  that formally makes this tagger its measurement instrument. It splits attributes into a **structural**
+  layer (architectural facts that define a VR model's semantic spec, validated by a
+  build→re-shoot→compare *design cycle*) and a **proximal** layer (perceptual constructs), and it names two
+  jobs for this repo: a *structural extractor* emitting a room's elements to the platform's `room-v0.3`
+  vocabulary, and *witness-3*, the measurement-on-renders leg that may corroborate a scientific claim. The
+  platform enforces, in code and fail-closed, that our **GREEN/AMBER tiers are consumed as
+  measurement-faithfulness only** — a GREEN measure is never a validated cause and cannot be a confirmatory
+  witness until the platform's own calibration gate promotes it. The agreed interface is a single
+  machine-readable `measure_registry.json` this repo will author (canonical `cnfa.*` keys, per-measure
+  tier / determinism / licence / faithfulness) and the platform will pin by content hash. **Platform side:
+  built and independently reviewed. This repo's side (the extractor and the registry): specified and
+  agreed, not yet built.** Source: the platform's `constraints/attribute_charter.json`,
+  `src/vr_condition_audit/attribute_map.py`, and `docs/ATTRIBUTE_ARCHITECTURE_AND_DIVISION_OF_LABOR.md`.
+  When this repo builds its side, the registry and extractor become §5-measurable here.
 
 ## §6 — The plan to green
 
