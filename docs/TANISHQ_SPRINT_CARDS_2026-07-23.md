@@ -1,5 +1,14 @@
 # Tanishq — Tagger Sprint Cards (assignable work)
 
+> ## ⛔ SPRINT PRE-FLIGHT GATE (MANDATORY — Method-Enforcement Controller)  [Tanishq, 2026-08-14]
+> **No task in this sprint starts until the Method-Enforcement Controller is installed and its self-tests
+> pass on the machine and AI you are using.** Hard gate, not a recommendation. Install + verify per
+> `/Users/davidusa/REPOS/_control/METHODOLOGY/METHOD_ENFORCEMENT_CONTROLLER_HANDOFF_2026-08-14.md` (§6 is
+> your section). Acceptance: `dogged_stop_hook.py --selftest` and `headless_first_guard.py --selftest` both
+> pass; a `Read` with a bare `limit` is blocked; a "TODO"-with-no-owner turn is blocked once. Record the
+> pass before task 1.
+
+
 *Generated 2026-07-23 (Fable/Cowork) from the live queue `TASKS.md`. Each card is self-contained: goal,
 steps, acceptance test, files, dependencies, owner. Pick a card, claim it in `TASKS.md`, ship it under
 the repo protocol. Pair-with-review on anything touching the registry or M1′. Authoritative queue is
