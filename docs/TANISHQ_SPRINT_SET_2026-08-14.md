@@ -1,6 +1,6 @@
-# Tanishq — Sprint Set (POE instrument kit · shakedown · deploy plumbing)
+# Tanishq — Sprint Set (shakedown · deploy plumbing)
 
-*The hardware-and-deploy lane, written so the AI executing it needs nothing this document does not carry: absolute paths, exact instrument models and quantities, and an acceptance test for every task. It extends — it does not replace — the software sprints Tanishq already holds (`docs/TANISHQ_ONBOARDING_AND_SPRINTS_2026-07-21.md` Sprints A–G, and `docs/TANISHQ_SPRINT_CARDS_2026-07-23.md`). It adds only the three things those docs do not cover: the physical POE kit, its shakedown, and the deployment/serving plumbing.*
+*The hardware-and-deploy lane, written so the AI executing it needs nothing this document does not carry: absolute paths, exact instrument models and quantities, and an acceptance test for every task. It extends — it does not replace — the software sprints Tanishq already holds (`docs/TANISHQ_ONBOARDING_AND_SPRINTS_2026-07-21.md` Sprints A–G, and `docs/TANISHQ_SPRINT_CARDS_2026-07-23.md`). It adds only the two things those docs do not cover: a shakedown using already-available instruments, and the deployment/serving plumbing. **No procurement or buy-list is in scope for now — per David (2026-08-14), Tanishq's work uses his machine, the lab machine, and instruments already on hand; there is no buy-list task.***
 
 - `STATE_AS_OF: 2026-08-14`
 - `JUDGED_REVIEWED: 2026-08-14`
@@ -42,40 +42,13 @@ Each carries: **Goal · Repo/lane · Last-mile Success** (the observable end-sta
 Two disciplines run through all of them, because they are the ones a software-oriented planner under-weights:
 
 - **An instrument reading is a proxy until calibrated against a reference.** "Produces a number" is never acceptance; "reads within a stated tolerance of a known reference" is. **[verified — cowork prompt, Tanishq reminder 4]**
-- **Physical lead-times set the schedule, not the code.** No task may assume a sensor is on the bench. Borrow-first from campus; the ~£4–8k spend is David's gate; sequence around arrival dates. **[verified — cowork prompt, Tanishq reminder 1]**
+- **No procurement for now (David, 2026-08-14).** Tanishq's work uses already-available instruments — his machine, the lab machine, and borrowable campus gear. There is no buy-list. A task that would need an instrument not already on hand simply waits; it does not trigger a purchase. **[stated — DK 2026-08-14]**
 
 ---
 
-## Sprint 1 — The POE instrument kit (the costed buy-list)
+## Sprint 1 — (removed: no procurement for now)
 
-**Goal.** Turn the pilot-kit list into a concrete, costed **buy-list David can approve**, targeting the quantities the fourth code names (STI not dBA, m-EDI not lux, real ventilation/CO₂ not a spot reading), borrow-first from campus, and separating the environmental instruments (no human subjects) from the human-wear instruments (which cross the IRB line and are **not** on Tanishq's critical path). **[verified — cowork prompt reminders 1, 3, 5; `FALL_HANDOFF_PACK_2026-08-13.md` Tanishq packet; kit source below]**
-
-**Task 1.1 — Produce the environmental buy-list.**
-- **Repo / lane:** `Image_Tagger_dk_latest` (the operational pilot plan lives here, not in `Post_Occupancy_Evals` — that repo's own guide asks that one document own the operational plan, and it is this one). **[verified — `Post_Occupancy_Evals/docs/PROJECT_GUIDE_FOR_HUMANS.md` §4–5]**
-- **Last-mile Success:** a table at `/Users/davidusa/REPOS/Image_Tagger_dk_latest/docs/POE_KIT_BUYLIST_2026-08-14.md` **[proposed]**, one row per instrument, each row carrying: fourth-code quantity it reads, exact model + quantity, unit price (GBP), own-vs-borrow with the named campus source to try first, operator, and the calibration reference it will be checked against in Sprint 2. The environmental total is stated separately from the human-wear total. **Public-repo caution:** this file goes in a public repo — instrument models and indicative prices are fine; no ZHA commercials, no participant data, no calibration certificates with personal identifiers.
-
-  **Environmental instruments (no human subjects → no IRB → Tanishq's critical path).** Costs are indicative GBP for procurement planning; confirm exact models and current campus availability before buying. **[verified — `~/Documents/Zaha/_2026/POE_Pilot_Kit_Protocol_Instruments_IRB_ZHA_2026-07-21.html` §3, which states the costs are "procurement guidance, not commercials"]**
-
-  | Fourth-code quantity | Instrument — model + qty | ~£ | Own/borrow (source to try) | Note |
-  |---|---|---|---|---|
-  | **STI / STIPA + RT60** (intelligibility, not dBA) | NTi **XL2** + **M2230** mic, ×1 (STIPA + impulse-response RT60) | 1,500–2,500 | borrow first (campus acoustics / EH&S) | needs an **acoustic calibrator** each session |
-  | Continuous sound level (context, not the headline) | 2–3 calibrated noise loggers (Svantek / Convergence) | 0–600 | borrow | time-sync to the run sheet |
-  | **m-EDI + CCT + spectrum at the eye** (circadian light, not desk lux) | **Sekonic C-800** spectrometer (or UPRtek MK350S), ×1, measured vertically at eye height | 1,200–1,800 | own | the melanopic instrument; the one to buy |
-  | **DGP glare** | DSLR/mirrorless + fisheye → HDR → `evalglare`, ×1 | 0–500 | borrow camera; or Technoteam LMK luminance camera if a lab has one | environmental HDR capture, no subjects |
-  | **Flicker (modulation % + Hz)** | Viso Light Spion or UPRtek flicker meter, ×1 | 300–1,200 | own/borrow | at each luminaire type |
-  | **MRT + air/RH + air velocity + adaptive opportunity** (whole-body thermal, not just air temp/PMV) | globe thermometer + **HOBO MX1101/MX1104** loggers + hot-wire anemometer; or integrated Testo 400 | 400–1,500 | own/borrow | multi-height for radiant asymmetry |
-  | **CO₂-decay air-change rate** (real ventilation, not a spot CO₂) | **Aranet4** NDIR monitors, ×2–3 | 180–250 ea | own | also the ventilation-vs-cognition pairing |
-  | **VOC / PM₂.₅ / HCHO** | Awair Element / Airthings continuous IAQ + PID (Ion Science Tiger) for TVOC magnitude + formaldehyde meter | 200–900 | own | low-cost for trend, PID for magnitude |
-
-  Core purchasable **environmental** kit lands roughly **£4–6k** before assays and the physiology wearables. **[verified — kit protocol §3]**
-
-  **Human-wear / assay instruments — the IRB line runs here; OFF Tanishq's critical path** (Stephan operates these under IRB; listed only so the buy-list is complete and the boundary is explicit): wearable light dosimeter worn at the eye (LYS / ActLumus / Daysimeter); HRV chest strap (Polar H10); EDA/skin-temp/PPG wearable (Empatica EmbracePlus / Shimmer3 GSR+); skin-temp iButtons (Maxim DS1922L); salivary-cortisol salivettes + assay; actigraphy; and any occupancy sensing that could identify a person. The moment an instrument is worn by, or samples, a person, IRB and informed consent are required **before any data collection**. **[verified — kit protocol §5; cowork prompt reminder 5]**
-
-- **Validation:** every environmental row has a non-empty model, quantity, price, own/borrow source, and named calibration reference; the environmental subtotal and the human-wear subtotal are stated separately; the human-wear block is explicitly flagged IRB / off-critical-path. A one-line trace sits beside each price ("indicative GBP, kit protocol §3"). (Checklist is the fallback gate here because the deliverable is a document; the real gate is the checker below.)
-- **Failure states:** `classical_proxies_smuggled_in` (a row that buys a dBA meter or a lux meter as the headline instrument instead of STI / m-EDI); `borrow_step_skipped` (an "own" on an instrument campus already shares — the SLM, comfort meter, luminance camera, and actigraph are common shared instruments); `irb_line_blurred` (a wearable or saliva instrument listed on the critical path); `price_without_trace` (a number with no source line).
-- **Checker ≠ author:** David reviews and approves the environmental buy-list against the ~£4–8k gate; a second reader (Stephan or the reviewing agent) confirms the fourth-code quantity in each row is the deep construct, not the classical proxy, and that the IRB split is drawn correctly.
-- **One-example-first:** fully cost and source **one** row (the Aranet4 CO₂ line — cheapest, owned earliest, and the Sprint 2 shakedown instrument) end to end, and have it approved, before completing the rest of the table.
-- **Depends-on:** David's ~£4–8k procurement authorization gates the *purchase*, not the buy-list. **The buy-list can and should be produced now.** **[verified — `FALL_HANDOFF_PACK` Tanishq: "Depends-on: David's ~£4–8k procurement authorization"]**
+Per David (2026-08-14), a costed buy-list is **not** part of Tanishq's work at this stage. The lab is fine for a while on David's machine and the lab machine, using already-available instruments and borrowable campus gear. There is no purchasing task here. If dedicated procurement becomes necessary later, it returns as a David-owned decision, not a Tanishq sprint. The shakedown below therefore runs on whatever suitable instrument is already on hand; if none is, it waits rather than triggering a purchase. **[stated — DK 2026-08-14]**
 
 ---
 
@@ -90,7 +63,7 @@ Two disciplines run through all of them, because they are the ones a software-or
 - **Failure states:** `reinvented_the_pipeline` (a fresh ad-hoc ingester instead of reusing the proven sync-QC/provenance machinery); `strict_gate_is_cosmetic` (a mis-clocked pair still exports); `provenance_missing` (numbers with no instrument/calibration metadata beside them); `passes_on_synthetic_only` (works on generated data but never run on a real logger file — the emotibit repo's own honest boundary is that its guarantees are scaffolds until run on real sessions).
 - **Checker ≠ author:** David or Stephan re-runs the sync-QC computation from the raw logs and confirms the report and the strict-gate refusal reproduce.
 - **One-example-first:** ingest and sync-QC **one** real pair of logs before wiring any batch or additional instruments.
-- **Depends-on:** the first Aranet4 units in hand (Sprint 1 → procurement); the emotibit pipeline pattern (present on disk, git-tracked). **[verified — emotibit inventory 2026-08-14]**
+- **Depends-on:** an already-available environmental logger (lab or borrowed — no procurement); the emotibit pipeline pattern (present on disk, git-tracked). **[verified — emotibit inventory 2026-08-14]**
 
 **Task 2.2 — Calibrate the one instrument against a reference and produce the receipt.**
 - **Repo / lane:** `Image_Tagger_dk_latest` (`poe_shakedown/`).
@@ -129,17 +102,16 @@ Two disciplines run through all of them, because they are the ones a software-or
 
 ## Sequence & dependencies
 
-The order is set by physical lead-times and by what gates what, not by code readiness.
+The order is set by what gates what. With procurement out of scope for now, the near-term work is software-and-deploy plus a shakedown only if a suitable instrument is already on hand — none of which waits on a purchase.
 
 1. **Sprint 0 (gate)** — now; blocks everything.
-2. **Sprint 1.1 (buy-list)** — now, in parallel with Sprint 0's verification; produces the artifact David needs to authorize the ~£4–8k spend. **This is the schedule's pinch point:** nothing physical arrives until David approves and instruments are procured or borrowed, so the buy-list is the first thing that must be right.
-3. **Procurement gate (David) → instruments arrive.** Borrow-first shortens this; the Aranet4 CO₂ units are cheapest and should arrive first, which is why they are the one-example instrument.
-4. **Sprint 2 (shakedown)** — begins the moment the first Aranet4 + a borrowable reference are in hand; one instrument, one space, one receipt, checked, before any full sweep is proposed.
-5. **Sprint 3 (deploy plumbing)** — 3.1 (serve contract + sample dry-run) is **startable now**, independent of hardware, and independent of live data (build against a sample; live data waits on codex 1a). 3.2 waits on the packaged tagger read from the software/agent lane.
+2. **Sprint 3.1 (serve contract + sample dry-run)** — startable now, independent of hardware and of live data (build against a sample; live data waits on codex 1a). The most useful thing Tanishq can do immediately, on existing machines.
+3. **Sprint 2 (shakedown)** — runs whenever a suitable environmental logger is already available (lab or borrowed) plus a borrowable reference; one instrument, one space, one receipt, checked, before any full sweep. If no instrument is on hand, it waits — without triggering a purchase.
+4. **Sprint 3.2 (deploy the tagger read)** — waits on the packaged tagger read from the software/agent lane (item B).
 
-Cross-lane, in one line: **Stephan/agent lane hand off the KA page bundle and (later) codex hands off the live pipeline → Tanishq serves them; Tanishq hands off the shakedown receipt → the pilot's environmental sweep can be trusted.** The human-subjects lane (physiology, cognitive tasks run on people, wearables, cortisol, occupancy sensing of people) needs IRB and stays **off Tanishq's critical path** — he builds the software for some of it (e.g. the cognitive micro-battery), but running it on people is Stephan's under IRB. **[verified — kit protocol §2, §5; cowork prompt reminder 5]**
+Cross-lane, in one line: **Stephan/agent lane hand off the KA page bundle and (later) codex hands off the live pipeline → Tanishq serves them.** The human-subjects lane (physiology, cognitive tasks on people, wearables, cortisol) needs IRB and stays **off Tanishq's critical path**. **[verified — kit protocol §2, §5]**
 
-**The one blocker to name plainly:** the procurement authorization (~£4–8k, David's gate) sits in front of every physical task. The buy-list (Sprint 1.1) and the deploy serve-contract (Sprint 3.1) are the two substantial pieces of work that do **not** wait on it and should proceed immediately.
+**The near-term work that proceeds now, on existing machines:** the deploy serve-contract (Sprint 3.1) and, if an instrument is already on hand, the one-instrument shakedown (Sprint 2). Neither waits on any purchase.
 
 ---
 
