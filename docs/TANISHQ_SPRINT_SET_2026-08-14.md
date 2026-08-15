@@ -1,15 +1,14 @@
-# Tanishq — Sprint Set (shakedown · deploy plumbing)
+# Tanishq — Sprint Set (photo→VR production loop · POE shakedown · deploy plumbing)
 
-*The hardware-and-deploy lane, written so the AI executing it needs nothing this document does not carry: absolute paths, exact instrument models and quantities, and an acceptance test for every task. It extends — it does not replace — the software sprints Tanishq already holds (`docs/TANISHQ_ONBOARDING_AND_SPRINTS_2026-07-21.md` Sprints A–G, and `docs/TANISHQ_SPRINT_CARDS_2026-07-23.md`). It adds only the two things those docs do not cover: a shakedown using already-available instruments, and the deployment/serving plumbing. **No procurement or buy-list is in scope for now — per David (2026-08-14), Tanishq's work uses his machine, the lab machine, and instruments already on hand; there is no buy-list task.***
+*The engine-and-deploy lane, written so the AI executing it needs nothing this document does not carry: absolute paths, exact acceptance tests, and named failure states. His **biggest task** is the photo→VR production loop (Sprint 1, pending David's directory decomposition); his **secondary** work is the debug-POE shakedown and the deploy/serving plumbing. It extends — it does not replace — the software sprints Tanishq already holds (`docs/TANISHQ_ONBOARDING_AND_SPRINTS_2026-07-21.md` Sprints A–G; `docs/TANISHQ_SPRINT_CARDS_2026-07-23.md`). **No procurement / buy-list is in scope (David, 2026-08-14).***
 
-- `STATE_AS_OF: 2026-08-14`
-- `JUDGED_REVIEWED: 2026-08-14`
-- `STALE_AFTER_DAYS: 30`
-- **Lane (repo-level, disjoint):** Tanishq owns **`Image_Tagger_dk_latest`** and **`Post_Occupancy_Evals`** only. He does **not** commit into `Knowledge_Atlas` or `New_VR_Platform` (Stephan's), nor into any Article_Eater repo (codex holds it). Branches: `tanishq/<topic>`. Enforcement: the lane-guard pre-commit hook (`/Users/davidusa/REPOS/_control/hooks/lane_guard.py`, map `/Users/davidusa/REPOS/_control/lanes.json`) — declare once with `export FLEET_LANE=tanishq` or `echo tanishq > ~/.fleet_lane`. **[verified — `LANE_MAP_2026-08-14.md`]**
-
-*Provenance convention: **[verified]** = read out of a repository or a source document this session; **[proposed]** = an intended artifact or path that does not yet exist; **[stated — DK]** = David Kirsh's recorded intent.*
+- `STATE_AS_OF: 2026-08-15` (refreshed to current scope) · `STALE_AFTER: 30 commits / scope edits`
+- **Lane:** Tanishq owns **`Image_Tagger_dk_latest`** and **`Post_Occupancy_Evals`** (plus, for the loop, shared subtrees governed by **path-level lanes**). He does **not** commit into `Knowledge_Atlas` or (except through an agreed path-level split) `New_VR_Platform` — Stephan's — nor any Article_Eater repo (Codex's). Branch prefix `tanishq/<topic>`. [verified — `LANE_MAP_2026-08-14.md`; `lanes.json`]
+- *Provenance: **[verified]** read this session · **[proposed]** intended artifact not yet built · **[stated — DK]** David's recorded intent · **[BLOCKED — DK decision]** waits on a David decision named in the build prompt §9.*
 
 ---
+
+## Sprint 0 — Q0 pre-flight (nothing below starts until all three tasks pass)
 
 > ## ⛔ SPRINT PRE-FLIGHT GATE (MANDATORY — Method-Enforcement Controller)
 > **No task in this sprint starts until the Method-Enforcement Controller is installed and its self-tests
@@ -19,112 +18,112 @@
 > pass; a `Read` with a bare `limit` is blocked; a "TODO"-with-no-owner turn is blocked once. Record the
 > pass in the sprint ledger before task 1.
 
----
+### Task 0 — Install and verify the Method-Enforcement Controller
+- **Repo/lane:** machine-level setup; no repo commit required.
+- **Last-mile Success:** the hook block (handoff §6/§4) is merged into `~/.claude/settings.json`; the client is restarted so the watcher activates; the pass is the first row of the sprint ledger. On Tanishq's own hardware, re-point every absolute path and rely on Monitor as the durable channel.
+- **Validation:** `python3 /Users/davidusa/REPOS/_control/hooks/dogged_stop_hook.py --selftest` and `.../headless_first_guard.py --selftest` both print all-controls-pass; a bare-`limit` `Read` is blocked; an ownerless-"TODO" turn is blocked once.
+- **Failure states:** `wired_but_not_activated` (client not restarted); `paths_point_at_daves_mac` (Option B copied without re-pointing); `selftest_skipped`.
+- **Checker ≠ author:** David (or the machine-handoff owner) confirms both self-tests and one live block against the actual `~/.claude/settings.json`.
+- **One-example-first / Depends-on:** this is the gate; nothing precedes it.
 
-## Sprint 0 — Install the controller (Task 0, the gate)
+### Task 0.1 — Declare the lane and install the lane-guard
+- **Last-mile Success:** `echo tanishq > ~/.fleet_lane`; the pre-commit lane-guard is installed on `Image_Tagger_dk_latest` and `Post_Occupancy_Evals`, refusing a commit into a repo (or, once path-level lanes exist, a subtree) his lane does not own.
+- **Validation:** `python3 /Users/davidusa/REPOS/_control/hooks/lane_guard.py --selftest` prints all-controls-pass; after declaring, a trial commit in his repos is accepted and a trial commit into a Stephan-owned repo is refused. [install via `_control/hooks/install_lane_guard.sh`]
+- **Failure states:** `lane_undeclared`; `declared_wrong_lane` (deliberate, recorded, not accidental).
+- **Checker ≠ author:** David confirms the self-test and one refused cross-lane commit.
+- **One-example-first:** install on `Image_Tagger_dk_latest` first, confirm accept/refuse, then `Post_Occupancy_Evals`.
 
-Nothing below begins until this passes. It comes first because Tanishq's work is fast and hardware-facing, and two of the guards are the ones that catch the failures that lane produces: the full-read guard (do not trust a partial sensor read or a truncated log as the whole reading) and the disclosure-not-remedy stop hook (a shakedown that "mostly works, TODO the rest" is not a finished shakedown). **[verified — handoff §6]**
+### Task 0.2 — Load the Kirsh Method and hold the problem-solving heuristics
+- **Last-mile Success:** Tanishq's AI has read `METHOD_CARD_v0.1_2026-08-13.md` and can restate the moves that shape every task: **Think → Plan → Test → Replan → Implement**; **prove-the-negative**; **checker ≠ author**; **adversarial testing**; **FSM contracts + a control plane**; **provenance / DB meta-awareness**.
+- **Validation:** a ledger row confirming the restatement, and that Sprint-1 planning carries a claim + refutation + a negative control before any build. (Checklist is the fallback; the gate is that the tasks are visibly shaped by the moves.)
+- **Failure states:** `card_unread`; `ritual_restatement`.
+- **Checker ≠ author:** David confirms the restatement and that the first real task carries a claim+refutation+negative-control.
+- **One-example-first:** demonstrate the moves on the first Sprint-1 task.
 
-**Task 0 — Install and verify the Method-Enforcement Controller.**
-- **Repo / lane:** machine-level setup; no repo commit required.
-- **Last-mile Success:** the hook block from the handoff is merged into `~/.claude/settings.json` (Option A if working in this checkout, Option B on Tanishq's own hardware with every absolute path re-pointed to where the hook files landed); the client has been restarted so the watcher activates the hooks; and the pass is recorded as the first line of the sprint ledger (`/Users/davidusa/REPOS/Image_Tagger_dk_latest/docs/TANISHQ_SPRINT_LEDGER_2026-08-14.md` **[proposed]**). **[verified — handoff §4]**
-- **Validation:** `python3 /Users/davidusa/REPOS/_control/hooks/dogged_stop_hook.py --selftest` prints all-controls-pass; `python3 /Users/davidusa/REPOS/_control/hooks/headless_first_guard.py --selftest` prints all-controls-pass; a `Read` with a bare `limit` (no `offset`) is blocked; a turn that writes "TODO" with no owner is blocked once. On a foreign machine, also confirm `python3` and `bash` resolve.
-- **Failure states:** `wired_but_not_activated` (settings merged but the client was not restarted, so no hook fires); `paths_point_at_daves_mac` (Option B copied without re-pointing the absolute paths, so the runner-queue paths do not exist — on a foreign machine, rely on Monitor as the durable channel, not the runner); `selftest_skipped` (installed but never self-tested — indistinguishable at runtime from not installed).
-- **Checker ≠ author:** David, or whoever owns the machine handoff, confirms the two self-tests printed pass and observes one live block, against the actual `~/.claude/settings.json` — not against a claim that it was installed.
-- **Depends-on:** nothing. This gates every task below.
-
----
-
-## How every task below is shaped
-
-Each carries: **Goal · Repo/lane · Last-mile Success** (the observable end-state and the exact artifact that turns the gear) · **Validation** (a check that passes only when the task is genuinely done) · **Failure states** (the ways it can look done without being done) · **Checker ≠ author** (a different person or AI lineage verifies, against the exact artifact) · **One-example-first** (the first item is done and verified before the rest are proposed) · **Depends-on**.
-
-Two disciplines run through all of them, because they are the ones a software-oriented planner under-weights:
-
-- **An instrument reading is a proxy until calibrated against a reference.** "Produces a number" is never acceptance; "reads within a stated tolerance of a known reference" is. **[verified — cowork prompt, Tanishq reminder 4]**
-- **No procurement for now (David, 2026-08-14).** Tanishq's work uses already-available instruments — his machine, the lab machine, and borrowable campus gear. There is no buy-list. A task that would need an instrument not already on hand simply waits; it does not trigger a purchase. **[stated — DK 2026-08-14]**
-
----
-
-## Sprint 1 — (removed: no procurement for now)
-
-Per David (2026-08-14), a costed buy-list is **not** part of Tanishq's work at this stage. The lab is fine for a while on David's machine and the lab machine, using already-available instruments and borrowable campus gear. There is no purchasing task here. If dedicated procurement becomes necessary later, it returns as a David-owned decision, not a Tanishq sprint. The shakedown below therefore runs on whatever suitable instrument is already on hand; if none is, it waits rather than triggering a purchase. **[stated — DK 2026-08-14]**
+*Record all three Q0 passes as START rows in `_control/SHARED_SPRINT_AND_ARTIFACT_LEDGER.md` before Task 1.*
 
 ---
 
-## Sprint 2 — The debug-POE shakedown (one instrument, one space)
+## Sprint 1 — BIGGEST: the photo→VR production loop  **[BLOCKED — DK decision: directory decomposition]**
 
-**Goal.** Before the full multi-space sweep, shake down **one** instrument in **one** space and prove it reads within tolerance of a known reference. This is an environmental shakedown with **no human subjects, so no IRB** — and it stays that way. It produces **receipts, not assurances**: what was measured, against what reference, in what calibration state, as evidence a checker who is not the author can re-verify. **[verified — cowork prompt reminders 2, 4, 5, 8; `FALL_HANDOFF_PACK` Tanishq]**
+**The loop.** A user picks an image → VR takes a first cut (an editable room) → renders an aligned 2D view of that 3D space → Image_Tagger compares the render's scene graph + wall-layout inference against the target image → the difference drives another cycle → a HITL step lets the user accept or say what is wrong. It spans `New_VR_Platform` (VR generation, Stephan's) and `Image_Tagger_dk_latest` (scene-graph/wall-layout comparison, Tanishq's), meeting at a **render↔verdict interface**. [scope — build prompt; `LANE_MAP` path-level-lanes section]
 
-**Task 2.1 — Reuse the existing capture pipeline for environmental logger ingestion.**
-- **Repo / lane:** `Image_Tagger_dk_latest` for the shakedown artifacts; the pipeline *pattern* is reused from `emotibit_polar_data_system` (do not commit into it — it is not in Tanishq's lane; copy or import the pattern into his lane). **[verified — `LANE_MAP`; cowork prompt reminder 6]**
-- **Last-mile Success:** an ingestion path under `/Users/davidusa/REPOS/Image_Tagger_dk_latest/poe_shakedown/` **[proposed]** that ingests two co-located CO₂ logger files, schema-validates them, runs a **sync-QC** step reporting drift/overlap/jitter with a 0–100 confidence score and an R/Y/G band, and **refuses to emit metrics in strict mode when the two clocks cannot be trusted to align** — reusing the sync-QC + strict-gate + provenance design already built in `emotibit_polar_data_system` (`backend/`, `scripts/` sync-QC, and the Bland–Altman benchmark scaffold), rather than reinventing it. Sync-QC and provenance metadata are acceptance criteria, not extras. **[verified — `emotibit_polar_data_system/docs/PROJECT_GUIDE_FOR_HUMANS.md` §2–4]**
-- **Validation:** on two co-located logs the pipeline emits a sync-QC report (drift, overlap, jitter, confidence, band) and, on a deliberately mis-clocked pair, the strict gate refuses to export — proving the gate is live, not decorative. A provenance record (instrument model, serial, firmware, calibration state, capture window) is attached to the output.
-- **Failure states:** `reinvented_the_pipeline` (a fresh ad-hoc ingester instead of reusing the proven sync-QC/provenance machinery); `strict_gate_is_cosmetic` (a mis-clocked pair still exports); `provenance_missing` (numbers with no instrument/calibration metadata beside them); `passes_on_synthetic_only` (works on generated data but never run on a real logger file — the emotibit repo's own honest boundary is that its guarantees are scaffolds until run on real sessions).
-- **Checker ≠ author:** David or Stephan re-runs the sync-QC computation from the raw logs and confirms the report and the strict-gate refusal reproduce.
-- **One-example-first:** ingest and sync-QC **one** real pair of logs before wiring any batch or additional instruments.
-- **Depends-on:** an already-available environmental logger (lab or borrowed — no procurement); the emotibit pipeline pattern (present on disk, git-tracked). **[verified — emotibit inventory 2026-08-14]**
+**Why it is BLOCKED, and what is STARTABLE anyway.** The build cannot begin until David decomposes the loop into directories and assigns them (open decision §9): under the LANE_MAP's proposal, Tanishq owns cycle orchestration + the scene-graph/wall-layout comparison + the HITL surface; Stephan owns VR generation (photo→editable room + the aligned render); path-level lanes in `lanes.json` then keep them from colliding in a shared repo. Until those directories exist and are assigned, no cross-repo loop code may be committed (the lane-guard is repo-level today). **Do not guess the decomposition — flag it and do the design that makes the decision cheap.**
 
-**Task 2.2 — Calibrate the one instrument against a reference and produce the receipt.**
-- **Repo / lane:** `Image_Tagger_dk_latest` (`poe_shakedown/`).
-- **Last-mile Success:** a shakedown receipt at `/Users/davidusa/REPOS/Image_Tagger_dk_latest/poe_shakedown/RECEIPT_CO2_<space>_<date>.md` **[proposed]** recording: instrument (Aranet4, serial, firmware), the reference it was checked against (a borrowed reference-grade NDIR from EH&S, or a factory-fresh second unit plus a known outdoor ~420 ppm baseline and a CO₂-decay event), the co-located measurement window, the agreement statistics (bias and limits of agreement, Bland–Altman), and the pass/fail against a **stated tolerance** — the Aranet4 spec tolerance is ±(30 ppm + 3% of reading); the acceptance is "reads within that band of the reference across the measured range," not "produced a plausible curve." **Public-repo caution:** the receipt records environmental readings and instrument serials only — no participant data, and raw high-frequency logs are git-ignored (keep the summary + agreement stats in the repo).
-- **Validation:** the receipt states a numeric tolerance and shows the measured agreement inside it (or, honestly, outside it → the instrument is flagged, not trusted); the raw log referenced by the receipt exists and the agreement statistic recomputes from it.
-- **Failure states:** `number_not_calibration` (a reading reported as trustworthy with no reference comparison — the exact proxy-as-proof failure); `tolerance_unstated` (a "within tolerance" claim with no band written down); `reference_weaker_than_instrument` (checked against something no better than the instrument itself); `receipt_not_reproducible` (agreement stats that a checker cannot recompute from the referenced log).
-- **Checker ≠ author:** David or Stephan recomputes the bias and limits of agreement from the referenced raw log and confirms the pass/fail verdict.
-- **One-example-first:** this **is** the one example that gates the full sweep — one instrument, one space, one reference. The multi-instrument, multi-space sweep is proposed only after this receipt passes and is checked.
-- **Depends-on:** Task 2.1; a borrowable reference-grade CO₂ instrument (borrow-first, EH&S).
+### T1.1 — STARTABLE now: decompose the loop and propose the directory split + interface  **(design; unblocks the rest)**
+- **Repo/lane:** `Image_Tagger_dk_latest/docs/` (a proposal doc in Tanishq's lane; it does not commit code into either shared subtree).
+- **Last-mile Success:** a proposal at `Image_Tagger_dk_latest/docs/PHOTO_VR_LOOP_DECOMPOSITION_2026-08-15.md` **[proposed]** that (a) lists the loop's components as concrete modules/directories, (b) assigns each to a lane (Tanishq: orchestration, scene-graph/wall-layout comparison, HITL; Stephan: VR generation + aligned render), (c) specifies the **render↔verdict interface** (what a render hands the comparator; what a verdict hands back — fields, formats, file paths), and (d) proposes the exact `lanes.json` path-level entries to enact it.
+- **Validation (exits 0 iff done):** the proposal names every component with an owning lane and no unowned gap in the loop; the render↔verdict interface is specified concretely enough that a checker could stub both sides; the proposed `lanes.json` diff passes `lane_guard.py --selftest` when applied to a scratch copy (path-level mode).
+- **Failure states:** `decomposition_guessed_as_decided` (proposal committed to `lanes.json` before David approves — the guard/ownership changed without the decision); `interface_underspecified` (a render↔verdict contract too vague to stub); `unowned_seam` (a loop step assigned to no lane).
+- **Checker ≠ author:** **David decides** the decomposition and ownership; Stephan confirms the VR-generation boundary matches his lane. Cowork/Codex does not enact `lanes.json` until David signs.
+- **One-example-first:** specify the single render↔verdict hop first and get David's read before decomposing the whole cycle.
 
----
+### T1.2 — BLOCKED (needs T1.1 approved): scene-graph / wall-layout comparison on ONE image
+- **Repo/lane:** `Image_Tagger_dk_latest` (Tanishq's comparison subtree, per the approved split).
+- **Last-mile Success:** for one target image and one VR first-cut render, a deterministic comparison emits a structured discrepancy report (scene-graph diff + wall-layout inference diff) at a declared path, re-runnable to byte-identical canonical JSON.
+- **Validation (exits 0 iff done):** a `run_loop_compare.py` **[proposed]** exits 0 only when the report exists, validates against its schema, and a second run reproduces the hash; a deliberately mismatched render (wrong wall count) makes the report show the discrepancy — it must **not** report agreement on a bad render (the negative control).
+- **Failure states:** `passes_on_synthetic_only` (compared against a self-render, never a real target); `false_agreement` (a wrong render reported as matching); `nondeterministic_run`.
+- **Checker ≠ author:** a different lineage (or Stephan, owning the render side) re-runs the comparison and confirms the discrepancy on the mismatched render.
+- **One-example-first:** one target/render pair, one room type, before any batch.
 
-## Sprint 3 — Deploy / pipeline plumbing (incl. the KA review-page handoff)
-
-**Goal.** Stand up the deployment and data-serving plumbing the fall demo needs — and define the **cross-lane handoff** for serving the Knowledge-Atlas review webpage so the split does not strand the hosted adjudication surface. The division is fixed by the lane map: **Stephan owns the KA "Feature Review" page** (it is grafted into `Knowledge_Atlas`, which is his repo); **Tanishq owns the deploy/plumbing** — hosting it, serving it, and piping data to it — **without committing into `Knowledge_Atlas`.** **[verified — `LANE_MAP`; `FALL_HANDOFF_PACK` Tanishq + Stephan packets; cowork prompt reminder 7]**
-
-**Task 3.1 — Define the serve contract (the interface that makes the split safe).**
-- **Repo / lane:** `Image_Tagger_dk_latest` (Tanishq's deploy artifacts live in his lane, never in KA).
-- **Last-mile Success:** a serve-contract document at `/Users/davidusa/REPOS/Image_Tagger_dk_latest/docs/KA_REVIEW_SERVE_CONTRACT_2026-08-14.md` **[proposed]** stating exactly what Stephan's lane hands off (a built, deployable bundle or a run command; the port it listens on; the environment variables it needs; the data mount it reads from — the `verification_packets.py` output plus the migration-024 annotations store) and what Tanishq's lane provides (the runtime host, reverse proxy, TLS, DNS, uptime, and the data-sync job that lands the packet files where the page reads them). The page is hosted, JWT-protected (URL + login, no local checkout). **[verified — `FALL_HANDOFF_PACK` Stephan packet, item C]**
-- **Validation:** the contract names the artifact Stephan produces and the exact interface (port, env, data path) with no gap that requires Tanishq to edit KA source; a dry-run against a **sample** packet directory (not live data) serves the page and the page reads the sample. **Live data is blocked on codex's 1a pipeline handoff — do not wait on it to build against the sample.** **[verified — `FALL_HANDOFF_PACK`: "STARTABLE NOW against a sample, live data BLOCKED ON codex's 1a handoff"]**
-- **Failure states:** `lane_crossed` (Tanishq edits files inside `Knowledge_Atlas` to make it deploy — the lane-guard should and will block the commit); `contract_implicit` (deployment that works only because the deployer happened to know an undocumented port/env, so the next person cannot reproduce it); `secret_in_public_repo` (a JWT signing key, credential, or token committed into the public Image_Tagger repo — GitHub push protection will reject it; design so it never arises, keep secrets in the runtime environment).
-- **Checker ≠ author:** Stephan (owner of the KA page) confirms the serve contract matches what his lane actually produces; a second reader confirms no Image_Tagger commit touches KA source and no secret is committed.
-- **One-example-first:** serve one sample packet end to end before wiring the live data-sync job.
-- **Depends-on:** Stephan / the agent lane producing the built KA Feature-Review bundle (item C, spec `_control/METHODOLOGY/BUILD_SPEC_adjudication_console_2026-08-13.md`); codex's 1a pipeline handoff for **live** data only. **[verified — `FALL_HANDOFF_PACK`]**
-
-**Task 3.2 — Stand up the deployment for the deployable tagger read (storyboard steps 2–3).**
-- **Repo / lane:** `Image_Tagger_dk_latest`.
-- **Last-mile Success:** a reproducible deployment (documented run command + environment) that serves the packaged tagger read of one real render into attribute fields, from `Image_Tagger_dk_latest`, hosted and reachable — the deploy/plumbing half of the fall demo. The *science* of the read (attributes, evidence binding, confidence rungs) is the software sprints' job (Sprints D/E/G and the agent-lane item B); this task is the serving of it. **[verified — `FALL_HANDOFF_PACK` agent-lane item B; SYSTEM_OVERVIEW §6]**
-- **Validation:** a clean-environment run of the documented command brings the service up and returns the attribute fields for one known render; `node_modules`, venvs, caches, and any file >100 MB are git-ignored and absent from commits (public-repo constraint).
-- **Failure states:** `works_on_my_machine` (comes up only in the author's environment, no documented reproducible run); `repo_bloated` (a venv, cache, or large binary committed — push protection / the 100 MB limit will reject it); `calibration_overclaimed` (serving a perceptual field as evidence when it is still uncalibrated — every reading must carry its maturity rung; an uncalibrated measure is exploratory, not evidence). **[verified — cowork prompt guardrails]**
-- **Checker ≠ author:** a different AI lineage or David runs the documented command from a clean checkout and confirms the service comes up and returns the fields.
-- **One-example-first:** one render, one deployment, verified, before any batch or multi-render serving.
-- **Depends-on:** the packaged tagger read from the software/agent lane (item B); Sprint 0.
+### T1.3 — BLOCKED (needs T1.1 + T1.2): cycle orchestration + user HITL accept/reject
+- **Repo/lane:** `Image_Tagger_dk_latest` (orchestration + HITL subtree).
+- **Last-mile Success:** the loop cycles — render → compare → adjust → re-render — until the discrepancy falls below a stated threshold or a cap, then presents the user a HITL step to accept or mark what is wrong; the user's verdict is recorded with provenance.
+- **Validation (exits 0 iff done):** the orchestrator runs the cycle to its stop condition on one image and records each iteration's discrepancy; the HITL verdict lands in an audited store; a run with an unreachable threshold stops at the cap and is **flagged**, not looped forever or falsely accepted.
+- **Failure states:** `infinite_or_silent_loop` (no cap / no flag on non-convergence); `verdict_unprovenanced` (accept/reject stored without who/when/what-image); `resemblance_used_as_evidence` (a convergence score treated as calibrated truth — it is exploratory until calibrated).
+- **Checker ≠ author:** David or Stephan drives one accept and one reject and confirms both are recorded correctly.
+- **One-example-first:** one full accept-path and one full reject-path on a single image before generalizing.
 
 ---
 
-## Sequence & dependencies
+## Sprint 2 — SECONDARY: the debug-POE shakedown (one instrument, one space, no procurement)
 
-The order is set by what gates what. With procurement out of scope for now, the near-term work is software-and-deploy plus a shakedown only if a suitable instrument is already on hand — none of which waits on a purchase.
+**Goal.** Shake down **one** already-available instrument in **one** space and prove it reads within tolerance of a known reference — **receipts, not assurances**; **no human subjects → no IRB**; **no buy-list** (uses on-hand/borrowable gear). [scope; `FALL_HANDOFF_PACK` Tanishq]
 
-1. **Sprint 0 (gate)** — now; blocks everything.
-2. **Sprint 3.1 (serve contract + sample dry-run)** — startable now, independent of hardware and of live data (build against a sample; live data waits on codex 1a). The most useful thing Tanishq can do immediately, on existing machines.
-3. **Sprint 2 (shakedown)** — runs whenever a suitable environmental logger is already available (lab or borrowed) plus a borrowable reference; one instrument, one space, one receipt, checked, before any full sweep. If no instrument is on hand, it waits — without triggering a purchase.
-4. **Sprint 3.2 (deploy the tagger read)** — waits on the packaged tagger read from the software/agent lane (item B).
+### T2.1 — Reuse the proven capture pipeline for logger ingestion
+- **Repo/lane:** `Image_Tagger_dk_latest/poe_shakedown/` **[proposed]** (reuse the *pattern* from `emotibit_polar_data_system` — import/copy, do not commit into it).
+- **Last-mile Success:** an ingestion path that ingests two co-located logger files, schema-validates, runs sync-QC (drift/overlap/jitter → 0–100 confidence + R/Y/G band), and **refuses to emit metrics in strict mode when the clocks cannot be trusted to align** — reusing the sync-QC/strict-gate/provenance design already built, not reinventing it.
+- **Validation (exits 0 iff done):** on two co-located logs it emits a sync-QC report; on a deliberately mis-clocked pair the strict gate refuses to export (gate is live, not cosmetic); a provenance record (model, serial, firmware, calibration state, window) is attached.
+- **Failure states:** `reinvented_the_pipeline`; `strict_gate_is_cosmetic`; `provenance_missing`; `passes_on_synthetic_only`.
+- **Checker ≠ author:** David or Stephan re-runs sync-QC from the raw logs and confirms the report and the strict-gate refusal.
+- **One-example-first / Depends-on:** one real pair of logs first; an already-available logger + the emotibit pattern (on disk).
 
-Cross-lane, in one line: **Stephan/agent lane hand off the KA page bundle and (later) codex hands off the live pipeline → Tanishq serves them.** The human-subjects lane (physiology, cognitive tasks on people, wearables, cortisol) needs IRB and stays **off Tanishq's critical path**. **[verified — kit protocol §2, §5]**
-
-**The near-term work that proceeds now, on existing machines:** the deploy serve-contract (Sprint 3.1) and, if an instrument is already on hand, the one-instrument shakedown (Sprint 2). Neither waits on any purchase.
-
----
-
-## Relationship to Tanishq's existing sprints (extend, don't duplicate)
-
-This set adds the hardware/deploy lane. It does not restate the software sprints Tanishq already holds, which remain live and in his lane:
-- `docs/TANISHQ_ONBOARDING_AND_SPRINTS_2026-07-21.md` — Sprint A (corpus image database), B (M1′ audit coverage), C (cross-environment determinism), D (Wave-3 detector deployment), E (corpus scoring pipeline), F (labelling console backend + deploy — **IRB before any real participant**), G (annotated-image search). **[verified]**
-- `docs/TANISHQ_SPRINT_CARDS_2026-07-23.md` — the assignable tagger cards (LEG-1, CC-3/5/6/7/8/9, VIEW-4/5, DK-1-support). **[verified]**
-
-Sprint 3.2 here is the *deployment* half of what Sprints D/E/G and agent-lane item B produce; Sprint 3.1 is the plumbing for Stephan's KA page. Where this set and the older docs both touch deployment, this set owns the hosting/serving contract and the older docs own the science of what is served.
+### T2.2 — Calibrate the one instrument against a reference; produce the receipt
+- **Repo/lane:** `Image_Tagger_dk_latest/poe_shakedown/`.
+- **Last-mile Success:** a receipt `RECEIPT_<instr>_<space>_<date>.md` **[proposed]** recording instrument (model/serial/firmware), the reference checked against, the co-located window, the agreement stats (bias + limits of agreement, Bland–Altman), and pass/fail against a **stated tolerance** (e.g. Aranet4 ±(30 ppm + 3% of reading)). Raw high-frequency logs gitignored; summary + stats in-repo; no participant data.
+- **Validation (exits 0 iff done):** the receipt states a numeric tolerance and shows measured agreement inside it (or honestly outside → flagged, not trusted); the referenced raw log exists and the agreement statistic recomputes from it.
+- **Failure states:** `number_not_calibration` (reading trusted with no reference); `tolerance_unstated`; `reference_weaker_than_instrument`; `receipt_not_reproducible`.
+- **Checker ≠ author:** David or Stephan recomputes bias + limits of agreement from the referenced log and confirms the verdict.
+- **One-example-first:** this IS the one example gating any multi-instrument/space sweep.
 
 ---
 
-## Provenance
+## Sprint 3 — SECONDARY: deploy / serving plumbing (incl. the KA review-page handoff)
 
-The pre-flight gate, the acceptance self-tests, and the two guards that matter most for this lane are from `/Users/davidusa/REPOS/_control/METHODOLOGY/METHOD_ENFORCEMENT_CONTROLLER_HANDOFF_2026-08-14.md` (§6) and the cowork sprint-set builder prompt `/Users/davidusa/REPOS/_control/prompts/COWORK_SPRINT_SET_BUILDER_PROMPT.md` (Tanishq reminders 1–8, and the task-shape/guardrail requirements). The lane split and the lane-guard are from `/Users/davidusa/REPOS/_control/METHODOLOGY/LANE_MAP_2026-08-14.md`. The IRB line (environmental work needs no IRB; human-wear instruments do) is general project knowledge. Any detailed instrument list lives in a confidential, David-held working document that is **not in git** (`~/Documents/Zaha/…`, David-only); it is **not needed by Tanishq** now that procurement is deferred, and **nothing in this sprint set depends on any file outside git or the shared databases**. The pipeline-reuse target (sync QC, strict-sync gate, R/Y/G confidence, Bland–Altman scaffold, provenance) is from `/Users/davidusa/REPOS/emotibit_polar_data_system/docs/PROJECT_GUIDE_FOR_HUMANS.md`. The fall target, the per-person assignments, the KA Feature-Review handoff, and the ~£4–8k procurement gate are from `/Users/davidusa/REPOS/_control/METHODOLOGY/FALL_HANDOFF_PACK_2026-08-13.md`. The system frame, the fourth-code quantities (STI, m-EDI, real ventilation), and the maturity-rung / calibration-before-evidence discipline are from `/Users/davidusa/REPOS/SYSTEM_OVERVIEW.md` and `/Users/davidusa/REPOS/Post_Occupancy_Evals/docs/PROJECT_GUIDE_FOR_HUMANS.md`. Written under the science-communication norms in `/Users/davidusa/REPOS/atlas_shared/contracts/SCIENCE_COMMUNICATION_NORMS.md`. Items marked **[proposed]** are intended artifacts that do not yet exist; **[stated — DK]** is recorded intent; **[verified]** was read this session.
+**Goal.** Stand up the deploy/data-serving plumbing the fall demo needs, and define the **cross-lane serve contract** so the split does not strand the hosted KA adjudication surface: **Stephan owns the KA "Feature Review" page** (in `Knowledge_Atlas`); **Tanishq owns hosting/serving/piping data to it — without committing into `Knowledge_Atlas`.** [scope; `LANE_MAP`; `FALL_HANDOFF_PACK`]
+
+### T3.1 — Define the serve contract (the interface that makes the split safe)
+- **Repo/lane:** `Image_Tagger_dk_latest/docs/KA_REVIEW_SERVE_CONTRACT_2026-08-14.md` **[proposed]** (Tanishq's deploy artifacts stay in his lane).
+- **Last-mile Success:** a contract stating exactly what Stephan's lane hands off (deployable bundle or run command; port; env vars; data mount — `verification_packets.py` output + the migration-024 annotations store) and what Tanishq provides (host, reverse proxy, TLS, DNS, uptime, the data-sync job). Hosted, JWT-protected.
+- **Validation (exits 0 iff done):** the contract names the artifact + exact interface (port/env/data path) with no gap requiring Tanishq to edit KA source; a dry-run against a **sample** packet directory serves the page and it reads the sample. (Live data BLOCKED on Codex 1a — build against the sample, don't wait.)
+- **Failure states:** `lane_crossed` (Tanishq edits `Knowledge_Atlas` to deploy — the guard blocks it); `contract_implicit` (works only via an undocumented port/env); `secret_in_public_repo`.
+- **Checker ≠ author:** Stephan confirms the contract matches what his lane produces; a second reader confirms no Image_Tagger commit touches KA source and no secret is committed.
+- **One-example-first:** serve one sample packet end-to-end before wiring the live data-sync.
+
+### T3.2 — Stand up the deployment for the deployable tagger read
+- **Repo/lane:** `Image_Tagger_dk_latest`.
+- **Last-mile Success:** a reproducible deployment (documented run command + env) that serves the packaged tagger read of one real render into attribute fields, hosted and reachable — the serving half of the fall demo. (The *science* of the read is the software/agent lane's job; this task serves it.)
+- **Validation (exits 0 iff done):** a clean-environment run of the documented command brings the service up and returns the fields for one known render; `node_modules`/venvs/caches/>100 MB are gitignored and absent from commits.
+- **Failure states:** `works_on_my_machine`; `repo_bloated`; `calibration_overclaimed` (serving an uncalibrated perceptual field as evidence — every reading carries its maturity rung).
+- **Checker ≠ author:** a different lineage or David runs the documented command from a clean checkout and confirms the service + fields.
+- **One-example-first / Depends-on:** one render, verified, before batch; the packaged tagger read from the software/agent lane (item B).
+
+---
+
+## Sequence, guardrails, provenance
+
+**Sequence.** Sprint 0 (0 → 0.1 → 0.2) gates everything. **Sprint 1 (biggest) is BLOCKED on David's directory decomposition** — but **T1.1 (the decomposition proposal) is STARTABLE now** and is the thing that unblocks it; T1.2/T1.3 wait on David's sign-off. In parallel, **Sprint 3.1 (serve contract + sample dry-run) is STARTABLE now** on existing machines and is the most useful immediate non-blocked work; **Sprint 2 (shakedown)** runs whenever a suitable instrument is on hand; **Sprint 3.2** waits on the packaged tagger read. The human-subjects lane (wearables, cortisol) needs IRB and stays off this critical path.
+
+**Guardrails.** Lane: every task names its repo; the loop's shared subtrees are governed by path-level lanes **only after David approves T1.1** — until then no cross-repo loop commit. Public-repo cautions (`Image_Tagger_dk_latest`, `Post_Occupancy_Evals` public): no secrets, no participant data, nothing >100 MB. Calibration-before-evidence: an instrument reading or a perceptual/convergence score is exploratory until calibrated against a reference. Cross-visibility: log START/DONE and shared artifacts to `_control/SHARED_SPRINT_AND_ARTIFACT_LEDGER.md`.
+
+**Provenance.** Scope from `COWORK_BUILD_SPRINTS_STEPHAN_TANISHQ_2026-08-14.md`; task-shape/gate from `COWORK_SPRINT_SET_BUILDER_PROMPT.md`; lanes from `LANE_MAP_2026-08-14.md` + `lanes.json` + `lane_guard.py`; controller from `METHOD_ENFORCEMENT_CONTROLLER_HANDOFF_2026-08-14.md` §6; shakedown pipeline pattern from `emotibit_polar_data_system/docs/PROJECT_GUIDE_FOR_HUMANS.md`; deploy/KA-handoff from `FALL_HANDOFF_PACK_2026-08-13.md`. Extends `TANISHQ_ONBOARDING_AND_SPRINTS_2026-07-21.md` + `TANISHQ_SPRINT_CARDS_2026-07-23.md`. No task depends on a David-only, non-git file. Refreshed 2026-08-15 by cowork (Claude/Opus) to the current scope; a draft for a different-lineage certifier (Codex) or David to sign. Written under `atlas_shared/contracts/SCIENCE_COMMUNICATION_NORMS.md`.
