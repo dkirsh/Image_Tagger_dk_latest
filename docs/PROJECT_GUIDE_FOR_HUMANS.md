@@ -22,7 +22,7 @@ and why is it built the way it is.*
 - `STALE_AFTER_DAYS: 30`
 
 > **Where this sits in the whole system.** Image Tagger is the **space-reader** — one
-> organ of the larger enterprise described in [`../../SYSTEM_OVERVIEW.md`](../../SYSTEM_OVERVIEW.md)
+> organ of the larger enterprise described in [`../../atlas_shared/docs/SYSTEM_OVERVIEW.md`](../../atlas_shared/docs/SYSTEM_OVERVIEW.md)
 > ("The Fourth Code"). Its job is the *feature* side of every "feature → effect" claim the
 > system wants to make about a building: it computes a room's falsifiable attributes from
 > visual input, and it is the place where the Cognitive, Emotional, Social, and Wellness
@@ -221,7 +221,7 @@ construct it indexes, the level it acts at, the mechanism, and the literature wa
 its evidence grade; and the *field visualizers*, which turn a bare number like "STI = 0.42"
 into a picture of *where in the plan* intelligibility collapses, because a designer acts on
 seeing, not on a scalar **[proposed — named as the current build front in
-`../../SYSTEM_OVERVIEW.md` §4, §6]**.
+`../../atlas_shared/docs/SYSTEM_OVERVIEW.md` §4, §6]**.
 
 ## 6 · Milestones for the next phase
 
@@ -288,7 +288,7 @@ dates):
 - [`docs/WELLBEING_CODE_AND_VIZ_OPERATORS_2026-07-18.md`](WELLBEING_CODE_AND_VIZ_OPERATORS_2026-07-18.md)
   — the well-being operators, each with its science, location, importance, and — critically —
   its development and validation state.
-- [`../../SYSTEM_OVERVIEW.md`](../../SYSTEM_OVERVIEW.md) — "The Fourth Code": how this
+- [`../../atlas_shared/docs/SYSTEM_OVERVIEW.md`](../../atlas_shared/docs/SYSTEM_OVERVIEW.md) — "The Fourth Code": how this
   space-reader fits with the evidence engine, the experiment side, and the VR platform as one
   system.
 
