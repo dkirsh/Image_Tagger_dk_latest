@@ -8,6 +8,8 @@
 
 ---
 
+> **PRIORITIES (David, 2026-08-14): (1) BIGGEST — the photo→VR production loop** (Sprint 1: image → VR first cut → aligned render → Image_Tagger scene-graph/wall-layout comparison → cycle → HITL). **(2) Secondary** — the debug-POE shakedown (Sprint 2; existing instruments, no buy-list) and the deploy/serve plumbing (Sprint 3). **Lane:** Tanishq owns `Image_Tagger_dk_latest` + `Post_Occupancy_Evals` + the `production_loop/` subtree of `New_VR_Platform` (path-lane); decomposition + render↔verdict interface in `_control/METHODOLOGY/LANE_MAP_2026-08-14.md`.
+
 ## Sprint 0 — Q0 pre-flight (nothing below starts until all three tasks pass)
 
 > ## ⛔ SPRINT PRE-FLIGHT GATE (MANDATORY — Method-Enforcement Controller)
