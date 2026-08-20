@@ -1,0 +1,162 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "title": "loop verdict (verdict.json) \u2014 render-verdict/v0.4",
+ "description": "Consumer side of the render<->verdict seam. Canonical JSON (sorted keys, minimal separators, trailing LF); byte-identical re-runs required. discrepancy.score is exploratory and uncalibrated \u2014 never evidence. built_against echoes the packet contract_version consumed (fail-closed on mismatch). Breaking changes: version bump + _control ledger announcement BEFORE landing. v0.4 (round 3 + the properly versioned amendment): identity.mode and objects_mode are tri-state exact | multiset_fallback | vacuous; R3-1 \u2014 a target object bbox that is present but malformed, or mis-keyed as bbox_xywh, lands in position_unverified (symmetric with an unreadable render echo; a genuinely absent bbox owes nothing); R3-2 \u2014 target object id/category must be non-empty strings (refused otherwise), render furniture ids must be strings or the comparator degrades to multiset_fallback; no str() coercion in identity matching. v0.3: moved-object scoring via furniture id + _source_bbox echo; agreement_policy strict default; NaN refused (RFC 8259); manifest type-validated; strict ap<i> spelling. v0.2 (announced): identity block + per-opening matching via aperture ids; extra_aperture_frac component; malformed inputs refused exit 2.",
+ "type": "object",
+ "required": [
+  "contract_version",
+  "built_against",
+  "run_id",
+  "iter",
+  "target_image_id",
+  "input_sha256",
+  "wall_layout_diff",
+  "object_diff",
+  "identity",
+  "discrepancy",
+  "verdict",
+  "agreement_policy"
+ ],
+ "properties": {
+  "contract_version": {
+   "const": "render-verdict/v0.4"
+  },
+  "built_against": {
+   "type": "string"
+  },
+  "run_id": {
+   "type": "string"
+  },
+  "iter": {
+   "type": "integer"
+  },
+  "target_image_id": {
+   "type": "string"
+  },
+  "input_sha256": {
+   "type": "object"
+  },
+  "wall_layout_diff": {
+   "type": "object",
+   "required": [
+    "target_openings",
+    "render_apertures",
+    "opening_mismatches",
+    "extra_render_apertures"
+   ],
+   "properties": {
+    "opening_mismatches": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "required": [
+       "opening_id",
+       "expected_wall",
+       "rendered_wall"
+      ]
+     }
+    }
+   }
+  },
+  "object_diff": {
+   "type": "object",
+   "required": [
+    "matched",
+    "missing_in_render",
+    "extra_in_render",
+    "moved"
+   ],
+   "properties": {
+    "moved": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "required": [
+       "object_id",
+       "bbox_target",
+       "bbox_render_source",
+       "offset_norm"
+      ],
+      "description": "v0.3 (Codex round-2 R2-1): furniture matched by source object id; _source_bbox (place_furniture.py:119) compared to the target object_bbox. Bound: x_m consistency with _source_bbox is platform math, not verified across the seam."
+     }
+    }
+   }
+  },
+  "discrepancy": {
+   "type": "object",
+   "required": [
+    "score",
+    "components",
+    "calibration"
+   ],
+   "properties": {
+    "calibration": {
+     "const": "exploratory_uncalibrated"
+    },
+    "components": {
+     "type": "object",
+     "required": [
+      "opening_wall_mismatch_frac",
+      "extra_aperture_frac",
+      "object_missing_frac",
+      "object_extra_frac",
+      "object_moved_frac"
+     ],
+     "description": "extra_aperture_frac added in v0.2 (Codex finding A2: invented apertures must cost)."
+    }
+   }
+  },
+  "verdict": {
+   "enum": [
+    "CONTINUE",
+    "BELOW_THRESHOLD",
+    "CAP_REACHED_FLAGGED"
+   ]
+  },
+  "identity": {
+   "type": "object",
+   "required": [
+    "mode",
+    "unverifiable_kinds",
+    "objects_mode",
+    "position_unverified"
+   ],
+   "properties": {
+    "mode": {
+     "enum": [
+      "exact",
+      "multiset_fallback",
+      "vacuous"
+     ]
+    },
+    "unverifiable_kinds": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "objects_mode": {
+     "enum": [
+      "exact",
+      "multiset_fallback",
+      "vacuous"
+     ]
+    },
+    "position_unverified": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    }
+   },
+   "description": "exact = per-opening matching via platform aperture ids ap<i>; multiset_fallback = ids absent, and any kind with >=2 target openings is unverifiable \u2014 a verdict with unverifiable kinds can never be BELOW_THRESHOLD (v0.2, Codex review finding A1). v0.3 amendment (pre-landing): 'vacuous' = nothing claimed on that axis by either side \u2014 verified by emptiness, allowed to agree, but never dressed up as 'exact'."
+  },
+  "agreement_policy": {
+   "enum": [
+    "strict",
+    "allow_unverified"
+   ],
+   "description": "strict (default): BELOW_THRESHOLD requires exact identity for openings AND objects with no position_unverified. allow_unverified: explicit relaxation for stub producers (v0.3)."
+  }
+ }
+}

@@ -1,0 +1,51 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "title": "render packet manifest (packet.json) \u2014 render-verdict/v0.4",
+ "description": "Producer side of the render<->verdict seam (docs/PHOTO_VR_LOOP_DECOMPOSITION_2026-08-15.md section 5, Option 1 signed 2026-08-19). Directory also contains render.png, room.json (room.v0_3), camera.json. Consumer verifies every sha256 before comparing and refuses on mismatch. v0.4 producer requirements: furniture ids must be STRINGS (the comparator no longer coerces; non-string ids degrade identity to multiset_fallback, which under the strict agreement policy can never reach BELOW_THRESHOLD); everything else unchanged from v0.3. v0.3: furniture entries carry the source object id and _source_bbox (place_furniture.py:115-120) so moved objects are verifiable; produced_utc is required and enforced; iter must be a finite integer. room.json is the platform's semantic room (schema_version 0.3-semantic, from place_furniture) or a bare room v0.3 shell; the producer MUST use the place_furniture entry point when the scene carries objects, since photo_to_vr does not place furniture. v0.2: consumer refuses v0.1 packets; producer must emit platform aperture ids (ap<i>) in room.json for exact identity matching; without them the comparator degrades to multiset_fallback and never claims agreement on ambiguous kinds.",
+ "type": "object",
+ "required": [
+  "contract_version",
+  "run_id",
+  "iter",
+  "target_image_id",
+  "produced_utc",
+  "sha256"
+ ],
+ "properties": {
+  "contract_version": {
+   "const": "render-verdict/v0.4"
+  },
+  "run_id": {
+   "type": "string"
+  },
+  "iter": {
+   "type": "integer",
+   "minimum": 0
+  },
+  "target_image_id": {
+   "type": "string"
+  },
+  "produced_utc": {
+   "type": "string"
+  },
+  "sha256": {
+   "type": "object",
+   "required": [
+    "render_png",
+    "room_json",
+    "camera_json"
+   ],
+   "properties": {
+    "render_png": {
+     "type": "string"
+    },
+    "room_json": {
+     "type": "string"
+    },
+    "camera_json": {
+     "type": "string"
+    }
+   }
+  }
+ }
+}
