@@ -1,10 +1,13 @@
-"""loop/tests/test_run_loop_compare.py — T1.2 comparator tests (contract v0.4).
+"""loop/tests/test_run_loop_compare.py — T1.2 comparator tests (contract v0.5).
 
 Deterministic, tmp_path-based, stdlib-runnable (pytest optional). The negative controls
 encode the Codex review's executed attacks across three rounds: A1 permutation, A2
 invented aperture (round 1); moved-object, NaN, manifest typing, ap00 spelling (round
-2); R3-1 target-side bbox asymmetry and R3-2 type-coerced identity (round 3) — plus the
-malformed-input fail-closed sweep. Honest bound: all fixtures synthetic; the
+2); R3-1 target-side bbox asymmetry and R3-2 type-coerced identity (round 3); V04-1
+null-as-absent, V04-2 category coercion, V04-3 the $-vs-\\Z regex trap (round 4) — plus
+the malformed-input fail-closed sweep. The round-4 additions are exactly the coverage
+gaps Codex named: object_bbox null, the long-list bbox, render category type, and
+aperture-id trailing whitespace. Honest bound: all fixtures synthetic; the
 one-real-image run is a separately recorded step (passes_on_synthetic_only stays open
 until then).
 
@@ -477,11 +480,13 @@ def test_r3_malformed_target_bbox_blocks_agreement(tmp_path):
     verified — position_unverified + CONTINUE, symmetric with an unreadable echo.
     v0.3 silently skipped these and agreed."""
     bad_bboxes = ("0.1,0.6,0.1,0.2",              # string, not a list
-                  [0.10, 0.6, 0.1],               # wrong length
+                  [0.10, 0.6, 0.1],               # too short
+                  [0.10, 0.6, 0.1, 0.2, 0.5],     # too long (round-4 named gap)
                   [0.10, 0.6, 0.1, "x"],          # non-numeric entry
                   [0.10, 0.6, 0.1, float("nan")],  # non-finite entry
                   [0.10, 0.6, 0.1, True],         # bool is not a number here
-                  {"x": 0.1, "y": 0.6})           # mapping, not a sequence
+                  {"x": 0.1, "y": 0.6},           # mapping, not a sequence
+                  None)                           # V04-1: present null is NOT absent
     for i, bb in enumerate(bad_bboxes):
         scene = {"image_id": f"r3a{i}",
                  "openings": [{"kind": "door", "bbox_xywh": [0.50, 0.55, 0.06, 0.35]}],
@@ -561,6 +566,114 @@ def test_r3_nonstring_render_id_falls_back_not_exact(tmp_path):
     v = verdict_of(tmp_path)
     assert v["identity"]["objects_mode"] == "multiset_fallback"
     assert v["verdict"] == "CONTINUE"
+
+
+# ------------------------------------------------------------------ Codex round-4 regressions
+
+def test_v04_1_null_object_bbox_blocks_agreement(tmp_path):
+    """V04-1 (round-4 HIGH): object_bbox: null is a PRESENT claim that cannot be read
+    — key-presence test, not value-shape enumeration. v0.4 agreed here."""
+    scene = {"image_id": "v04n",
+             "openings": [{"kind": "door", "bbox_xywh": [0.50, 0.55, 0.06, 0.35]}],
+             "objects": [{"id": "o1", "category": "chair", "object_bbox": None,
+                          "evidence": {}}]}
+    code, msg = rlc.run(write_target(tmp_path, scene),
+                        make_packet(tmp_path, _r3_room(_R3_ECHO)),
+                        tmp_path / "verdict", threshold=0.0)
+    assert code == 0, msg
+    v = verdict_of(tmp_path)
+    assert v["identity"]["position_unverified"] == ["o1"]
+    assert v["verdict"] == "CONTINUE"
+
+
+def test_v04_null_containers_refused(tmp_path):
+    """Null policy (decided once, round 4): a present-null CONTAINER is a malformed
+    document, exit 2 — on either side of the seam. Only a missing key is absent."""
+    # target side
+    for i, scene in enumerate((
+            {"image_id": "n0", "openings": None,
+             "objects": [{"id": "o1", "category": "chair", "evidence": {}}]},
+            {"image_id": "n1", "objects": None,
+             "openings": [{"kind": "door", "bbox_xywh": [0.5, 0.5, 0.1, 0.3]}]})):
+        t = tmp_path / f"s{i}.json"
+        t.write_text(json.dumps(scene), encoding="utf-8")
+        code, msg = rlc.run(t, make_packet(tmp_path / f"p{i}", _r3_room(_R3_ECHO)),
+                            tmp_path / f"v{i}", None)
+        assert code == 2 and "null" in msg, f"target case {i}: {code} {msg}"
+    # render side
+    for j, room in enumerate((
+            {"schema_version": "0.3", "apertures": None, "furniture": []},
+            {"schema_version": "0.3",
+             "apertures": [{"id": "ap0", "kind": "door", "wall": "north"}],
+             "furniture": None})):
+        p = make_packet(tmp_path / f"pr{j}", room)
+        code, msg = rlc.run(write_target(tmp_path), p, tmp_path / f"vr{j}", None)
+        assert code == 2 and "null" in msg, f"render case {j}: {code} {msg}"
+
+
+def test_v04_2_render_category_type_never_matches(tmp_path):
+    """V04-2 (round-4 HIGH): target "7" must NOT match render 7; target "None" must
+    NOT match render null. No str() coercion on the category path."""
+    for i, (tcat, rcat, marker) in enumerate((
+            ("7", 7, "<unreadable-category:int>"),
+            ("None", None, "<unreadable-category:NoneType>"),
+            ("True", True, "<unreadable-category:bool>"))):
+        scene = {"image_id": f"v042-{i}",
+                 "openings": [{"kind": "door", "bbox_xywh": [0.50, 0.55, 0.06, 0.35]}],
+                 "objects": [{"id": "o1", "category": tcat, "evidence": {}}]}
+        room = _r3_room([{"id": "o1", "category": rcat,
+                          "_source_bbox": [0.10, 0.6, 0.1, 0.2]}])
+        t = tmp_path / f"s{i}.json"
+        t.write_text(json.dumps(scene), encoding="utf-8")
+        code, msg = rlc.run(t, make_packet(tmp_path / f"p{i}", room),
+                            tmp_path / f"v{i}", threshold=0.0)
+        assert code == 0, f"case {i}: {msg}"
+        v = json.loads((tmp_path / f"v{i}" / "verdict.json").read_text())
+        assert v["object_diff"]["missing_in_render"] == [tcat], f"case {i}"
+        assert v["object_diff"]["extra_in_render"] == [marker], f"case {i}"
+        assert v["verdict"] == "CONTINUE", f"case {i}: coerced category agreed"
+
+
+def test_v04_2_marker_string_cannot_false_match(tmp_path):
+    """The marker is display-only: a target category LITERALLY equal to the marker
+    text still cannot match a non-string render category."""
+    scene = {"image_id": "v042m",
+             "openings": [{"kind": "door", "bbox_xywh": [0.50, 0.55, 0.06, 0.35]}],
+             "objects": [{"id": "o1", "category": "<unreadable-category:int>",
+                          "evidence": {}}]}
+    room = _r3_room([{"id": "o1", "category": 7,
+                      "_source_bbox": [0.10, 0.6, 0.1, 0.2]}])
+    code, msg = rlc.run(write_target(tmp_path, scene), make_packet(tmp_path, room),
+                        tmp_path / "verdict", threshold=0.0)
+    assert code == 0, msg
+    v = verdict_of(tmp_path)
+    assert v["object_diff"]["matched"] == []
+    assert v["verdict"] == "CONTINUE"
+
+
+def test_v04_3_aperture_id_trailing_newline_not_exact(tmp_path):
+    """V04-3 (round-4 MEDIUM-HIGH): 'ap0\n' defeated the ^...$ spelling gate because
+    Python $ matches before a trailing newline. \Z closes it: fallback, never exact."""
+    for i, bad_id in enumerate(("ap0\n", "ap0\t", "ap0 ")):
+        room = {"schema_version": "0.3",
+                "apertures": [{"id": bad_id, "kind": "glazed_wall", "wall": "east"},
+                              {"id": "ap1", "kind": "door", "wall": "north"}],
+                "furniture": [{"id": "o1", "category": "chair"},
+                              {"id": "o2", "category": "desk"}]}
+        p = make_packet(tmp_path / f"p{i}", room)
+        code, msg = rlc.run(write_target(tmp_path), p, tmp_path / f"v{i}",
+                            threshold=0.0)
+        assert code == 0, f"case {i}: {msg}"
+        v = json.loads((tmp_path / f"v{i}" / "verdict.json").read_text())
+        assert v["identity"]["mode"] == "multiset_fallback", f"case {i}: {bad_id!r}"
+        assert v["verdict"] == "CONTINUE", f"case {i}"
+
+
+def test_v04_4_negative_iter_refused(tmp_path):
+    p = make_packet(tmp_path, GOOD_ROOM, manifest_override={"iter": -1})
+    code, msg = rlc.run(write_target(tmp_path), p, tmp_path / "verdict", None)
+    assert code == 2 and "iter" in msg
+    assert not (tmp_path / "verdict" / "verdict.json").exists()
 
 
 # ------------------------------------------------------------------ stdlib runner

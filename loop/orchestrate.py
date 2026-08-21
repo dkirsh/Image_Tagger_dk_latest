@@ -7,10 +7,10 @@ infinite loop), then records the human's accept/reject with provenance.
 
 Lane: Image_Tagger_dk_latest (tanishq). The producer runs as an external COMMAND
 (your production_loop/ code in New_VR_Platform, or any stub honouring the packet
-contract) — no cross-repo imports; the loop crosses repos through render-verdict/v0.4.
+contract) — no cross-repo imports; the loop crosses repos through render-verdict/v0.5.
 
 METHOD BLOCK (Method Card v0.1)
-- FREEZE: consumes render-verdict/v0.4 via loop/run_loop_compare.py (same commit);
+- FREEZE: consumes render-verdict/v0.5 via loop/run_loop_compare.py (same commit);
   producer invoked by command template only.
 - CLAIM: for one target scene and one producer, the orchestrator reaches a stop state in
   at most `cap` iterations, records every iteration's discrepancy, and a run that cannot

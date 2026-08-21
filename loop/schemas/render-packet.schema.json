@@ -1,7 +1,7 @@
 {
  "$schema": "https://json-schema.org/draft/2020-12/schema",
- "title": "render packet manifest (packet.json) \u2014 render-verdict/v0.4",
- "description": "Producer side of the render<->verdict seam (docs/PHOTO_VR_LOOP_DECOMPOSITION_2026-08-15.md section 5, Option 1 signed 2026-08-19). Directory also contains render.png, room.json (room.v0_3), camera.json. Consumer verifies every sha256 before comparing and refuses on mismatch. v0.4 producer requirements: furniture ids must be STRINGS (the comparator no longer coerces; non-string ids degrade identity to multiset_fallback, which under the strict agreement policy can never reach BELOW_THRESHOLD); everything else unchanged from v0.3. v0.3: furniture entries carry the source object id and _source_bbox (place_furniture.py:115-120) so moved objects are verifiable; produced_utc is required and enforced; iter must be a finite integer. room.json is the platform's semantic room (schema_version 0.3-semantic, from place_furniture) or a bare room v0.3 shell; the producer MUST use the place_furniture entry point when the scene carries objects, since photo_to_vr does not place furniture. v0.2: consumer refuses v0.1 packets; producer must emit platform aperture ids (ap<i>) in room.json for exact identity matching; without them the comparator degrades to multiset_fallback and never claims agreement on ambiguous kinds.",
+ "title": "render packet manifest (packet.json) \u2014 render-verdict/v0.5",
+ "description": "v0.5 (round 4, artifact 95c071af @ 60d938df): NULL POLICY decided once \u2014 a present JSON null is never 'absent': null containers (openings/objects/apertures/furniture) are refused as malformed; a null object_bbox is an unreadable claim -> position_unverified. V04-1 key-presence bbox test; V04-2 no str() coercion on any category/kind/wall path (non-string render categories become display-only <unreadable-category:T> markers that can never match); V04-3 ap<i> regex anchored with \\Z (trailing newline defeated $); V04-4 iter >= 0 enforced to match this schema. Producer side of the render<->verdict seam (docs/PHOTO_VR_LOOP_DECOMPOSITION_2026-08-15.md section 5, Option 1 signed 2026-08-19). Directory also contains render.png, room.json (room.v0_3), camera.json. Consumer verifies every sha256 before comparing and refuses on mismatch. v0.4 producer requirements: furniture ids must be STRINGS (the comparator no longer coerces; non-string ids degrade identity to multiset_fallback, which under the strict agreement policy can never reach BELOW_THRESHOLD); everything else unchanged from v0.3. v0.3: furniture entries carry the source object id and _source_bbox (place_furniture.py:115-120) so moved objects are verifiable; produced_utc is required and enforced; iter must be a finite integer. room.json is the platform's semantic room (schema_version 0.3-semantic, from place_furniture) or a bare room v0.3 shell; the producer MUST use the place_furniture entry point when the scene carries objects, since photo_to_vr does not place furniture. v0.2: consumer refuses v0.1 packets; producer must emit platform aperture ids (ap<i>) in room.json for exact identity matching; without them the comparator degrades to multiset_fallback and never claims agreement on ambiguous kinds.",
  "type": "object",
  "required": [
   "contract_version",
@@ -13,7 +13,7 @@
  ],
  "properties": {
   "contract_version": {
-   "const": "render-verdict/v0.4"
+   "const": "render-verdict/v0.5"
   },
   "run_id": {
    "type": "string"

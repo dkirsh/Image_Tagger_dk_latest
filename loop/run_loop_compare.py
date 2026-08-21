@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """run_loop_compare.py — T1.2: the render↔verdict comparator (photo→VR production loop).
 
-Contract: render-verdict/v0.4. Contract owner: Tanishq.
+Contract: render-verdict/v0.5. Contract owner: Tanishq.
 
 PROCESS RULE (adopted after round 3 was invalidated by a mid-review edit): the review
 subject is a COMMITTED HASH. This file is committed to tanishq/loop-comparator BEFORE any
@@ -20,8 +20,10 @@ Review lineage (checker ≠ author, different lineage = Codex/gpt-5.5):
        point) — a freeze violation, owned in the v0.4 announcement. Round 3 (artifact
        ad6c8037) returned BROKEN against the pre-amendment bytes; two findings survive
        the amendment and are fixed here.
-  v0.4 (this file) = v0.3 + vacuous modes + round-3 fixes; announced (superseding the
-       v0.3 row) BEFORE landing, reviewed as a committed hash.
+  v0.4 = v0.3 + vacuous modes + round-3 fixes; the first version reviewed as a
+       committed hash (60d938df). Round 4 (artifact 95c071af) returned BROKEN with three
+       strict false agreements — the protocol held (worktree unchanged, zero drift).
+  v0.5 (this file) = v0.4 + round-4 fixes + the null policy, decided once.
 
 Lane: Image_Tagger_dk_latest (tanishq). Never imports New_VR_Platform code.
 
@@ -82,6 +84,28 @@ v0.3 -> v0.4 (round-3 findings + the amendment, versioned properly):
        scene schema requires it) -> otherwise REFUSED, fail-closed; render furniture ids
        must be strings -> otherwise multiset_fallback. No str() coercion anywhere in
        identity: 7 never matches "7", and null never matches null.
+
+v0.4 -> v0.5 (round-4 findings, artifact 95c071af @ commit 60d938df):
+  V04-1 null bbox: v0.4 tested "is the value absent" instead of "is the key present", so
+       object_bbox: null collapsed to "no claim" and agreed unchecked. Fixed as Codex
+       prescribed — a KEY-PRESENCE test ends the shape-enumeration arms race: if either
+       bbox key is present, whatever its value, the claim must be readable or it lands in
+       position_unverified.
+  NULL POLICY (the judgement call, decided once, David may override): a present JSON null
+       is NEVER "absent". On a leaf claim (object_bbox) it is an unreadable claim ->
+       position_unverified. On a container (target openings/objects, room
+       apertures/furniture) it is a malformed document -> REFUSED exit 2. Only a MISSING
+       KEY is absent. This also closes the objects:null -> vacuous boundary Codex flagged.
+  V04-2 category coercion: str() removed from BOTH render category paths (exact-branch
+       compare and fallback multiset) and from the openings kind/wall compares — the
+       "no coercion" claim now matches the code. A non-string render category can never
+       match; it is reported as a typed marker <unreadable-category:T> (markers are
+       display-only: they are never entered into the match multiset, so a target category
+       that happens to equal a marker string still cannot false-match).
+  V04-3 ap<i> anchor: ^...$ with re.match accepts a trailing newline (Python $ matches
+       before \n). Anchored with \Z; "ap0\n" now falls to multiset_fallback.
+  V04-4 (consistency): iter must be >= 0, matching render-packet.schema.json's minimum —
+       the comparator no longer consumes a packet its own schema calls invalid.
 """
 from __future__ import annotations
 
@@ -93,13 +117,14 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
-CONTRACT_VERSION = "render-verdict/v0.4"
+CONTRACT_VERSION = "render-verdict/v0.5"
 _EPS = 1e-6
 
 STRUCTURAL_KINDS = frozenset({"window", "door", "glazed_wall", "glass_partition",
                               "skylight", "clerestory", "opening_unclassified"})
 _ZONE_CX = {"left": 0.17, "center": 0.5, "right": 0.83}
-_AP_ID = re.compile(r"^ap(0|[1-9][0-9]*)$")     # exact platform spelling, no leading zeros
+_AP_ID = re.compile(r"^ap(0|[1-9][0-9]*)\Z")    # \Z not $: $ matches before a trailing
+                                                # newline (round-4 V04-3)
 
 
 class Refused(Exception):
@@ -165,6 +190,9 @@ def load_packet(packet_dir: Path) -> Dict:
     if isinstance(it, bool) or not isinstance(it, int):
         if not (_finite(it) and float(it).is_integer()):
             raise Refused("packet.json iter must be a finite integer")
+    if it < 0:
+        raise Refused("packet.json iter must be >= 0 "
+                      "(render-packet.schema.json minimum — round-4 V04-4)")
     pu = manifest.get("produced_utc")
     if not isinstance(pu, str) or not pu:
         raise Refused("packet.json produced_utc must be a non-empty string "
@@ -193,9 +221,11 @@ def load_packet(packet_dir: Path) -> Dict:
     if not isinstance(room, dict):
         raise Refused("room.json must be a JSON object")
     for field in ("apertures", "furniture"):
+        if field in room and room[field] is None:      # null policy: present null is
+            raise Refused(f"room.json {field} is null — a present null is malformed, "
+                          f"not absent (omit the key instead)")
         v = room.get(field, [])
-        if v is not None and (not isinstance(v, list)
-                              or any(not isinstance(x, dict) for x in v)):
+        if not isinstance(v, list) or any(not isinstance(x, dict) for x in v):
             raise Refused(f"room.json {field} must be a list of objects")
     return {"manifest": manifest, "room": room}
 
@@ -210,6 +240,9 @@ def load_target(target_path: Path) -> Dict:
     if not (scene.get("openings") or scene.get("objects")):
         raise Refused("target scene has neither openings nor objects — nothing to compare")
     for field in ("openings", "objects"):
+        if field in scene and scene[field] is None:    # null policy: present null is
+            raise Refused(f"target scene {field} is null — a present null is malformed, "
+                          f"not absent (omit the key instead)")
         v = scene.get(field)
         if v is not None and (not isinstance(v, list)
                               or any(not isinstance(o, dict) for o in v)):
@@ -241,6 +274,24 @@ def _multiset(items: List[str]) -> Dict[str, int]:
     return out
 
 
+def _disp(v) -> str:
+    """Display-only rendering of a value that SHOULD be a string. Never used for
+    matching (round-4 V04-2): markers cannot enter a match multiset."""
+    return v if (isinstance(v, str) and v) else f"<non-string:{type(v).__name__}>"
+
+
+def _render_cat(f: Dict):
+    """The furniture entry's category if it is a usable string, else None (no str()
+    coercion — a non-string category can never match anything)."""
+    v = f.get("category", f.get("element"))
+    return v if (isinstance(v, str) and v) else None
+
+
+def _cat_marker(f: Dict) -> str:
+    v = f.get("category", f.get("element"))
+    return f"<unreadable-category:{type(v).__name__}>"
+
+
 def _bbox_ok(bb) -> bool:
     return (isinstance(bb, Sequence) and not isinstance(bb, (str, bytes))
             and len(bb) == 4 and all(_finite(v) for v in bb))
@@ -268,13 +319,15 @@ def _compare_openings(expected: List[Dict], apertures: List[Dict]):
             if a is None:
                 mismatches.append({"opening_id": f"target_opening_{e['index']}_{e['kind']}",
                                    "expected_wall": e["wall"], "rendered_wall": "MISSING"})
-            elif str(a.get("kind")) != e["kind"] or str(a.get("wall")) != e["wall"]:
+            elif a.get("kind") != e["kind"] or a.get("wall") != e["wall"]:
+                # direct comparison, no str(): a non-string kind/wall can only MISmatch
                 mismatches.append({"opening_id": f"target_opening_{e['index']}_{e['kind']}",
                                    "expected_wall": e["wall"],
-                                   "rendered_wall": str(a.get("wall", "unknown")),
+                                   "rendered_wall": _disp(a.get("wall", "unknown")),
                                    "expected_kind": e["kind"],
-                                   "rendered_kind": str(a.get("kind", "unknown"))})
-        extra = sorted(f"ap{i}:{a.get('kind')}->{a.get('wall')}"
+                                   "rendered_kind": _disp(a.get("kind", "unknown"))})
+        extra = sorted(f"ap{i}:{_disp(a.get('kind', 'unknown'))}->"
+                       f"{_disp(a.get('wall', 'unknown'))}"
                        for i, a in by_index.items() if i not in expected_idx)
     else:
         want: Dict[str, List[str]] = {}
@@ -282,8 +335,10 @@ def _compare_openings(expected: List[Dict], apertures: List[Dict]):
             want.setdefault(e["kind"], []).append(e["wall"])
         have: Dict[str, List[str]] = {}
         for a in apertures:
-            have.setdefault(str(a.get("kind", "unknown")), []).append(
-                str(a.get("wall", "unknown")))
+            # _disp keys/values: non-string kinds/walls become markers, which can never
+            # equal a STRUCTURAL_KINDS kind or a wall_for() wall — mismatch-only
+            have.setdefault(_disp(a.get("kind", "unknown")), []).append(
+                _disp(a.get("wall", "unknown")))
         for kind in sorted(want):
             walls = want[kind]
             if len(walls) >= 2:
@@ -333,28 +388,27 @@ def _compare_objects(scene: Dict, room: Dict):
         t_by = {o["id"]: o for o in t_objs}
         r_by = {f["id"]: f for f in r_furn}
         matched = sorted(i for i in t_by if i in r_by)
-        missing = [str(t_by[i].get("category", "unknown"))
-                   for i in t_by if i not in r_by]
-        extra_o = [str(r_by[i].get("category", r_by[i].get("element", "unknown")))
+        missing = [t_by[i]["category"] for i in t_by if i not in r_by]
+        extra_o = [_render_cat(r_by[i]) or _cat_marker(r_by[i])
                    for i in r_by if i not in t_by]
         matched_cats = []
         for i in matched:                     # category must also agree on a matched id
-            tc = str(t_by[i].get("category", "unknown"))
-            rc = str(r_by[i].get("category", r_by[i].get("element", "unknown")))
-            if tc != rc:
+            tc = t_by[i]["category"]          # validated non-empty string above
+            rc = _render_cat(r_by[i])         # None unless a usable string (V04-2:
+            if rc is None or tc != rc:        # no str() — 7 never matches "7")
                 missing.append(tc)
-                extra_o.append(rc)
+                extra_o.append(rc if rc is not None else _cat_marker(r_by[i]))
             else:
                 matched_cats.append(tc)
         matched_cats, missing, extra_o = sorted(matched_cats), sorted(missing), sorted(extra_o)
         for i in matched:
             tobj = t_by[i]
+            if "object_bbox" not in tobj and "bbox_xywh" not in tobj:
+                continue    # V04-1: KEY-PRESENCE test — only a missing key is absent.
             tb, rb = tobj.get("object_bbox"), r_by[i].get("_source_bbox")
-            if tb is None and "bbox_xywh" not in tobj:
-                continue                      # claim genuinely ABSENT: nothing owed
             if not _bbox_ok(tb):
-                # R3-1: present-but-malformed or mis-keyed (bbox_xywh on an object) is a
-                # claim that cannot be READ — same epistemic state as an unreadable echo
+                # R3-1/V04-1: a PRESENT claim that cannot be read (null, malformed, or
+                # mis-keyed bbox_xywh) — same epistemic state as an unreadable echo
                 position_unverified.append(i)
                 continue
             if not _bbox_ok(rb):
@@ -368,13 +422,18 @@ def _compare_objects(scene: Dict, room: Dict):
         return ("exact", matched_cats, missing, extra_o, moved,
                 sorted(position_unverified), len(matched))
 
-    # fallback: category multisets; every matched category is position-unverifiable
-    t_cats = sorted(str(o.get("category", "unknown")) for o in t_objs)
-    r_cats = sorted(str(f.get("category", f.get("element", "unknown"))) for f in r_furn)
-    tm, rm = _multiset(t_cats), _multiset(r_cats)
+    # fallback: category multisets; every matched category is position-unverifiable.
+    # V04-2: only usable STRING categories enter the render multiset — a non-string
+    # category is counted as an extra (typed marker, display-only) and can never match.
+    t_cats = sorted(o["category"] for o in t_objs)   # validated non-empty strings above
+    r_cat_vals = [_render_cat(f) for f in r_furn]
+    rm = _multiset([c for c in r_cat_vals if c is not None])
+    unreadable = [_cat_marker(f) for f, c in zip(r_furn, r_cat_vals) if c is None]
+    tm = _multiset(t_cats)
     matched_cats = sorted(c for c in tm for _ in range(min(tm[c], rm.get(c, 0))))
     missing = sorted(c for c in tm for _ in range(max(0, tm[c] - rm.get(c, 0))))
-    extra_o = sorted(c for c in rm for _ in range(max(0, rm[c] - tm.get(c, 0))))
+    extra_o = sorted([c for c in rm for _ in range(max(0, rm[c] - tm.get(c, 0)))]
+                     + unreadable)
     return ("multiset_fallback", matched_cats, missing, extra_o, [],
             sorted(set(matched_cats)), len(matched_cats))
 
@@ -500,7 +559,7 @@ def run(target: Path, packet_dir: Path, out_dir: Path, threshold: Optional[float
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="render<->verdict comparator (T1.2, v0.4)")
+    ap = argparse.ArgumentParser(description="render<->verdict comparator (T1.2, v0.5)")
     ap.add_argument("--target", required=True)
     ap.add_argument("--packet", required=True)
     ap.add_argument("--out", required=True)
