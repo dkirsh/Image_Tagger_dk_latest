@@ -93,7 +93,7 @@ versioned contract, a dependency check, and breaking-change notification. All fo
 
 - **Contract owner:** Tanishq (under Option 1 both sides are his lane; under Option 2 the
   contract stays Tanishq-owned, Stephan implements the producer side — David confirms at
-  sign-off). **Version:** `render-verdict/v0.1`, carried in every artifact.
+  sign-off). **Version:** `render-verdict/v0.5`, carried in every artifact.
 - **Breaking change protocol:** version bump + a ledger/status-board announcement BEFORE
   any producer or consumer changes — announce-and-reconcile, never a silent push.
 
@@ -101,24 +101,109 @@ versioned contract, a dependency check, and breaking-change notification. All fo
 - `render.png` (RGB, target's aspect); `room.json` (validates against
   `room.v0_3.schema.json` [verified]); `camera.json`
   `{position_m, look_at_m, fov_deg, image_wh}`;
-- `packet.json` `{contract_version: "render-verdict/v0.1", run_id, iter, target_image_id,
-  produced_utc, sha256: {render_png, room_json, camera_json}}`
+- `packet.json` `{contract_version: "render-verdict/v0.5", run_id, iter, target_image_id,
+  produced_utc, sha256: {render_png, room_json, camera_json}}` — `run_id` and
+  `target_image_id` must be non-empty strings, `produced_utc` a non-empty string, and `iter`
+  an integer `>= 0`. These are type-checked, not merely required; a malformed manifest is
+  refused with exit 2 rather than carried into the verdict.
+- **Producer requirements, all needed for a verdict that can reach agreement:**
+  1. `room.json` apertures carry the platform's `ap<i>` ids (`reconstruct.py:148`), spelled
+     exactly as the platform writes them — matched against `^ap(0|[1-9][0-9]*)\Z`, so
+     `ap00`, `ap0 `, and `ap0\n` are all rejected as not-the-platform-spelling and drop the
+     packet to `multiset_fallback`. Gaps in the sequence are legitimate: non-structural
+     kinds keep their source indices.
+  2. Each furniture entry carries the source object `id` and `_source_bbox`
+     (`place_furniture.py:115-120`), the latter being the target object's `object_bbox`
+     echoed back. Without them a moved object cannot be detected.
+  3. **Furniture `id` and `category` must be STRINGS.** Identity matching performs no type
+     coercion at all, so a numeric or null id no longer quietly matches its string spelling;
+     it degrades to `multiset_fallback`. An unreadable category becomes a display-only
+     marker that can never enter the match set, even if a target category happens to equal
+     the marker text.
+  4. Absent any of these, the comparator degrades rather than guesses: openings fall to
+     `multiset_fallback` and no kind with two or more target openings can be reported as
+     agreeing; objects fall to category multisets and every matched category is recorded in
+     `identity.position_unverified`.
+- **The null policy, decided once and applying everywhere (v0.5).** A present JSON `null` is
+  never treated as absent. On a leaf claim such as `object_bbox` it is an *unreadable claim*,
+  so the object lands in `position_unverified` and strict agreement is blocked. On a
+  container — target `openings`/`objects`, room `apertures`/`furniture` — it is a *malformed
+  document* and the whole packet is refused with exit 2. Only a genuinely missing key counts
+  as absent, and only an absent key owes nothing. This is a decision rather than a discovery,
+  and David may override it; it interacts with the schema-versus-fixture question below.
 
 **Verdict — comparator writes `iter_<k>/verdict/`, canonical JSON, byte-identical re-runs:**
-- `verdict.json` `{contract_version: "render-verdict/v0.1",
+- `verdict.json` `{contract_version: "render-verdict/v0.5",
   built_against: "<producer contract_version echoed>",  ← the dependency check: the
   comparator REFUSES (fail-closed) a packet whose contract_version it was not built
   against, rather than guessing;
   run_id, iter, target_image_id, input_sha256: {…},
-  wall_layout_diff: {target_walls, render_walls, opening_mismatches:
-    [{opening_id, expected_wall, rendered_wall}]},
+  agreement_policy: "strict" | "allow_unverified",  ← strict is the default; see below,
+  wall_layout_diff: {target_openings, render_apertures, opening_mismatches:
+    [{opening_id, expected_wall, rendered_wall}], extra_render_apertures},
   object_diff: {matched, missing_in_render, extra_in_render,
-    moved: [{object_id, bbox_target, bbox_render, offset_px}]},
-  discrepancy: {score, components, calibration: "exploratory_uncalibrated"},  ← never
+    moved: [{object_id, bbox_target, bbox_render_source, offset_norm}]},
+  identity: {mode: "exact" | "multiset_fallback" | "vacuous", unverifiable_kinds: [...],
+    objects_mode: "exact" | "multiset_fallback" | "vacuous", position_unverified: [...]},
+    ← vacuous means nothing was claimed on that axis by either side: allowed to agree,
+      never dressed up as "exact",
+  discrepancy: {score, components: {opening_wall_mismatch_frac, extra_aperture_frac,
+    object_missing_frac, object_extra_frac, object_moved_frac},
+    calibration: "exploratory_uncalibrated"},  ← never
     treated as truth (`resemblance_used_as_evidence` refusal),
   verdict: "CONTINUE" | "BELOW_THRESHOLD" | "CAP_REACHED_FLAGGED"}`
+- The verdict is canonical JSON under RFC 8259 strictly: a non-finite number anywhere in it
+  is a refusal, never a `NaN` token written into the artifact.
+- **`agreement_policy`, and the one decision it hands David.** Under `strict`, the default,
+  `BELOW_THRESHOLD` requires that identity was actually established on both sides — exact
+  aperture ids with no `unverifiable_kinds`, exact object ids, and an empty
+  `position_unverified`. A packet that simply omits ids can therefore never be reported as
+  agreeing, even when nothing in it visibly disagrees, because the comparator was never in a
+  position to tell. `allow_unverified` relaxes that for stub or foreign producers.
+  Strict is recommended, since the real producer always emits ids and `_source_bbox`. David
+  confirms or overrides.
 - Loop end: `hitl.json` per `reconstruction-critique.schema.json` [verified] +
   `{who, when_utc, run_id, iter}`.
+
+**v0.1 → v0.5 (2026-08-21), announced per this section's own breaking-change protocol**
+(`_control` ledger, superseding each earlier announcement in turn). Any producer still on
+v0.1 migrates straight to v0.5: v0.2 was announced but never landed in a commit, and v0.3 and
+v0.4 were each superseded within a day, so no producer ever had a packet to build against
+until now. The comparator refuses every earlier version rather than comparing across them.
+
+Four rounds of different-lineage non-author review by Codex drove this, and each round found
+what the previous fix had not thought of.
+
+Round 1 (`…ATTACK_2026-08-20.md` @ `ae160481`) broke v0.1: a same-kind wall permutation and an
+invented aperture both reported agreement. Round 2 (`…V02…` @ `d50d9fb1`) broke v0.2: a chair
+moved clear across the room still scored 0.0, because `object_diff.moved` had been specified
+here since v0.1 and emitted as `[]` throughout — a field promised in the contract and never
+populated fails more quietly than one that is wrong, not less badly. Round 3 (`…V03…` @
+`ad6c8037`) broke v0.3: a target `object_bbox` that was present but malformed, or mis-keyed as
+`bbox_xywh`, was silently skipped as "no position claim", and `str()` coercion let `7` match
+`"7"`. Round 4 (`…V04…` @ `95c071af`) broke v0.4 on three more: a present `object_bbox: null`
+read as absent, render-side category coercion that had survived the round-3 sweep, and an
+aperture id `"ap0\n"` accepted as exact because Python's `$` matches before a trailing
+newline.
+
+The pattern across rounds is worth naming, because it shaped v0.5. Each fix enumerated the bad
+shapes someone had thought of, and the next round arrived with the shape nobody had. So v0.5
+stops enumerating: the bbox test asks whether the *key is present*, not whether the value is
+one of a list of known-bad things, and the null policy above settles a whole class of
+questions in one decision rather than case by case.
+
+This section changed too, not only the code. Earlier revisions named
+`target_walls` / `render_walls` where the schema and implementation used
+`target_openings` / `render_apertures` — where prose and schema disagree, the schema wins. And
+`moved` entries carry `bbox_render_source` and `offset_norm` rather than the `bbox_render` and
+`offset_px` once specified here, because what the producer can honestly echo is the source
+bbox it placed from, not a rendered-pixel measurement nobody computes.
+
+**Review protocol, adopted after a failure of ours (v0.4).** During round 3 the working tree
+was edited underneath the review, so the report described a file that no longer existed by the
+time it landed. The review subject is now a **committed hash**, checked out detached, and the
+author stays hands-off until the artifact lands. A finding that reproduces only outside the
+hash is a protocol violation rather than a finding.
 
 Stub-level test: either side can be faked with hand-written files; T1.2's negative
 control (wrong-wall render → non-empty `opening_mismatches`, never "agreement") runs
