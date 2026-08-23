@@ -56,3 +56,7 @@ corpus_L6/*
 __pycache__/
 .DS_Store
 !corpus_L6/_provenance.csv
+
+# pytest cache — build artifact, never source (2026-08-23 sync)
+.pytest_cache/
+**/.pytest_cache/

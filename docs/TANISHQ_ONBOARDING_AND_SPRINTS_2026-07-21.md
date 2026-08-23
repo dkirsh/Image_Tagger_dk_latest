@@ -1,5 +1,14 @@
 # Tanishq — Onboarding & Sprint List (Image Tagger / Cognitive+Wellness Code)
 
+> ## ⛔ SPRINT PRE-FLIGHT GATE (MANDATORY — Method-Enforcement Controller)  [Tanishq, 2026-08-14]
+> **No task in this sprint starts until the Method-Enforcement Controller is installed and its self-tests
+> pass on the machine and AI you are using.** Hard gate, not a recommendation. Install + verify per
+> `/Users/davidusa/REPOS/_control/METHODOLOGY/METHOD_ENFORCEMENT_CONTROLLER_HANDOFF_2026-08-14.md` (§6 is
+> your section). Acceptance: `dogged_stop_hook.py --selftest` and `headless_first_guard.py --selftest` both
+> pass; a `Read` with a bare `limit` is blocked; a "TODO"-with-no-owner turn is blocked once. Record the
+> pass before task 1.
+
+
 *Prepared 2026-07-21. Your task list as a research student on the project. Read §0–§2 first (setup +
 the lay of the land), then work the sprints in §4. §3 is your flagship task — the image database — and
 it has a full build brief you can hand to yourself or to Claude/Codex. Ask David or check the linked
