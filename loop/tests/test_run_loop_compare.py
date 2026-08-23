@@ -1,4 +1,4 @@
-"""loop/tests/test_run_loop_compare.py — T1.2 comparator tests (contract v0.5).
+"""loop/tests/test_run_loop_compare.py — T1.2 comparator tests (contract v0.6).
 
 Deterministic, tmp_path-based, stdlib-runnable (pytest optional). The negative controls
 encode the Codex review's executed attacks across three rounds: A1 permutation, A2
@@ -7,7 +7,9 @@ invented aperture (round 1); moved-object, NaN, manifest typing, ap00 spelling (
 null-as-absent, V04-2 category coercion, V04-3 the $-vs-\\Z regex trap (round 4) — plus
 the malformed-input fail-closed sweep. The round-4 additions are exactly the coverage
 gaps Codex named: object_bbox null, the long-list bbox, render category type, and
-aperture-id trailing whitespace. Honest bound: all fixtures synthetic; the
+aperture-id trailing whitespace. Round 5 (F2 fallback-multiset purity, F3 strict
+RFC 8259 input, F1 marker non-collision pinned) is covered in its own section.
+Honest bound: all fixtures synthetic; the
 one-real-image run is a separately recorded step (passes_on_synthetic_only stays open
 until then).
 
@@ -371,9 +373,11 @@ def test_r2_position_claim_without_echo_blocks_agreement(tmp_path):
 
 
 def test_r2_nan_iter_refused_not_serialized(tmp_path):
+    """Since v0.6 (F3) the refusal happens at PARSE: NaN in the manifest is a non-RFC
+    8259 document and never reaches the iter type check. Refusal either way."""
     p = make_packet(tmp_path, GOOD_ROOM, manifest_override={"iter": float("nan")})
     code, msg = rlc.run(write_target(tmp_path), p, tmp_path / "verdict", None)
-    assert code == 2 and "iter" in msg
+    assert code == 2 and ("non-finite" in msg or "iter" in msg)
     assert not (tmp_path / "verdict" / "verdict.json").exists()
 
 
@@ -483,7 +487,6 @@ def test_r3_malformed_target_bbox_blocks_agreement(tmp_path):
                   [0.10, 0.6, 0.1],               # too short
                   [0.10, 0.6, 0.1, 0.2, 0.5],     # too long (round-4 named gap)
                   [0.10, 0.6, 0.1, "x"],          # non-numeric entry
-                  [0.10, 0.6, 0.1, float("nan")],  # non-finite entry
                   [0.10, 0.6, 0.1, True],         # bool is not a number here
                   {"x": 0.1, "y": 0.6},           # mapping, not a sequence
                   None)                           # V04-1: present null is NOT absent
@@ -652,8 +655,8 @@ def test_v04_2_marker_string_cannot_false_match(tmp_path):
 
 
 def test_v04_3_aperture_id_trailing_newline_not_exact(tmp_path):
-    """V04-3 (round-4 MEDIUM-HIGH): 'ap0\n' defeated the ^...$ spelling gate because
-    Python $ matches before a trailing newline. \Z closes it: fallback, never exact."""
+    """V04-3 (round-4 MEDIUM-HIGH): 'ap0\\n' defeated the ^...$ spelling gate because
+    Python $ matches before a trailing newline. \\Z closes it: fallback, never exact."""
     for i, bad_id in enumerate(("ap0\n", "ap0\t", "ap0 ")):
         room = {"schema_version": "0.3",
                 "apertures": [{"id": bad_id, "kind": "glazed_wall", "wall": "east"},
@@ -674,6 +677,105 @@ def test_v04_4_negative_iter_refused(tmp_path):
     code, msg = rlc.run(write_target(tmp_path), p, tmp_path / "verdict", None)
     assert code == 2 and "iter" in msg
     assert not (tmp_path / "verdict" / "verdict.json").exists()
+
+
+# ------------------------------------------------------------------ Codex round-5 regressions
+
+def test_f3_nonfinite_constants_refused_at_parse(tmp_path):
+    """F3: NaN/Infinity/-Infinity are not RFC 8259 — refused exit 2 at the door, on
+    every input document."""
+    # target scene
+    t = tmp_path / "nan_scene.json"
+    t.write_text('{"image_id": "x", "openings": [{"kind": "door", '
+                 '"bbox_xywh": [NaN, 0.5, 0.1, 0.3]}]}', encoding="utf-8")
+    code, msg = rlc.run(t, make_packet(tmp_path / "p0", GOOD_ROOM), tmp_path / "v0", None)
+    assert code == 2 and "non-finite" in msg
+    # room.json (rewrite bytes + fix the sha so integrity passes and parsing is reached)
+    p = make_packet(tmp_path / "p1", GOOD_ROOM)
+    room_b = ('{"schema_version": "0.3", "apertures": [{"id": "ap0", "kind": "door", '
+              '"wall": "north"}], "furniture": [], "x": Infinity}\n').encode()
+    (p / "room.json").write_bytes(room_b)
+    mf = json.loads((p / "packet.json").read_text())
+    mf["sha256"]["room_json"] = hashlib.sha256(room_b).hexdigest()
+    (p / "packet.json").write_text(json.dumps(mf))
+    code, msg = rlc.run(write_target(tmp_path), p, tmp_path / "v1", None)
+    assert code == 2 and "non-finite" in msg
+    # packet.json manifest
+    p2 = make_packet(tmp_path / "p2", GOOD_ROOM)
+    mtext = (p2 / "packet.json").read_text().replace('"iter": 0', '"iter": -Infinity')
+    (p2 / "packet.json").write_text(mtext)
+    code, msg = rlc.run(write_target(tmp_path), p2, tmp_path / "v2", None)
+    assert code == 2 and "non-finite" in msg
+
+
+def test_f2_unreadable_aperture_never_enters_fallback_multiset(tmp_path):
+    """F2: a fallback-mode aperture with a non-string kind or wall must be reported as
+    an unreadable extra, never matched — and a target kind that literally equals the
+    marker text still finds nothing to match."""
+    scene = {"image_id": "f2",
+             "openings": [{"kind": "door", "bbox_xywh": [0.50, 0.55, 0.06, 0.35]}]}
+    room = {"schema_version": "0.3",
+            "apertures": [{"kind": "door", "wall": "north"},     # readable, no id
+                          {"kind": 7, "wall": "north"},          # unreadable kind
+                          {"kind": "window", "wall": None}],     # unreadable wall
+            "furniture": []}
+    code, msg = rlc.run(write_target(tmp_path, scene), make_packet(tmp_path, room),
+                        tmp_path / "verdict", threshold=0.0)
+    assert code == 0, msg
+    v = verdict_of(tmp_path)
+    assert v["identity"]["mode"] == "multiset_fallback"
+    extras = v["wall_layout_diff"]["extra_render_apertures"]
+    assert "<non-string:int>->north" in extras
+    assert "window-><non-string:NoneType>" in extras
+    assert v["wall_layout_diff"]["opening_mismatches"] == []     # the readable door matched
+    assert v["verdict"] == "CONTINUE"                            # fallback never agrees
+
+
+def test_f1_generated_marker_cannot_collide_with_literal(tmp_path):
+    """F1 (round 5, examined, no defect): pinned as a regression. A target category
+    that IS the marker text does not match a render category that GENERATES it."""
+    scene = {"image_id": "f1",
+             "openings": [{"kind": "door", "bbox_xywh": [0.50, 0.55, 0.06, 0.35]}],
+             "objects": [{"id": "o1", "category": "<unreadable-category:int>",
+                          "evidence": {}}]}
+    room = {"schema_version": "0.3",
+            "apertures": [{"id": "ap0", "kind": "door", "wall": "north"}],
+            "furniture": [{"id": "o1", "category": 7,
+                           "_source_bbox": [0.1, 0.6, 0.1, 0.2]}]}
+    code, msg = rlc.run(write_target(tmp_path, scene), make_packet(tmp_path, room),
+                        tmp_path / "verdict", threshold=0.0)
+    assert code == 0, msg
+    v = verdict_of(tmp_path)
+    assert v["object_diff"]["matched"] == []
+    assert v["verdict"] == "CONTINUE"
+    # and both sides genuinely claiming the same literal string IS agreement
+    room2 = {"schema_version": "0.3",
+             "apertures": [{"id": "ap0", "kind": "door", "wall": "north"}],
+             "furniture": [{"id": "o1", "category": "<unreadable-category:int>"}]}
+    code, msg = rlc.run(write_target(tmp_path, scene), make_packet(tmp_path / "p2", room2),
+                        tmp_path / "v2", threshold=0.0)
+    assert code == 0, msg
+    v2 = json.loads((tmp_path / "v2" / "verdict.json").read_text())
+    assert v2["object_diff"]["matched"] == ["<unreadable-category:int>"]
+    assert v2["verdict"] == "BELOW_THRESHOLD"
+
+
+def test_f3_overflow_inf_bbox_caught_by_value_check(tmp_path):
+    """The stated F3 bound, exercised: 1e999 parses as a plain (infinite) number in any
+    JSON parser, so the PARSER cannot refuse it — _finite must, via _bbox_ok."""
+    t = tmp_path / "inf_scene.json"
+    t.write_text('{"image_id": "inf", '
+                 '"openings": [{"kind": "door", "bbox_xywh": [0.5, 0.55, 0.06, 0.35]}], '
+                 '"objects": [{"id": "o1", "category": "chair", '
+                 '"object_bbox": [1e999, 0.6, 0.1, 0.2], "evidence": {}}]}',
+                 encoding="utf-8")
+    room = _r3_room(_R3_ECHO)
+    code, msg = rlc.run(t, make_packet(tmp_path, room), tmp_path / "verdict",
+                        threshold=0.0)
+    assert code == 0, msg
+    v = verdict_of(tmp_path)
+    assert v["identity"]["position_unverified"] == ["o1"]
+    assert v["verdict"] == "CONTINUE"
 
 
 # ------------------------------------------------------------------ stdlib runner

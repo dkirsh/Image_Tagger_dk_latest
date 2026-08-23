@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """run_loop_compare.py — T1.2: the render↔verdict comparator (photo→VR production loop).
 
-Contract: render-verdict/v0.5. Contract owner: Tanishq.
+Contract: render-verdict/v0.6. Contract owner: Tanishq.
 
 PROCESS RULE (adopted after round 3 was invalidated by a mid-review edit): the review
 subject is a COMMITTED HASH. This file is committed to tanishq/loop-comparator BEFORE any
@@ -23,7 +23,11 @@ Review lineage (checker ≠ author, different lineage = Codex/gpt-5.5):
   v0.4 = v0.3 + vacuous modes + round-3 fixes; the first version reviewed as a
        committed hash (60d938df). Round 4 (artifact 95c071af) returned BROKEN with three
        strict false agreements — the protocol held (worktree unchanged, zero drift).
-  v0.5 (this file) = v0.4 + round-4 fixes + the null policy, decided once.
+  v0.5 = v0.4 + round-4 fixes + the null policy. Round 5 (the second hash-pinned
+       round, against cc21164d) returned BROKEN on two claim-vs-code findings — for the
+       first time, NO false agreement was reachable; the code's claims about itself were
+       the defect. F1 (marker collision) was examined and did NOT reproduce.
+  v0.6 (this file) = v0.5 + round-5 fixes; claims now match code by construction.
 
 Lane: Image_Tagger_dk_latest (tanishq). Never imports New_VR_Platform code.
 
@@ -103,9 +107,30 @@ v0.4 -> v0.5 (round-4 findings, artifact 95c071af @ commit 60d938df):
        display-only: they are never entered into the match multiset, so a target category
        that happens to equal a marker string still cannot false-match).
   V04-3 ap<i> anchor: ^...$ with re.match accepts a trailing newline (Python $ matches
-       before \n). Anchored with \Z; "ap0\n" now falls to multiset_fallback.
+       before \\n). Anchored with \\Z; "ap0\\n" now falls to multiset_fallback.
   V04-4 (consistency): iter must be >= 0, matching render-packet.schema.json's minimum —
        the comparator no longer consumes a packet its own schema calls invalid.
+
+v0.5 -> v0.6 (round-5 findings against cc21164d):
+  F2 claim-vs-code: v0.5's openings fallback fed _disp() markers straight into the `have`
+       MATCHING multiset while _disp's docstring said "never used for matching" — the
+       V04-2 disease (claim broader than code) recurring one layer up. No false agreement
+       was reachable (a marker can never equal a STRUCTURAL_KINDS kind or a wall_for()
+       wall — verified by both lineages), but the claim is now true BY CONSTRUCTION: an
+       aperture whose kind or wall is not a usable string never enters any matching
+       structure; it is reported among the extras as an unreadable claim.
+  F3 RFC 8259 on INPUT: python's json.loads accepts NaN/Infinity/-Infinity, so the
+       "strict RFC 8259" claim held only for output. All three input documents (target
+       scene, room.json, packet.json) are now parsed with a parse_constant refusal —
+       a non-finite constant is refused exit 2 at the door. Stated bound: overflow
+       spellings (1e999 -> inf) parse as ordinary numbers past any JSON parser; the
+       _finite value checks remain the second line of defence and catch them.
+  F1 examined, no change: a GENERATED marker cannot collide with a LITERAL one
+       (target="<unreadable-category:int>" vs render category 7 -> CONTINUE, matched=[]);
+       both sides literally claiming the same string is correct agreement. Regression
+       test added so the property stays pinned.
+  Hygiene: docstring escapes doubled; compiles clean with invalid-escape warnings
+       promoted to errors (the v0.5 SyntaxWarning at import is gone).
 """
 from __future__ import annotations
 
@@ -117,7 +142,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
-CONTRACT_VERSION = "render-verdict/v0.5"
+CONTRACT_VERSION = "render-verdict/v0.6"
 _EPS = 1e-6
 
 STRUCTURAL_KINDS = frozenset({"window", "door", "glazed_wall", "glass_partition",
@@ -129,6 +154,15 @@ _AP_ID = re.compile(r"^ap(0|[1-9][0-9]*)\Z")    # \Z not $: $ matches before a t
 
 class Refused(Exception):
     """Fail-closed refusal: malformed or unproven input is refused, never guessed at."""
+
+
+def _strict_loads(s: str, what: str):
+    """RFC 8259-strict input parsing (round-5 F3): python's json.loads accepts
+    NaN/Infinity/-Infinity; we refuse them at the door. Overflow spellings (1e999)
+    parse as numbers in any JSON parser — the _finite value checks catch those."""
+    def _no_const(name: str):
+        raise Refused(f"{what}: non-finite JSON constant {name} refused (RFC 8259)")
+    return json.loads(s, parse_constant=_no_const)
 
 
 def _num(x) -> bool:
@@ -172,7 +206,7 @@ def load_packet(packet_dir: Path) -> Dict:
     if not pj.exists():
         raise Refused(f"packet.json missing in {packet_dir}")
     try:
-        manifest = json.loads(pj.read_text(encoding="utf-8"))
+        manifest = _strict_loads(pj.read_text(encoding="utf-8"), "packet.json")
     except ValueError as e:
         raise Refused(f"packet.json unparseable: {e}")
     if not isinstance(manifest, dict):
@@ -215,7 +249,7 @@ def load_packet(packet_dir: Path) -> Dict:
         contents[fname] = b
 
     try:
-        room = json.loads(contents["room.json"].decode("utf-8"))
+        room = _strict_loads(contents["room.json"].decode("utf-8"), "room.json")
     except ValueError as e:
         raise Refused(f"room.json unparseable: {e}")
     if not isinstance(room, dict):
@@ -232,7 +266,7 @@ def load_packet(packet_dir: Path) -> Dict:
 
 def load_target(target_path: Path) -> Dict:
     try:
-        scene = json.loads(target_path.read_text(encoding="utf-8"))
+        scene = _strict_loads(target_path.read_text(encoding="utf-8"), "target scene")
     except (OSError, ValueError) as e:
         raise Refused(f"cannot read target scene: {e}")
     if not isinstance(scene, dict):
@@ -275,8 +309,10 @@ def _multiset(items: List[str]) -> Dict[str, int]:
 
 
 def _disp(v) -> str:
-    """Display-only rendering of a value that SHOULD be a string. Never used for
-    matching (round-4 V04-2): markers cannot enter a match multiset."""
+    """Display-only rendering of a value that SHOULD be a string. Never enters ANY
+    matching structure — true by construction since v0.6: round-5 F2 caught v0.5
+    feeding _disp output into the openings fallback multiset (no false agreement was
+    reachable, but the claim was broader than the code — the V04-2 disease again)."""
     return v if (isinstance(v, str) and v) else f"<non-string:{type(v).__name__}>"
 
 
@@ -334,11 +370,16 @@ def _compare_openings(expected: List[Dict], apertures: List[Dict]):
         for e in expected:
             want.setdefault(e["kind"], []).append(e["wall"])
         have: Dict[str, List[str]] = {}
+        unreadable: List[str] = []
         for a in apertures:
-            # _disp keys/values: non-string kinds/walls become markers, which can never
-            # equal a STRUCTURAL_KINDS kind or a wall_for() wall — mismatch-only
-            have.setdefault(_disp(a.get("kind", "unknown")), []).append(
-                _disp(a.get("wall", "unknown")))
+            k, w = a.get("kind", "unknown"), a.get("wall", "unknown")
+            if isinstance(k, str) and k and isinstance(w, str) and w:
+                have.setdefault(k, []).append(w)
+            else:
+                # F2 (round 5): an aperture whose kind or wall is not a usable string
+                # is an unreadable claim — it never enters the matching multiset
+                # (_disp's docstring holds by construction now) and is reported extra.
+                unreadable.append(f"{_disp(k)}->{_disp(w)}")
         for kind in sorted(want):
             walls = want[kind]
             if len(walls) >= 2:
@@ -355,7 +396,8 @@ def _compare_openings(expected: List[Dict], apertures: List[Dict]):
                     mismatches.append({"opening_id": f"target_{kind}_{j}",
                                        "expected_wall": w, "rendered_wall": "MISSING"})
             have[kind] = avail
-        extra = sorted(f"{k}->{w}" for k, ws in have.items() for w in ws)
+        extra = sorted([f"{k}->{w}" for k, ws in have.items() for w in ws]
+                       + unreadable)
     return ("exact" if exact_mode else "multiset_fallback"), mismatches, extra, \
         sorted(unverifiable_kinds)
 
@@ -559,7 +601,7 @@ def run(target: Path, packet_dir: Path, out_dir: Path, threshold: Optional[float
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="render<->verdict comparator (T1.2, v0.5)")
+    ap = argparse.ArgumentParser(description="render<->verdict comparator (T1.2, v0.6)")
     ap.add_argument("--target", required=True)
     ap.add_argument("--packet", required=True)
     ap.add_argument("--out", required=True)
