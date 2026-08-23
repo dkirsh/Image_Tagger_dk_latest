@@ -1,4 +1,4 @@
-"""loop/tests/test_run_loop_compare.py — T1.2 comparator tests (contract v0.6).
+"""loop/tests/test_run_loop_compare.py — T1.2 comparator tests (contract v0.7).
 
 Deterministic, tmp_path-based, stdlib-runnable (pytest optional). The negative controls
 encode the Codex review's executed attacks across three rounds: A1 permutation, A2
@@ -682,8 +682,9 @@ def test_v04_4_negative_iter_refused(tmp_path):
 # ------------------------------------------------------------------ Codex round-5 regressions
 
 def test_f3_nonfinite_constants_refused_at_parse(tmp_path):
-    """F3: NaN/Infinity/-Infinity are not RFC 8259 — refused exit 2 at the door, on
-    every input document."""
+    """F3: NaN/Infinity/-Infinity refuse exit 2 at the door on every PARSED input
+    document (target scene, room.json, packet.json). camera.json is an
+    integrity-checked opaque sidecar — hashed, never parsed (round-6 wording scope)."""
     # target scene
     t = tmp_path / "nan_scene.json"
     t.write_text('{"image_id": "x", "openings": [{"kind": "door", '
@@ -776,6 +777,29 @@ def test_f3_overflow_inf_bbox_caught_by_value_check(tmp_path):
     v = verdict_of(tmp_path)
     assert v["identity"]["position_unverified"] == ["o1"]
     assert v["verdict"] == "CONTINUE"
+
+
+# ------------------------------------------------------------------ Codex round-6 regression
+
+def test_fresh1_packet_member_as_directory_refused(tmp_path):
+    """FRESH-1 (round-6 HIGH, the only accepted finding): a packet member that is a
+    directory must REFUSE exit 2, never traceback — symmetric with the target side,
+    which already refused cleanly. v0.6 raised IsADirectoryError through run()."""
+    for member in ("packet.json", "room.json", "render.png", "camera.json"):
+        p = make_packet(tmp_path / member.replace(".", "_"), GOOD_ROOM)
+        victim = p / member
+        victim.unlink()
+        victim.mkdir()                      # the file is now a DIRECTORY
+        code, msg = rlc.run(write_target(tmp_path), p,
+                            tmp_path / f"v_{member.replace('.', '_')}", None)
+        assert code == 2, f"{member}: expected refusal, got {code}: {msg}"
+        assert msg.startswith("REFUSED"), f"{member}: {msg}"
+    # control: target-as-directory refused cleanly before and still does
+    tdir = tmp_path / "target_as_dir"
+    tdir.mkdir()
+    code, msg = rlc.run(tdir, make_packet(tmp_path / "ok", GOOD_ROOM),
+                        tmp_path / "v_t", None)
+    assert code == 2 and "REFUSED" in msg
 
 
 # ------------------------------------------------------------------ stdlib runner

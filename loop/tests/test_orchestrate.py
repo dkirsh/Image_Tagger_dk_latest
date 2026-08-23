@@ -50,7 +50,7 @@ cam_b = b'{{"fov_deg": 70}}'
 (out / "camera.json").write_bytes(cam_b)
 sha = lambda b: hashlib.sha256(b).hexdigest()
 (out / "packet.json").write_text(json.dumps({{
-  "contract_version": "render-verdict/v0.6", "run_id": run_id, "iter": it,
+  "contract_version": "render-verdict/v0.7", "run_id": run_id, "iter": it,
   "target_image_id": "t13-fixture", "produced_utc": "2026-08-20T00:00:00+00:00",
   "sha256": {{"render_png": sha(render), "room_json": sha(room_b), "camera_json": sha(cam_b)}}}}))
 print("stub packet", it)

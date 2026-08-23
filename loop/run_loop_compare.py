@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """run_loop_compare.py — T1.2: the render↔verdict comparator (photo→VR production loop).
 
-Contract: render-verdict/v0.6. Contract owner: Tanishq.
+Contract: render-verdict/v0.7. Contract owner: Tanishq.
 
 PROCESS RULE (adopted after round 3 was invalidated by a mid-review edit): the review
 subject is a COMMITTED HASH. This file is committed to tanishq/loop-comparator BEFORE any
@@ -27,7 +27,14 @@ Review lineage (checker ≠ author, different lineage = Codex/gpt-5.5):
        round, against cc21164d) returned BROKEN on two claim-vs-code findings — for the
        first time, NO false agreement was reachable; the code's claims about itself were
        the defect. F1 (marker collision) was examined and did NOT reproduce.
-  v0.6 (this file) = v0.5 + round-5 fixes; claims now match code by construction.
+  v0.6 = v0.5 + round-5 fixes. Round 6 (against d2149736) returned BROKEN on ONE
+       accepted finding (FRESH-1, filesystem shape) — the second consecutive round with
+       no reachable false agreement. Two findings were REJECTED with executed evidence
+       (the _disp sort-order "leak" reaches only a display list's ordering; 1e999 in a
+       field outside comparator semantics is a wording-scope item, not a defect).
+  v0.7 (this file) = v0.6 + FRESH-1 + three wording-scope corrections. T1.3
+       (orchestrate.py) enters review scope for the FIRST time this round — six prior
+       rounds covered the comparator only, so its 7/7 was author-run evidence.
 
 Lane: Image_Tagger_dk_latest (tanishq). Never imports New_VR_Platform code.
 
@@ -131,6 +138,23 @@ v0.5 -> v0.6 (round-5 findings against cc21164d):
        test added so the property stays pinned.
   Hygiene: docstring escapes doubled; compiles clean with invalid-escape warnings
        promoted to errors (the v0.5 SyntaxWarning at import is gone).
+
+v0.6 -> v0.7 (round-6 findings against d2149736):
+  FRESH-1: a packet member that is a DIRECTORY (packet.json, room.json, render.png,
+       camera.json) raised IsADirectoryError straight through run() — exit 1 traceback
+       where the contract promises exit 2 REFUSED. The target side already caught
+       OSError; the packet side now does too (OSError added to run()'s refusal tuple).
+       The module's own refutation clause named this condition; by its own standard the
+       round-6 verdict was a break, not a nitpick.
+  WORDING (three scope corrections, no behavior change):
+       (a) camera.json is an integrity-checked OPAQUE SIDECAR — hashed, never parsed.
+           The F3 strict-parse guarantee covers the PARSED inputs: target scene,
+           room.json, packet.json. camera.json's contents are outside comparator
+           semantics by design.
+       (b) the F3 overflow bound (1e999 -> inf, caught by _finite) holds for COMPARED
+           fields; a non-finite number in a field the comparator never reads is not
+           detected and not claimed to be.
+       (c) test names scoped accordingly.
 """
 from __future__ import annotations
 
@@ -142,7 +166,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
-CONTRACT_VERSION = "render-verdict/v0.6"
+CONTRACT_VERSION = "render-verdict/v0.7"
 _EPS = 1e-6
 
 STRUCTURAL_KINDS = frozenset({"window", "door", "glazed_wall", "glass_partition",
@@ -579,7 +603,10 @@ def run(target: Path, packet_dir: Path, out_dir: Path, threshold: Optional[float
         text = canonical(verdict)          # R2-2: non-finite anywhere -> ValueError
     except Refused as e:
         return 2, f"REFUSED: {e}"
-    except (TypeError, ValueError, KeyError, AttributeError, IndexError) as e:
+    except (OSError, TypeError, ValueError, KeyError, AttributeError, IndexError) as e:
+        # OSError added in v0.7 (round-6 FRESH-1): a packet member that is a directory
+        # (or otherwise unreadable) is a malformed input, refused exit 2 — the target
+        # side already behaved this way; the seam is now symmetric.
         return 2, f"REFUSED (malformed input): {type(e).__name__}: {e}"
     problems = validate_verdict(verdict)
     if problems:
@@ -601,7 +628,7 @@ def run(target: Path, packet_dir: Path, out_dir: Path, threshold: Optional[float
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="render<->verdict comparator (T1.2, v0.6)")
+    ap = argparse.ArgumentParser(description="render<->verdict comparator (T1.2, v0.7)")
     ap.add_argument("--target", required=True)
     ap.add_argument("--packet", required=True)
     ap.add_argument("--out", required=True)
