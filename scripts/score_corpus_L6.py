@@ -37,6 +37,7 @@ for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS",
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import os
@@ -60,7 +61,10 @@ SCORE_COLUMNS: Tuple[str, ...] = (
     "m1p_digest", "computed_utc", "pctile_in_corpus",
 )
 # Honest provenance extras (corpus_db ignores columns it does not know).
-EXTRA_COLUMNS: Tuple[str, ...] = ("status", "reason", "model_version")
+EXTRA_COLUMNS: Tuple[str, ...] = (
+    "status", "reason", "model_version", "image_complete",
+    "image_score_count", "image_attr_ids_sha256",
+)
 OUT_COLUMNS: Tuple[str, ...] = SCORE_COLUMNS + EXTRA_COLUMNS
 
 # manifest filename aliases (Sprint E §9)
@@ -405,6 +409,48 @@ def sort_rows(rows: List[Dict[str, object]]) -> List[Dict[str, object]]:
     return sorted(rows, key=lambda r: (str(r.get("filename", "")), str(r.get("attr_id", ""))))
 
 
+def _attr_ids_sha256(attr_ids: Iterable[str]) -> str:
+    payload = "\n".join(sorted(attr_ids)) + "\n"
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def seal_complete_image_rows(rows: List[Dict[str, object]]) -> None:
+    """Mark an atomic per-image annotation result so resume can verify completeness."""
+    attr_ids = [str(r.get("attr_id", "")) for r in rows]
+    if not attr_ids or any(not attr_id for attr_id in attr_ids):
+        raise ValueError("cannot seal image rows without attribute identities")
+    if len(set(attr_ids)) != len(attr_ids):
+        raise ValueError("annotator returned duplicate attr_id values for one image")
+    digest = _attr_ids_sha256(attr_ids)
+    for row in rows:
+        row["image_complete"] = 1
+        row["image_score_count"] = len(rows)
+        row["image_attr_ids_sha256"] = digest
+
+
+def complete_existing_filenames(rows: List[Dict[str, object]]) -> set:
+    """Return only image identities carrying a self-consistent completion seal."""
+    grouped: Dict[str, List[Dict[str, object]]] = {}
+    for row in rows:
+        filename = str(row.get("filename", ""))
+        if filename:
+            grouped.setdefault(filename, []).append(row)
+    complete = set()
+    for filename, group in grouped.items():
+        attr_ids = [str(r.get("attr_id", "")) for r in group]
+        if not attr_ids or len(set(attr_ids)) != len(attr_ids) or any(not x for x in attr_ids):
+            continue
+        expected_digest = _attr_ids_sha256(attr_ids)
+        if all(
+            str(r.get("image_complete", "")).strip() == "1"
+            and str(r.get("image_score_count", "")).strip() == str(len(group))
+            and r.get("image_attr_ids_sha256") == expected_digest
+            for r in group
+        ):
+            complete.add(filename)
+    return complete
+
+
 def read_existing_scores(path: Path) -> List[Dict[str, object]]:
     if not path.exists():
         return []
@@ -520,6 +566,7 @@ def run(corpus_dir: Path,
         "images_seen": 0,
         "images_scored": 0,
         "images_skipped_existing": 0,
+        "images_incomplete_existing": 0,
         "images_missing_file": 0,
         "images_failed": 0,
         "images_not_png": 0,
@@ -545,7 +592,10 @@ def run(corpus_dir: Path,
     resuming = (resume or only_missing) and out_path.exists() and not force
     if resuming:
         existing_rows = read_existing_scores(out_path)
-        already = {str(r["filename"]) for r in existing_rows if r.get("filename")}
+        already = complete_existing_filenames(existing_rows)
+        summary["images_incomplete_existing"] = len({
+            str(r["filename"]) for r in existing_rows if r.get("filename")
+        } - already)
 
     # ---- select work ------------------------------------------------------------------
     todo: List[str] = []
@@ -627,11 +677,22 @@ def run(corpus_dir: Path,
             if fail_fast:
                 break
             continue
+        try:
+            seal_complete_image_rows(rows)
+        except ValueError as e:
+            summary["images_failed"] += 1
+            summary["failures"].append({"filename": fn, "path": str(path),
+                                        "error": str(e)[:300]})
+            if fail_fast:
+                break
+            continue
         new_rows.extend(rows)
         summary["images_scored"] += 1
 
     # ---- merge, percentile, write --------------------------------------------------------
-    all_rows = (existing_rows + new_rows) if resuming else new_rows
+    replaced = {str(r["filename"]) for r in new_rows}
+    preserved_rows = [r for r in existing_rows if str(r.get("filename", "")) not in replaced]
+    all_rows = (preserved_rows + new_rows) if resuming else new_rows
     # percentiles are recomputed across the whole corpus every write, so a resumed run
     # never leaves stale percentiles from a smaller sample.
     compute_percentiles(all_rows)
@@ -684,9 +745,9 @@ def build_parser() -> argparse.ArgumentParser:
                    help="accepted for symmetry with corpus_db; not required for scoring")
     p.add_argument("--limit", type=int, default=None)
     p.add_argument("--resume", action="store_true",
-                   help="preserve existing rows; score only filenames not already present")
+                   help="preserve completion-sealed image rows; rescore partial/legacy rows")
     p.add_argument("--only-missing", action="store_true",
-                   help="alias of --resume (score only images absent from scores.csv)")
+                   help="alias of --resume")
     p.add_argument("--skip-existing", action="store_true", help="alias of --resume")
     p.add_argument("--force", action="store_true",
                    help="ignore existing scores.csv and rescore from scratch")

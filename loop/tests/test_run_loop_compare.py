@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -809,6 +810,34 @@ def test_fresh1_packet_member_as_directory_refused(tmp_path):
     code, msg = rlc.run(tdir, make_packet(tmp_path / "ok", GOOD_ROOM),
                         tmp_path / "v_t", None)
     assert code == 2 and "REFUSED" in msg
+
+
+def test_packet_fifo_and_symlink_members_refused_without_blocking(tmp_path):
+    fifo_packet = make_packet(tmp_path / "fifo", GOOD_ROOM)
+    (fifo_packet / "render.png").unlink()
+    os.mkfifo(fifo_packet / "render.png")
+    code, msg = rlc.run(write_target(tmp_path), fifo_packet, tmp_path / "v_fifo", None)
+    assert code == 2 and "regular file" in msg
+
+    symlink_packet = make_packet(tmp_path / "symlink", GOOD_ROOM)
+    room = symlink_packet / "room.json"
+    real_room = symlink_packet / "real-room.json"
+    room.rename(real_room)
+    room.symlink_to(real_room)
+    code, msg = rlc.run(write_target(tmp_path), symlink_packet, tmp_path / "v_link", None)
+    assert code == 2 and "regular file" in msg
+
+
+def test_existing_verdict_directory_is_immutable(tmp_path):
+    target = write_target(tmp_path)
+    packet = make_packet(tmp_path, GOOD_ROOM)
+    out = tmp_path / "immutable-verdict"
+    code, msg = rlc.run(target, packet, out, threshold=0.0)
+    assert code == 0, msg
+    before = (out / "verdict.json").read_bytes()
+    code, msg = rlc.run(target, packet, out, threshold=0.0)
+    assert code == 2 and "immutable" in msg
+    assert (out / "verdict.json").read_bytes() == before
 
 
 # ------------------------------------------------------------------ stdlib runner

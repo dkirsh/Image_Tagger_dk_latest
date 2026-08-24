@@ -205,6 +205,33 @@ def test_score_for_unknown_image_skipped(tmp_path):
     assert summary["scores_skipped_unknown_image"] == 1
 
 
+def test_nonfinite_score_is_rejected(tmp_path):
+    corpus = make_fixture_corpus(tmp_path)
+    with (corpus / "scores.csv").open("a", newline="", encoding="utf-8") as fh:
+        csv.writer(fh).writerow(
+            ["interiors/lobby.png", "bad.nonfinite", "inf", "AMBER", "", "0",
+             "", "", ""])
+    try:
+        corpus_db.build_database(corpus, rebuild=True)
+    except ValueError as exc:
+        assert "non-finite" in str(exc)
+    else:
+        raise AssertionError("non-finite score was accepted")
+
+
+def test_duplicate_score_identity_is_rejected(tmp_path):
+    corpus = make_fixture_corpus(tmp_path)
+    with (corpus / "scores.csv").open("a", newline="", encoding="utf-8") as fh:
+        csv.writer(fh).writerow(
+            ["interiors/lobby.png", ATTR, "0.99", "AMBER", "", "0", "", "", "99"])
+    try:
+        corpus_db.build_database(corpus, rebuild=True)
+    except ValueError as exc:
+        assert "duplicate score identity" in str(exc)
+    else:
+        raise AssertionError("duplicate score identity was silently replaced")
+
+
 def test_registry_seeding_in_real_repo(tmp_path):
     """In this repo the live registry should give exactly 68 attributes."""
     corpus = make_fixture_corpus(tmp_path, with_scores=False)

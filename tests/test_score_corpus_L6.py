@@ -217,6 +217,26 @@ def test_only_missing_is_equivalent_to_resume(tmp_path):
     assert s["images_skipped_existing"] == 1 and s["images_scored"] == 1
 
 
+def test_resume_rescores_unsealed_partial_image_and_replaces_rows(tmp_path):
+    corpus = make_corpus(tmp_path, ["interiors/a.png"])
+    out = corpus / "scores.csv"
+    with out.open("w", newline="", encoding="utf-8") as fh:
+        writer = csv.DictWriter(fh, fieldnames=list(S.OUT_COLUMNS))
+        writer.writeheader()
+        writer.writerow({"filename": "interiors/a.png", "attr_id": "old.only",
+                         "value": "1", "abstained": "0"})
+
+    summary = S.run(
+        corpus, out, resume=True,
+        annotate_fn=fake_annotator({"a.png": {"old.only": 1.0, "new.required": 2.0}}))
+    rows = read_csv(out)
+    assert summary["images_incomplete_existing"] == 1
+    assert summary["images_skipped_existing"] == 0 and summary["images_scored"] == 1
+    assert {r["attr_id"] for r in rows} == {"old.only", "new.required"}
+    assert all(r["image_complete"] == "1" and r["image_score_count"] == "2"
+               for r in rows)
+
+
 # --------------------------------------------------------------------------- 7. dry run
 def test_dry_run_does_not_write_scores(tmp_path):
     corpus = make_corpus(tmp_path, ["interiors/a.png"])
