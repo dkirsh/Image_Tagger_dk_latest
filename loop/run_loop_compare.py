@@ -596,6 +596,9 @@ def validate_verdict(v: Dict) -> List[str]:
 
 def run(target: Path, packet_dir: Path, out_dir: Path, threshold: Optional[float],
         allow_unverified: bool = False) -> Tuple[int, str]:
+    if threshold is not None and (
+            not _finite(threshold) or not 0.0 <= float(threshold) <= 1.0):
+        return 2, "REFUSED: threshold must be a finite number in [0,1]"
     try:
         scene = load_target(target)
         packet = load_packet(packet_dir)

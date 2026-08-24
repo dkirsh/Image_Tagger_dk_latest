@@ -101,6 +101,45 @@ def test_zero_cap_refused(tmp_path):
     assert code == 2 and "cap" in msg
 
 
+def test_bad_threshold_refused_before_producer_runs(tmp_path):
+    marker = tmp_path / "producer-ran"
+    code, msg = orchestrate.run_cycle(
+        write_target(tmp_path), tmp_path / "bad-threshold",
+        f"touch {marker}", cap=1, threshold=float("inf"))
+    assert code == 2 and "threshold" in msg
+    assert not marker.exists()
+
+
+def test_existing_run_directory_refused_to_prevent_stale_packet_reuse(tmp_path):
+    run_dir = tmp_path / "existing"
+    run_dir.mkdir()
+    (run_dir / "stale.txt").write_text("old", encoding="utf-8")
+    code, msg = orchestrate.run_cycle(
+        write_target(tmp_path), run_dir, make_stub(tmp_path, GOOD_ROOM, "stale"),
+        cap=1, threshold=0.0)
+    assert code == 2 and "already exists" in msg and "stale" in msg
+
+
+def test_run_summary_binds_target_and_producer(tmp_path):
+    target = write_target(tmp_path)
+    command = make_stub(tmp_path, GOOD_ROOM, "bound")
+    run_dir = tmp_path / "bound-run"
+    code, msg = orchestrate.run_cycle(target, run_dir, command, cap=1, threshold=0.0)
+    assert code == 0, msg
+    summary = json.loads((run_dir / "run_summary.json").read_text())
+    assert summary["target_sha256"] == hashlib.sha256(target.read_bytes()).hexdigest()
+    assert summary["producer_cmd_sha256"] == hashlib.sha256(command.encode()).hexdigest()
+
+
+def test_producer_timeout_is_bounded(tmp_path):
+    sleeper = tmp_path / "sleep.py"
+    sleeper.write_text("import time; time.sleep(5)", encoding="utf-8")
+    code, msg = orchestrate.run_cycle(
+        write_target(tmp_path), tmp_path / "timeout-run", f"{sys.executable} {sleeper}",
+        cap=1, threshold=0.0, producer_timeout_seconds=0.01)
+    assert code == 2 and "timed out" in msg
+
+
 def test_failing_producer_refused_with_iter_named(tmp_path):
     bad = tmp_path / "boom.py"
     bad.write_text("import sys; sys.exit(7)", encoding="utf-8")

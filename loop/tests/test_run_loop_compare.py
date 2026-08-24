@@ -190,6 +190,15 @@ def test_wrong_wall_render_must_not_report_agreement(tmp_path):
     assert v["verdict"] == "CONTINUE"
 
 
+def test_nonfinite_or_out_of_range_threshold_refused(tmp_path):
+    target = write_target(tmp_path)
+    packet = make_packet(tmp_path, GOOD_ROOM)
+    for threshold in (float("nan"), float("inf"), -0.01, 1.01, True):
+        code, msg = rlc.run(target, packet, tmp_path / "verdict", threshold)
+        assert code == 2
+        assert "threshold" in msg
+
+
 def test_missing_aperture_reported(tmp_path):
     room = {"schema_version": "0.3",
             "apertures": [{"id": "ap1", "kind": "door", "wall": "north"}],

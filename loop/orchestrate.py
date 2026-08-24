@@ -62,12 +62,30 @@ def sha256_text(t: str) -> str:
     return hashlib.sha256(t.encode("utf-8")).hexdigest()
 
 
+def finite_number(value) -> bool:
+    return (isinstance(value, (int, float)) and not isinstance(value, bool)
+            and value == value and value not in (float("inf"), float("-inf")))
+
+
 def run_cycle(target: Path, run_dir: Path, producer_cmd: str,
-              cap: int, threshold: Optional[float]) -> Tuple[int, str]:
-    if cap < 1:
+              cap: int, threshold: Optional[float],
+              producer_timeout_seconds: float = 300.0) -> Tuple[int, str]:
+    if isinstance(cap, bool) or not isinstance(cap, int) or cap < 1:
         return 2, "REFUSED: cap must be >= 1 (a capless loop is the named failure)"
-    if not target.exists():
-        return 2, f"REFUSED: target {target} does not exist"
+    if threshold is not None and (
+            not finite_number(threshold) or not 0.0 <= float(threshold) <= 1.0):
+        return 2, "REFUSED: threshold must be a finite number in [0,1]"
+    if not finite_number(producer_timeout_seconds) or producer_timeout_seconds <= 0:
+        return 2, "REFUSED: producer timeout must be a positive finite number"
+    if not target.is_file():
+        return 2, f"REFUSED: target {target} is not a regular file"
+    if run_dir.exists():
+        return 2, (f"REFUSED: run directory {run_dir} already exists; "
+                   "run artifacts are immutable and may not reuse stale packets")
+    try:
+        target_sha256 = hashlib.sha256(target.read_bytes()).hexdigest()
+    except OSError as exc:
+        return 2, f"REFUSED: cannot read target {target}: {exc}"
     run_dir.mkdir(parents=True, exist_ok=True)
     run_id = run_dir.name
 
@@ -76,9 +94,20 @@ def run_cycle(target: Path, run_dir: Path, producer_cmd: str,
     for k in range(cap):
         it_dir = run_dir / f"iter_{k}"
         render_dir, verdict_dir = it_dir / "render", it_dir / "verdict"
-        cmd = producer_cmd.format(target=str(target), render_dir=str(render_dir),
-                                  run_id=run_id, iter=k)
-        proc = subprocess.run(shlex.split(cmd), capture_output=True, text=True)
+        try:
+            cmd = producer_cmd.format(target=str(target), render_dir=str(render_dir),
+                                      run_id=run_id, iter=k)
+            proc = subprocess.run(
+                shlex.split(cmd), capture_output=True, text=True,
+                timeout=float(producer_timeout_seconds),
+            )
+        except (KeyError, ValueError) as exc:
+            return 2, f"REFUSED: malformed producer command template: {exc}"
+        except subprocess.TimeoutExpired:
+            return 2, (f"REFUSED: producer timed out at iter {k} after "
+                       f"{producer_timeout_seconds:g}s")
+        except OSError as exc:
+            return 2, f"REFUSED: producer could not start at iter {k}: {exc}"
         if proc.returncode != 0:
             return 2, (f"REFUSED: producer failed at iter {k} (exit {proc.returncode}): "
                        f"{(proc.stderr or proc.stdout).strip()[:400]}")
@@ -97,7 +126,10 @@ def run_cycle(target: Path, run_dir: Path, producer_cmd: str,
 
     summary = {
         "run_id": run_id, "contract_version": rlc.CONTRACT_VERSION,
-        "target": target.name, "cap": cap, "threshold": threshold,
+        "target": target.name, "target_sha256": target_sha256,
+        "producer_cmd_sha256": sha256_text(producer_cmd),
+        "producer_timeout_seconds": float(producer_timeout_seconds),
+        "cap": cap, "threshold": threshold,
         "iterations": iterations, "final_status": final_status,
         "adjuster": "none_v0 (producer does not yet consume prior verdicts — open work)",
         "note": "scores are exploratory_uncalibrated; acceptance is a human act (hitl)",
@@ -145,6 +177,7 @@ def main(argv=None) -> int:
                    help="command template with {target} {render_dir} {run_id} {iter}")
     r.add_argument("--cap", type=int, default=3)
     r.add_argument("--threshold", type=float, default=None)
+    r.add_argument("--producer-timeout-seconds", type=float, default=300.0)
     h = sub.add_parser("hitl")
     h.add_argument("--run-dir", required=True)
     h.add_argument("--verdict", required=True)
@@ -154,7 +187,7 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     if a.cmd == "run":
         code, msg = run_cycle(Path(a.target), Path(a.run_dir), a.producer_cmd,
-                              a.cap, a.threshold)
+                              a.cap, a.threshold, a.producer_timeout_seconds)
     else:
         code, msg = record_hitl(Path(a.run_dir), a.verdict, a.who, a.note, a.when_utc)
     print(msg, file=sys.stderr if code == 2 else sys.stdout)
