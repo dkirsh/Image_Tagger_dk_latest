@@ -148,7 +148,7 @@ def test_timeout_terminates_producer_descendants(tmp_path):
         "import subprocess,sys,time\n"
         "subprocess.Popen([sys.executable,'-c',"
         "\"import sys,time; time.sleep(.2); open(sys.argv[1],'w').write('bad')\","
-        "sys.argv[1]])\n"
+        "sys.argv[1]], start_new_session=True)\n"
         "time.sleep(5)\n", encoding="utf-8")
     code, msg = orchestrate.run_cycle(
         write_target(tmp_path), tmp_path / "descendant-run",

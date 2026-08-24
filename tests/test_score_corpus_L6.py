@@ -193,12 +193,13 @@ def test_resume_preserves_existing_rows_and_scores_only_missing(tmp_path):
     out = corpus / "scores.csv"
     vals = {"a.png": {"attr.x": 1.0}, "b.png": {"attr.x": 3.0}}
 
-    first = S.run(corpus, out, limit=1, annotate_fn=fake_annotator(vals))
+    contract = {"expected_attr_ids": {"attr.x"}, "expected_model_version": "fixture-1"}
+    first = S.run(corpus, out, limit=1, annotate_fn=fake_annotator(vals), **contract)
     assert first["images_scored"] == 1
     rows1 = read_csv(out)
     assert {r["filename"] for r in rows1} == {"interiors/a.png"}
 
-    second = S.run(corpus, out, resume=True, annotate_fn=fake_annotator(vals))
+    second = S.run(corpus, out, resume=True, annotate_fn=fake_annotator(vals), **contract)
     assert second["images_skipped_existing"] == 1
     assert second["images_scored"] == 1
     rows2 = read_csv(out)
@@ -212,8 +213,9 @@ def test_only_missing_is_equivalent_to_resume(tmp_path):
     corpus = make_corpus(tmp_path, ["interiors/a.png", "interiors/b.png"])
     out = corpus / "scores.csv"
     vals = {"a.png": {"attr.x": 1.0}, "b.png": {"attr.x": 3.0}}
-    S.run(corpus, out, limit=1, annotate_fn=fake_annotator(vals))
-    s = S.run(corpus, out, only_missing=True, annotate_fn=fake_annotator(vals))
+    contract = {"expected_attr_ids": {"attr.x"}, "expected_model_version": "fixture-1"}
+    S.run(corpus, out, limit=1, annotate_fn=fake_annotator(vals), **contract)
+    s = S.run(corpus, out, only_missing=True, annotate_fn=fake_annotator(vals), **contract)
     assert s["images_skipped_existing"] == 1 and s["images_scored"] == 1
 
 
@@ -228,13 +230,49 @@ def test_resume_rescores_unsealed_partial_image_and_replaces_rows(tmp_path):
 
     summary = S.run(
         corpus, out, resume=True,
-        annotate_fn=fake_annotator({"a.png": {"old.only": 1.0, "new.required": 2.0}}))
+        annotate_fn=fake_annotator({"a.png": {"old.only": 1.0, "new.required": 2.0}}),
+        expected_attr_ids={"old.only", "new.required"},
+        expected_model_version="fixture-1")
     rows = read_csv(out)
     assert summary["images_incomplete_existing"] == 1
     assert summary["images_skipped_existing"] == 0 and summary["images_scored"] == 1
     assert {r["attr_id"] for r in rows} == {"old.only", "new.required"}
     assert all(r["image_complete"] == "1" and r["image_score_count"] == "2"
                for r in rows)
+
+
+def test_resume_contract_change_forces_rescore(tmp_path):
+    corpus = make_corpus(tmp_path, ["interiors/a.png"])
+    out = corpus / "scores.csv"
+    S.run(corpus, out, annotate_fn=fake_annotator({"a.png": {"old": 1.0}}),
+          expected_attr_ids={"old"}, expected_model_version="fixture-1")
+    changed = fake_annotator({"a.png": {"old": 2.0, "new": 3.0}})
+    def changed_model(path):
+        record = changed(path)
+        record["model_version"] = "fixture-2"
+        return record
+    summary = S.run(
+        corpus, out, resume=True, annotate_fn=changed_model,
+        expected_attr_ids={"old", "new"}, expected_model_version="fixture-2")
+    assert summary["images_skipped_existing"] == 0
+    assert summary["images_scored"] == 1
+    assert {r["attr_id"] for r in read_csv(out)} == {"old", "new"}
+
+
+def test_completion_seal_requires_frozen_attribute_and_model_contract():
+    rows = S.flatten_record(
+        "a.png", fake_annotator({"a.png": {"only": 1.0}})("/x/a.png"),
+        "2026-08-09T00:00:00+00:00")
+    assert S.seal_complete_image_rows(rows) is False
+    assert rows[0]["image_complete"] == 0
+    assert S.complete_existing_filenames(rows) == set()
+
+
+def test_live_registry_exposes_resume_contract():
+    attr_ids, model_version = S.load_registry_resume_contract()
+    assert len(attr_ids) >= 1
+    assert all(isinstance(attr_id, str) and attr_id for attr_id in attr_ids)
+    assert isinstance(model_version, str) and model_version
 
 
 # --------------------------------------------------------------------------- 7. dry run

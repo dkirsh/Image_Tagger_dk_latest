@@ -84,3 +84,25 @@ is not a cryptographic identity signature. A producer that deliberately creates 
 session can escape ordinary process-group containment. Most importantly, no unit test establishes
 scientific calibration. Promotion beyond synthetic engineering readiness still requires frozen
 real-image cases, source-blind human decisions, predeclared error metrics, and held-out validation.
+
+## Committed-hash re-review
+
+A second isolated reviewer (`gpt-5.6-luna`) attacked committed hash `f6c754d5` without reading
+this report or Git history. It ran 85 tests and seven fresh hostile checks. Five properties held;
+two new defects reproduced:
+
+1. direct comparator use could still return `BELOW_THRESHOLD` when packet `target_image_id`
+   differed from target-scene `image_id`;
+2. a timed-out descendant that called `setsid()` escaped process-group termination.
+
+The comparator now enforces target identity itself. Timeout cleanup snapshots the full descendant
+tree before killing the producer, terminates those PIDs individually as well as the process group,
+and escalates both to `SIGKILL`. The timeout regression now deliberately creates a new-session
+child.
+
+The re-review also clarified the scientific meaning of a score-completion seal: internal row count
+and digest prove that a CSV was not truncated, but cannot prove coverage unless the expected
+attribute universe and model are frozen. Production scoring now obtains both from the live
+registry. A seal is valid only when the row identities exactly equal that universe and every row's
+model version equals the frozen version. Injected or non-production annotators without an explicit
+contract produce unsealed rows and therefore cannot be skipped by resume.

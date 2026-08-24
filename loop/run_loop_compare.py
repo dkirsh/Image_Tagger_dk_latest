@@ -582,8 +582,15 @@ def _fully_verified(body: Dict) -> bool:
 
 def build_verdict(scene: Dict, packet: Dict, threshold: Optional[float],
                   allow_unverified: bool = False) -> Dict:
-    body = compare(scene, packet["room"])
     m = packet["manifest"]
+    target_id = scene.get("image_id")
+    if not isinstance(target_id, str) or not target_id:
+        raise Refused("target scene image_id must be a non-empty string")
+    if m.get("target_image_id") != target_id:
+        raise Refused(
+            f"packet target_image_id {m.get('target_image_id')!r} does not match "
+            f"target scene image_id {target_id!r}")
+    body = compare(scene, packet["room"])
     state = "CONTINUE"
     if threshold is not None and body["discrepancy"]["score"] <= threshold \
             and (allow_unverified or _fully_verified(body)):

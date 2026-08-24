@@ -78,6 +78,37 @@ def _kill_process_group(proc: subprocess.Popen, sig: int) -> None:
         pass
 
 
+def _descendant_pids(root_pid: int) -> set:
+    """Best-effort snapshot before killing a parent, including children in new sessions."""
+    try:
+        result = subprocess.run(
+            ["ps", "-axo", "pid=,ppid="], capture_output=True, text=True, timeout=1.0)
+    except (OSError, subprocess.TimeoutExpired):
+        return set()
+    children = {}
+    for line in result.stdout.splitlines():
+        try:
+            pid, ppid = (int(part) for part in line.split())
+        except (TypeError, ValueError):
+            continue
+        children.setdefault(ppid, set()).add(pid)
+    found, frontier = set(), [root_pid]
+    while frontier:
+        for pid in children.get(frontier.pop(), ()):
+            if pid not in found:
+                found.add(pid)
+                frontier.append(pid)
+    return found
+
+
+def _signal_pids(pids: set, sig: int) -> None:
+    for pid in sorted(pids, reverse=True):
+        try:
+            os.kill(pid, sig)
+        except ProcessLookupError:
+            pass
+
+
 def _run_producer(args, timeout_seconds: float) -> subprocess.CompletedProcess:
     proc = subprocess.Popen(
         args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
@@ -86,12 +117,16 @@ def _run_producer(args, timeout_seconds: float) -> subprocess.CompletedProcess:
     try:
         stdout, stderr = proc.communicate(timeout=timeout_seconds)
     except subprocess.TimeoutExpired:
+        descendants = _descendant_pids(proc.pid)
+        _signal_pids(descendants, signal.SIGTERM)
         _kill_process_group(proc, signal.SIGTERM)
         try:
             proc.communicate(timeout=0.5)
         except subprocess.TimeoutExpired:
+            _signal_pids(descendants, signal.SIGKILL)
             _kill_process_group(proc, signal.SIGKILL)
             proc.communicate()
+        _signal_pids(descendants, signal.SIGKILL)
         raise
     finally:
         if proc.poll() is not None:
