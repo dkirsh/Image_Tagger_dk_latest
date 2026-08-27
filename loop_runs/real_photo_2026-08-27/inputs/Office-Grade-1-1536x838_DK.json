@@ -1,0 +1,26 @@
+{
+  "kind": "reconstruction_critique",
+  "image_id": "Office-Grade-1-1536x838.jpg",
+  "rater": "DK",
+  "when": "2026-08-13T18:12:40.947Z",
+  "overall_verbatim": "the entire set of windows on the right which fall to ceiling and run virtually the entire length of the right wall except for a bookcase marking the distinction of the front public reception area from the back more private area. the built in bookcases on the left are missing as is the reception desk and the divider behind it also marking public from private space. there are no materials or lighting. Also the windows that it put in at the very back wall are wrong - there is writing on that wall not glass transparent onto something behind it.",
+  "items": [
+    {"stage":"openings","problem":true,"severity":"blocker","route":"upstream_to_AG",
+     "note":"Back-wall 'windows' are FALSE POSITIVES: that wall carries writing/signage, not glazing. Separately, the real glazing was UNDER-SEGMENTED into two small boxes."},
+    {"stage":"wall_assignment","problem":true,"severity":"blocker","route":"algorithm",
+     "note":"The glazing is on the RIGHT (side) wall, not the far wall where all openings were placed."},
+    {"stage":"aperture_geom","problem":true,"severity":"major","route":"algorithm",
+     "note":"Real glazing is FLOOR-TO-CEILING and runs nearly the whole right wall (broken by a bookcase) -- a glazed_wall, not small punched windows."},
+    {"stage":"missing","problem":true,"severity":"blocker","route":"frontier",
+     "note":"Missing: reception desk; built-in bookcases on the LEFT wall; a divider behind the desk; the right-wall bookcase that marks the public(front)/private(back) boundary."},
+    {"stage":"materials","problem":true,"severity":"major","route":"frontier",
+     "note":"No materials or lighting at all."},
+    {"stage":"dimensions","problem":true,"severity":"minor","route":"algorithm_partial",
+     "note":"INFERRED (not stated by DK): a full-length glazed wall + front/back zoning implies a longer, zoned room, not a plain 8x10 box."}
+  ],
+  "routing_summary": {
+    "upstream_to_AG": ["openings: back-wall false positives + right-wall under-segmentation"],
+    "algorithm": ["wall_assignment: side-wall glazing", "aperture_geom: full-height glazed_wall extent"],
+    "frontier": ["furniture/dividers", "materials/lighting"]
+  }
+}
