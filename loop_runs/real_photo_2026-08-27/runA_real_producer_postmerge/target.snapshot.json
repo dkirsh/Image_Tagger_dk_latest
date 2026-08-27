@@ -1,0 +1,10 @@
+{
+  "image_id": "Office-Grade-1-1536x838",
+  "primary_room_type": "reception",
+  "_note": "Corrected per DK critique: full-height glazing on the RIGHT (east) wall; back wall carries writing, NOT glazing (so it is not an opening); a central door on the far wall.",
+  "openings": [
+    {"kind": "glazed_wall", "zone": "right_mid", "bbox_xywh": [0.86, 0.50, 0.26, 0.92],
+     "_note": "floor-to-ceiling glazed wall running most of the right wall"},
+    {"kind": "door", "zone": "center_mid", "bbox_xywh": [0.50, 0.55, 0.06, 0.35]}
+  ]
+}

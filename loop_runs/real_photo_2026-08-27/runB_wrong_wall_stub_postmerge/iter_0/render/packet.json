@@ -1,0 +1,14 @@
+{
+ "_negative_control": "wrong_wall \u2014 glazing forced to north; see module docstring",
+ "contract_version": "render-verdict/v0.7",
+ "iter": 0,
+ "produced_utc": "unspecified",
+ "render_kind": "structural_placeholder_v0",
+ "run_id": "runB_wrong_wall_stub_postmerge",
+ "sha256": {
+  "camera_json": "bda3d015a611e9ddb5ccde42ff476dba1e74bce3b749018331b15edf8f44533a",
+  "render_png": "e5dd92acd7d1f9550a1848c765289b33b408f0f6c002fd935696ac778965182d",
+  "room_json": "6ef482459c77dffb7ebf77969f54044dd830d48116adf5b7be751d975622de9f"
+ },
+ "target_image_id": "Office-Grade-1-1536x838"
+}
