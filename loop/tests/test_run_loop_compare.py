@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -106,7 +107,9 @@ def make_packet(tmp: Path, room: dict, tamper: bool = False,
 
 def write_target(tmp: Path, scene: dict = TARGET_SCENE) -> Path:
     p = tmp / "target_scene.json"
-    p.write_text(json.dumps(scene, indent=1), encoding="utf-8")
+    fixture_scene = dict(scene)
+    fixture_scene["image_id"] = "fixture"
+    p.write_text(json.dumps(fixture_scene, indent=1), encoding="utf-8")
     return p
 
 
@@ -188,6 +191,15 @@ def test_wrong_wall_render_must_not_report_agreement(tmp_path):
     assert len(mm) == 1 and mm[0]["expected_wall"] == "east" \
         and mm[0]["rendered_wall"] == "north"
     assert v["verdict"] == "CONTINUE"
+
+
+def test_nonfinite_or_out_of_range_threshold_refused(tmp_path):
+    target = write_target(tmp_path)
+    packet = make_packet(tmp_path, GOOD_ROOM)
+    for threshold in (float("nan"), float("inf"), -0.01, 1.01, True):
+        code, msg = rlc.run(target, packet, tmp_path / "verdict", threshold)
+        assert code == 2
+        assert "threshold" in msg
 
 
 def test_missing_aperture_reported(tmp_path):
@@ -497,7 +509,9 @@ def test_r3_malformed_target_bbox_blocks_agreement(tmp_path):
                               "evidence": {}}]}
         t = tmp_path / f"s{i}.json"
         t.write_text(json.dumps(scene), encoding="utf-8")
-        code, msg = rlc.run(t, make_packet(tmp_path / f"p{i}", _r3_room(_R3_ECHO)),
+        code, msg = rlc.run(t, make_packet(
+                            tmp_path / f"p{i}", _r3_room(_R3_ECHO),
+                            manifest_override={"target_image_id": f"r3a{i}"}),
                             tmp_path / f"v{i}", threshold=0.0)
         assert code == 0, f"bbox case {i}: {msg}"
         v = json.loads((tmp_path / f"v{i}" / "verdict.json").read_text())
@@ -550,7 +564,9 @@ def test_r3_nonstring_target_identity_refused(tmp_path):
                  "objects": objs}
         t = tmp_path / f"s{i}.json"
         t.write_text(json.dumps(scene), encoding="utf-8")
-        code, msg = rlc.run(t, make_packet(tmp_path / f"p{i}", _r3_room(_R3_ECHO)),
+        code, msg = rlc.run(t, make_packet(
+                            tmp_path / f"p{i}", _r3_room(_R3_ECHO),
+                            manifest_override={"target_image_id": f"r3t{i}"}),
                             tmp_path / f"v{i}", None)
         assert code == 2, f"case {i}: expected refusal, got {code}: {msg}"
         assert "non-empty string" in msg, f"case {i}: {msg}"
@@ -628,7 +644,9 @@ def test_v04_2_render_category_type_never_matches(tmp_path):
                           "_source_bbox": [0.10, 0.6, 0.1, 0.2]}])
         t = tmp_path / f"s{i}.json"
         t.write_text(json.dumps(scene), encoding="utf-8")
-        code, msg = rlc.run(t, make_packet(tmp_path / f"p{i}", room),
+        code, msg = rlc.run(t, make_packet(
+                            tmp_path / f"p{i}", room,
+                            manifest_override={"target_image_id": f"v042-{i}"}),
                             tmp_path / f"v{i}", threshold=0.0)
         assert code == 0, f"case {i}: {msg}"
         v = json.loads((tmp_path / f"v{i}" / "verdict.json").read_text())
@@ -771,7 +789,9 @@ def test_f3_overflow_inf_bbox_caught_by_value_check(tmp_path):
                  '"object_bbox": [1e999, 0.6, 0.1, 0.2], "evidence": {}}]}',
                  encoding="utf-8")
     room = _r3_room(_R3_ECHO)
-    code, msg = rlc.run(t, make_packet(tmp_path, room), tmp_path / "verdict",
+    code, msg = rlc.run(t, make_packet(
+                        tmp_path, room, manifest_override={"target_image_id": "inf"}),
+                        tmp_path / "verdict",
                         threshold=0.0)
     assert code == 0, msg
     v = verdict_of(tmp_path)
@@ -800,6 +820,43 @@ def test_fresh1_packet_member_as_directory_refused(tmp_path):
     code, msg = rlc.run(tdir, make_packet(tmp_path / "ok", GOOD_ROOM),
                         tmp_path / "v_t", None)
     assert code == 2 and "REFUSED" in msg
+
+
+def test_packet_fifo_and_symlink_members_refused_without_blocking(tmp_path):
+    fifo_packet = make_packet(tmp_path / "fifo", GOOD_ROOM)
+    (fifo_packet / "render.png").unlink()
+    os.mkfifo(fifo_packet / "render.png")
+    code, msg = rlc.run(write_target(tmp_path), fifo_packet, tmp_path / "v_fifo", None)
+    assert code == 2 and "regular file" in msg
+
+    symlink_packet = make_packet(tmp_path / "symlink", GOOD_ROOM)
+    room = symlink_packet / "room.json"
+    real_room = symlink_packet / "real-room.json"
+    room.rename(real_room)
+    room.symlink_to(real_room)
+    code, msg = rlc.run(write_target(tmp_path), symlink_packet, tmp_path / "v_link", None)
+    assert code == 2 and "regular file" in msg
+
+
+def test_existing_verdict_directory_is_immutable(tmp_path):
+    target = write_target(tmp_path)
+    packet = make_packet(tmp_path, GOOD_ROOM)
+    out = tmp_path / "immutable-verdict"
+    code, msg = rlc.run(target, packet, out, threshold=0.0)
+    assert code == 0, msg
+    before = (out / "verdict.json").read_bytes()
+    code, msg = rlc.run(target, packet, out, threshold=0.0)
+    assert code == 2 and "immutable" in msg
+    assert (out / "verdict.json").read_bytes() == before
+
+
+def test_packet_target_identity_must_match_target_scene(tmp_path):
+    target = write_target(tmp_path)
+    packet = make_packet(
+        tmp_path, GOOD_ROOM, manifest_override={"target_image_id": "wrong-target"})
+    code, msg = rlc.run(target, packet, tmp_path / "identity-verdict", threshold=0.0)
+    assert code == 2 and "target_image_id" in msg and "does not match" in msg
+    assert not (tmp_path / "identity-verdict" / "verdict.json").exists()
 
 
 # ------------------------------------------------------------------ stdlib runner

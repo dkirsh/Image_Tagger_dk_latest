@@ -37,6 +37,7 @@ for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS",
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import os
@@ -60,7 +61,10 @@ SCORE_COLUMNS: Tuple[str, ...] = (
     "m1p_digest", "computed_utc", "pctile_in_corpus",
 )
 # Honest provenance extras (corpus_db ignores columns it does not know).
-EXTRA_COLUMNS: Tuple[str, ...] = ("status", "reason", "model_version")
+EXTRA_COLUMNS: Tuple[str, ...] = (
+    "status", "reason", "model_version", "image_complete",
+    "image_score_count", "image_attr_ids_sha256",
+)
 OUT_COLUMNS: Tuple[str, ...] = SCORE_COLUMNS + EXTRA_COLUMNS
 
 # manifest filename aliases (Sprint E §9)
@@ -405,6 +409,79 @@ def sort_rows(rows: List[Dict[str, object]]) -> List[Dict[str, object]]:
     return sorted(rows, key=lambda r: (str(r.get("filename", "")), str(r.get("attr_id", ""))))
 
 
+def _attr_ids_sha256(attr_ids: Iterable[str]) -> str:
+    payload = "\n".join(sorted(attr_ids)) + "\n"
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def seal_complete_image_rows(
+        rows: List[Dict[str, object]], expected_attr_ids: Optional[Iterable[str]] = None,
+        expected_model_version: Optional[str] = None) -> bool:
+    """Seal rows only against a frozen attribute universe and model version."""
+    attr_ids = [str(r.get("attr_id", "")) for r in rows]
+    if not attr_ids or any(not attr_id for attr_id in attr_ids):
+        raise ValueError("cannot seal image rows without attribute identities")
+    if len(set(attr_ids)) != len(attr_ids):
+        raise ValueError("annotator returned duplicate attr_id values for one image")
+    digest = _attr_ids_sha256(attr_ids)
+    for row in rows:
+        row["image_complete"] = 0
+        row["image_score_count"] = len(rows)
+        row["image_attr_ids_sha256"] = digest
+    if expected_attr_ids is None or not expected_model_version:
+        return False
+    expected = {str(attr_id) for attr_id in expected_attr_ids if str(attr_id)}
+    if set(attr_ids) != expected:
+        missing = sorted(expected - set(attr_ids))
+        extra = sorted(set(attr_ids) - expected)
+        raise ValueError(
+            f"annotator attribute coverage mismatch: missing={missing[:10]!r} extra={extra[:10]!r}")
+    if any(str(row.get("model_version", "")) != expected_model_version for row in rows):
+        raise ValueError("annotator model_version does not match the frozen resume contract")
+    for row in rows:
+        row["image_complete"] = 1
+    return True
+
+
+def complete_existing_filenames(
+        rows: List[Dict[str, object]], expected_attr_ids: Optional[Iterable[str]] = None,
+        expected_model_version: Optional[str] = None) -> set:
+    """Return only image identities carrying a self-consistent completion seal."""
+    if expected_attr_ids is None or not expected_model_version:
+        return set()
+    expected = {str(attr_id) for attr_id in expected_attr_ids if str(attr_id)}
+    expected_digest = _attr_ids_sha256(expected)
+    grouped: Dict[str, List[Dict[str, object]]] = {}
+    for row in rows:
+        filename = str(row.get("filename", ""))
+        if filename:
+            grouped.setdefault(filename, []).append(row)
+    complete = set()
+    for filename, group in grouped.items():
+        attr_ids = [str(r.get("attr_id", "")) for r in group]
+        if not attr_ids or len(set(attr_ids)) != len(attr_ids) or any(not x for x in attr_ids):
+            continue
+        if set(attr_ids) == expected and all(
+            str(r.get("image_complete", "")).strip() == "1"
+            and str(r.get("image_score_count", "")).strip() == str(len(group))
+            and r.get("image_attr_ids_sha256") == expected_digest
+            and str(r.get("model_version", "")) == expected_model_version
+            for r in group
+        ):
+            complete.add(filename)
+    return complete
+
+
+def load_registry_resume_contract() -> Tuple[set, str]:
+    """The production attribute universe and model identity used to judge completeness."""
+    from annotation_socket.registry import MODEL_VERSION, PREDICATES
+    attr_ids = {str(spec["id"]) for spec in PREDICATES
+                if isinstance(spec, dict) and spec.get("id")}
+    if not attr_ids or not isinstance(MODEL_VERSION, str) or not MODEL_VERSION:
+        raise ValueError("registry does not expose a usable resume contract")
+    return attr_ids, MODEL_VERSION
+
+
 def read_existing_scores(path: Path) -> List[Dict[str, object]]:
     if not path.exists():
         return []
@@ -494,7 +571,9 @@ def run(corpus_dir: Path,
         image_glob: str = "*.png",
         force: bool = False,
         annotate_fn: Optional[Callable[[str], Dict]] = None,
-        argv: Optional[Sequence[str]] = None) -> Dict:
+        argv: Optional[Sequence[str]] = None,
+        expected_attr_ids: Optional[Iterable[str]] = None,
+        expected_model_version: Optional[str] = None) -> Dict:
     """Score the corpus and write scores.csv. Returns the run summary dict.
 
     annotate_fn is the injection point: production passes None (the real annotator is
@@ -505,6 +584,15 @@ def run(corpus_dir: Path,
     corpus_dir = Path(corpus_dir)
     out_path = Path(out_path)
     manifest_path = Path(manifest_path) if manifest_path else corpus_dir / "manifest.csv"
+
+    resume_contract_error = None
+    if expected_attr_ids is not None:
+        expected_attr_ids = {str(attr_id) for attr_id in expected_attr_ids if str(attr_id)}
+    elif annotate_fn is None:
+        try:
+            expected_attr_ids, expected_model_version = load_registry_resume_contract()
+        except Exception as exc:
+            resume_contract_error = f"{type(exc).__name__}: {exc}"
 
     determinism = configure_determinism()
     summary: Dict = {
@@ -520,6 +608,7 @@ def run(corpus_dir: Path,
         "images_seen": 0,
         "images_scored": 0,
         "images_skipped_existing": 0,
+        "images_incomplete_existing": 0,
         "images_missing_file": 0,
         "images_failed": 0,
         "images_not_png": 0,
@@ -532,6 +621,13 @@ def run(corpus_dir: Path,
         "annotator_blocker": None,
         "rebuild_db": None,
         "schema_warning": _assert_schema_matches_corpus_db(),
+        "resume_contract": {
+            "attribute_count": len(expected_attr_ids) if expected_attr_ids is not None else None,
+            "attribute_ids_sha256": (_attr_ids_sha256(expected_attr_ids)
+                                     if expected_attr_ids is not None else None),
+            "model_version": expected_model_version,
+            "error": resume_contract_error,
+        },
         "environment": environment_fingerprint(argv or sys.argv, determinism),
     }
 
@@ -545,7 +641,11 @@ def run(corpus_dir: Path,
     resuming = (resume or only_missing) and out_path.exists() and not force
     if resuming:
         existing_rows = read_existing_scores(out_path)
-        already = {str(r["filename"]) for r in existing_rows if r.get("filename")}
+        already = complete_existing_filenames(
+            existing_rows, expected_attr_ids, expected_model_version)
+        summary["images_incomplete_existing"] = len({
+            str(r["filename"]) for r in existing_rows if r.get("filename")
+        } - already)
 
     # ---- select work ------------------------------------------------------------------
     todo: List[str] = []
@@ -627,11 +727,26 @@ def run(corpus_dir: Path,
             if fail_fast:
                 break
             continue
+        try:
+            sealed = seal_complete_image_rows(
+                rows, expected_attr_ids, expected_model_version)
+        except ValueError as e:
+            summary["images_failed"] += 1
+            summary["failures"].append({"filename": fn, "path": str(path),
+                                        "error": str(e)[:300]})
+            if fail_fast:
+                break
+            continue
+        if not sealed:
+            summary.setdefault("images_unsealed_no_resume_contract", 0)
+            summary["images_unsealed_no_resume_contract"] += 1
         new_rows.extend(rows)
         summary["images_scored"] += 1
 
     # ---- merge, percentile, write --------------------------------------------------------
-    all_rows = (existing_rows + new_rows) if resuming else new_rows
+    replaced = {str(r["filename"]) for r in new_rows}
+    preserved_rows = [r for r in existing_rows if str(r.get("filename", "")) not in replaced]
+    all_rows = (preserved_rows + new_rows) if resuming else new_rows
     # percentiles are recomputed across the whole corpus every write, so a resumed run
     # never leaves stale percentiles from a smaller sample.
     compute_percentiles(all_rows)
@@ -684,9 +799,9 @@ def build_parser() -> argparse.ArgumentParser:
                    help="accepted for symmetry with corpus_db; not required for scoring")
     p.add_argument("--limit", type=int, default=None)
     p.add_argument("--resume", action="store_true",
-                   help="preserve existing rows; score only filenames not already present")
+                   help="preserve completion-sealed image rows; rescore partial/legacy rows")
     p.add_argument("--only-missing", action="store_true",
-                   help="alias of --resume (score only images absent from scores.csv)")
+                   help="alias of --resume")
     p.add_argument("--skip-existing", action="store_true", help="alias of --resume")
     p.add_argument("--force", action="store_true",
                    help="ignore existing scores.csv and rescore from scratch")

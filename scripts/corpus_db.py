@@ -39,6 +39,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import sqlite3
 import sys
 from dataclasses import dataclass, field
@@ -106,10 +107,15 @@ def int_or_none(v) -> Optional[int]:
 
 
 def float_or_none(v) -> Optional[float]:
-    try:
-        return float(str(v).strip())
-    except (TypeError, ValueError):
+    if v is None or not str(v).strip():
         return None
+    try:
+        value = float(str(v).strip())
+    except (TypeError, ValueError):
+        raise ValueError(f"invalid numeric value {v!r}")
+    if not math.isfinite(value):
+        raise ValueError(f"non-finite numeric value {v!r}")
+    return value
 
 
 def bool_int(v) -> Optional[int]:
@@ -483,6 +489,16 @@ def load_scores(con: sqlite3.Connection, scores_path: Path) -> Dict[str, int]:
     known_images = {r[0] for r in con.execute("SELECT filename FROM images")}
     known_attrs = {r[0] for r in con.execute("SELECT attr_id FROM attributes")}
 
+    seen = set()
+    for row_number, r in enumerate(rows, 2):
+        key = (r["filename"], r["attr_id"])
+        if key in seen:
+            raise ValueError(
+                f"duplicate score identity {key!r} in {scores_path} at data row {row_number}")
+        seen.add(key)
+        for field in ("value", "confidence", "pctile_in_corpus"):
+            float_or_none(r[field])
+
     for r in rows:
         fn, attr = r["filename"], r["attr_id"]
         if fn not in known_images:
@@ -497,7 +513,7 @@ def load_scores(con: sqlite3.Connection, scores_path: Path) -> Dict[str, int]:
             known_attrs.add(attr)
             stats["score_attrs_added"] += 1
         con.execute(
-            "INSERT OR REPLACE INTO scores ({}) VALUES ({})".format(
+            "INSERT INTO scores ({}) VALUES ({})".format(
                 ",".join(SCORE_COLUMNS), ",".join("?" * len(SCORE_COLUMNS))),
             (fn, attr, float_or_none(r["value"]), r["tier"] or None,
              float_or_none(r["confidence"]), bool_int(r["abstained"]),

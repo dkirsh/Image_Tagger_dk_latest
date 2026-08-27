@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sys
+import time
 from pathlib import Path
 
 try:
@@ -101,6 +102,75 @@ def test_zero_cap_refused(tmp_path):
     assert code == 2 and "cap" in msg
 
 
+def test_bad_threshold_refused_before_producer_runs(tmp_path):
+    marker = tmp_path / "producer-ran"
+    code, msg = orchestrate.run_cycle(
+        write_target(tmp_path), tmp_path / "bad-threshold",
+        f"touch {marker}", cap=1, threshold=float("inf"))
+    assert code == 2 and "threshold" in msg
+    assert not marker.exists()
+
+
+def test_existing_run_directory_refused_to_prevent_stale_packet_reuse(tmp_path):
+    run_dir = tmp_path / "existing"
+    run_dir.mkdir()
+    (run_dir / "stale.txt").write_text("old", encoding="utf-8")
+    code, msg = orchestrate.run_cycle(
+        write_target(tmp_path), run_dir, make_stub(tmp_path, GOOD_ROOM, "stale"),
+        cap=1, threshold=0.0)
+    assert code == 2 and "already exists" in msg and "stale" in msg
+
+
+def test_run_summary_binds_target_and_producer(tmp_path):
+    target = write_target(tmp_path)
+    command = make_stub(tmp_path, GOOD_ROOM, "bound")
+    run_dir = tmp_path / "bound-run"
+    code, msg = orchestrate.run_cycle(target, run_dir, command, cap=1, threshold=0.0)
+    assert code == 0, msg
+    summary = json.loads((run_dir / "run_summary.json").read_text())
+    assert summary["target_sha256"] == hashlib.sha256(target.read_bytes()).hexdigest()
+    assert summary["producer_cmd_sha256"] == hashlib.sha256(command.encode()).hexdigest()
+
+
+def test_producer_timeout_is_bounded(tmp_path):
+    sleeper = tmp_path / "sleep.py"
+    sleeper.write_text("import time; time.sleep(5)", encoding="utf-8")
+    code, msg = orchestrate.run_cycle(
+        write_target(tmp_path), tmp_path / "timeout-run", f"{sys.executable} {sleeper}",
+        cap=1, threshold=0.0, producer_timeout_seconds=0.01)
+    assert code == 2 and "timed out" in msg
+
+
+def test_timeout_terminates_producer_descendants(tmp_path):
+    marker = tmp_path / "descendant-survived"
+    sleeper = tmp_path / "spawn.py"
+    sleeper.write_text(
+        "import subprocess,sys,time\n"
+        "subprocess.Popen([sys.executable,'-c',"
+        "\"import sys,time; time.sleep(.2); open(sys.argv[1],'w').write('bad')\","
+        "sys.argv[1]], start_new_session=True)\n"
+        "time.sleep(5)\n", encoding="utf-8")
+    code, msg = orchestrate.run_cycle(
+        write_target(tmp_path), tmp_path / "descendant-run",
+        f"{sys.executable} {sleeper} {marker}", cap=1, threshold=0.0,
+        producer_timeout_seconds=0.05)
+    time.sleep(0.3)
+    assert code == 2 and "timed out" in msg
+    assert not marker.exists()
+
+
+def test_producer_cannot_mutate_target_snapshot(tmp_path):
+    mutator = tmp_path / "mutate.py"
+    mutator.write_text(
+        "import pathlib,sys,time\n"
+        "pathlib.Path(sys.argv[1]).write_text('{}')\n", encoding="utf-8")
+    code, msg = orchestrate.run_cycle(
+        write_target(tmp_path), tmp_path / "mutation-run",
+        f"{sys.executable} {mutator} {{target}}", cap=1, threshold=0.0)
+    assert code == 2 and "mutated target snapshot" in msg
+    assert not (tmp_path / "mutation-run" / "run_summary.json").exists()
+
+
 def test_failing_producer_refused_with_iter_named(tmp_path):
     bad = tmp_path / "boom.py"
     bad.write_text("import sys; sys.exit(7)", encoding="utf-8")
@@ -141,6 +211,36 @@ def test_hitl_without_who_or_run_refused(tmp_path):
     assert code == 2 and "who" in msg
     code, msg = orchestrate.record_hitl(tmp_path / "run5", "maybe", "tanishq", "", None)
     assert code == 2 and "accept or reject" in msg
+
+
+def test_hitl_refuses_forged_summary_and_bad_timestamp(tmp_path):
+    forged = tmp_path / "forged"
+    forged.mkdir()
+    (forged / "run_summary.json").write_text(json.dumps({
+        "run_id": "forged", "iterations": [],
+        "final_status": "STOPPED_BELOW_THRESHOLD",
+    }), encoding="utf-8")
+    code, msg = orchestrate.record_hitl(forged, "accept", "attacker", "", None)
+    assert code == 2 and "invalid completed run evidence" in msg
+
+    run_dir = tmp_path / "valid-run"
+    orchestrate.run_cycle(write_target(tmp_path), run_dir,
+                          make_stub(tmp_path, GOOD_ROOM, "timestamp"), 1, 0.0)
+    code, msg = orchestrate.record_hitl(run_dir, "accept", "reviewer", "", "not-a-time")
+    assert code == 2 and "timestamp" in msg
+
+
+def test_hitl_hash_chain_detects_prior_row_tampering(tmp_path):
+    run_dir = tmp_path / "ledger-run"
+    orchestrate.run_cycle(write_target(tmp_path), run_dir,
+                          make_stub(tmp_path, GOOD_ROOM, "ledger"), 1, 0.0)
+    assert orchestrate.record_hitl(run_dir, "accept", "one", "", None)[0] == 0
+    ledger = run_dir / "hitl.jsonl"
+    row = json.loads(ledger.read_text(encoding="utf-8"))
+    row["who"] = "tampered"
+    ledger.write_text(json.dumps(row, sort_keys=True) + "\n", encoding="utf-8")
+    code, msg = orchestrate.record_hitl(run_dir, "reject", "two", "", None)
+    assert code == 2 and "broken HITL hash chain" in msg
 
 
 def test_summary_deterministic_across_reruns(tmp_path):

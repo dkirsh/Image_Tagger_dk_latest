@@ -161,7 +161,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
+import stat
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -223,15 +225,39 @@ def sha256_bytes(b: bytes) -> str:
     return hashlib.sha256(b).hexdigest()
 
 
+def read_regular_bytes(path: Path, label: str) -> bytes:
+    """Read one immutable view of a regular file without following symlinks."""
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NONBLOCK", 0)
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        fd = os.open(path, flags)
+    except OSError as exc:
+        raise Refused(f"{label} is not a readable regular file: {exc}") from exc
+    try:
+        mode = os.fstat(fd).st_mode
+        if not stat.S_ISREG(mode):
+            raise Refused(f"{label} must be a regular file")
+        chunks = []
+        while True:
+            chunk = os.read(fd, 1024 * 1024)
+            if not chunk:
+                return b"".join(chunks)
+            chunks.append(chunk)
+    except OSError as exc:
+        raise Refused(f"cannot read {label}: {exc}") from exc
+    finally:
+        os.close(fd)
+
+
 # ---------------------------------------------------------------- ingestion (fail-closed)
 
 def load_packet(packet_dir: Path) -> Dict:
     pj = packet_dir / "packet.json"
-    if not pj.exists():
-        raise Refused(f"packet.json missing in {packet_dir}")
     try:
-        manifest = _strict_loads(pj.read_text(encoding="utf-8"), "packet.json")
-    except ValueError as e:
+        manifest = _strict_loads(
+            read_regular_bytes(pj, "packet.json").decode("utf-8"), "packet.json")
+    except (UnicodeDecodeError, ValueError) as e:
         raise Refused(f"packet.json unparseable: {e}")
     if not isinstance(manifest, dict):
         raise Refused("packet.json must be a JSON object")
@@ -263,9 +289,7 @@ def load_packet(packet_dir: Path) -> Dict:
     for fname, key in (("render.png", "render_png"), ("room.json", "room_json"),
                        ("camera.json", "camera_json")):
         p = packet_dir / fname
-        if not p.exists():
-            raise Refused(f"{fname} missing from packet")
-        b = p.read_bytes()
+        b = read_regular_bytes(p, fname)
         claimed = shas.get(key)
         if not isinstance(claimed, str) or claimed != sha256_bytes(b):
             raise Refused(f"sha256 mismatch for {fname}: manifest={claimed!r} "
@@ -288,11 +312,11 @@ def load_packet(packet_dir: Path) -> Dict:
     return {"manifest": manifest, "room": room}
 
 
-def load_target(target_path: Path) -> Dict:
+def load_target_bytes(data: bytes, label: str = "target scene") -> Dict:
     try:
-        scene = _strict_loads(target_path.read_text(encoding="utf-8"), "target scene")
-    except (OSError, ValueError) as e:
-        raise Refused(f"cannot read target scene: {e}")
+        scene = _strict_loads(data.decode("utf-8"), label)
+    except (UnicodeDecodeError, ValueError) as e:
+        raise Refused(f"cannot parse {label}: {e}")
     if not isinstance(scene, dict):
         raise Refused("target scene must be a JSON object")
     if not (scene.get("openings") or scene.get("objects")):
@@ -306,6 +330,10 @@ def load_target(target_path: Path) -> Dict:
                               or any(not isinstance(o, dict) for o in v)):
             raise Refused(f"target scene {field} must be a list of objects")
     return scene
+
+
+def load_target(target_path: Path) -> Dict:
+    return load_target_bytes(read_regular_bytes(target_path, "target scene"))
 
 
 def expected_openings(scene: Dict) -> List[Dict]:
@@ -554,8 +582,15 @@ def _fully_verified(body: Dict) -> bool:
 
 def build_verdict(scene: Dict, packet: Dict, threshold: Optional[float],
                   allow_unverified: bool = False) -> Dict:
-    body = compare(scene, packet["room"])
     m = packet["manifest"]
+    target_id = scene.get("image_id")
+    if not isinstance(target_id, str) or not target_id:
+        raise Refused("target scene image_id must be a non-empty string")
+    if m.get("target_image_id") != target_id:
+        raise Refused(
+            f"packet target_image_id {m.get('target_image_id')!r} does not match "
+            f"target scene image_id {target_id!r}")
+    body = compare(scene, packet["room"])
     state = "CONTINUE"
     if threshold is not None and body["discrepancy"]["score"] <= threshold \
             and (allow_unverified or _fully_verified(body)):
@@ -595,9 +630,14 @@ def validate_verdict(v: Dict) -> List[str]:
 # ---------------------------------------------------------------- CLI
 
 def run(target: Path, packet_dir: Path, out_dir: Path, threshold: Optional[float],
-        allow_unverified: bool = False) -> Tuple[int, str]:
+        allow_unverified: bool = False,
+        target_bytes: Optional[bytes] = None) -> Tuple[int, str]:
+    if threshold is not None and (
+            not _finite(threshold) or not 0.0 <= float(threshold) <= 1.0):
+        return 2, "REFUSED: threshold must be a finite number in [0,1]"
     try:
-        scene = load_target(target)
+        scene = (load_target_bytes(target_bytes)
+                 if target_bytes is not None else load_target(target))
         packet = load_packet(packet_dir)
         verdict = build_verdict(scene, packet, threshold, allow_unverified)
         text = canonical(verdict)          # R2-2: non-finite anywhere -> ValueError
@@ -613,9 +653,22 @@ def run(target: Path, packet_dir: Path, out_dir: Path, threshold: Optional[float
         return 1, "verdict failed self-validation: " + "; ".join(problems)
     if canonical(json.loads(text)) != text:
         return 1, "nondeterministic_run: canonical round-trip diverged"
-    out_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        out_dir.parent.mkdir(parents=True, exist_ok=True)
+        out_dir.mkdir()
+    except FileExistsError:
+        return 2, (f"REFUSED: output directory {out_dir} already exists; "
+                   "verdict artifacts are immutable")
+    except OSError as e:
+        return 2, f"REFUSED: cannot create output directory {out_dir}: {e}"
     out = out_dir / "verdict.json"
-    out.write_text(text, encoding="utf-8")
+    try:
+        with out.open("x", encoding="utf-8") as fh:
+            fh.write(text)
+            fh.flush()
+            os.fsync(fh.fileno())
+    except OSError as e:
+        return 2, f"REFUSED: cannot create immutable verdict {out}: {e}"
     n_mm = len(verdict["wall_layout_diff"]["opening_mismatches"])
     n_ex = len(verdict["wall_layout_diff"]["extra_render_apertures"])
     n_mv = len(verdict["object_diff"]["moved"])

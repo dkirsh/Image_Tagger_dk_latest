@@ -41,9 +41,12 @@ Exit codes: 0 stop-below-threshold; 3 cap-reached-flagged; 2 refused/producer fa
 from __future__ import annotations
 
 import argparse
+import fcntl
 import hashlib
 import json
+import os
 import shlex
+import signal
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -55,37 +58,166 @@ import run_loop_compare as rlc  # noqa: E402  (same-lane sibling module)
 
 
 def canonical(obj) -> str:
-    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n"
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+                      allow_nan=False) + "\n"
 
 
 def sha256_text(t: str) -> str:
     return hashlib.sha256(t.encode("utf-8")).hexdigest()
 
 
+def finite_number(value) -> bool:
+    return (isinstance(value, (int, float)) and not isinstance(value, bool)
+            and value == value and value not in (float("inf"), float("-inf")))
+
+
+def _kill_process_group(proc: subprocess.Popen, sig: int) -> None:
+    try:
+        os.killpg(proc.pid, sig)
+    except ProcessLookupError:
+        pass
+
+
+def _descendant_pids(root_pid: int) -> set:
+    """Best-effort snapshot before killing a parent, including children in new sessions."""
+    try:
+        result = subprocess.run(
+            ["ps", "-axo", "pid=,ppid="], capture_output=True, text=True, timeout=1.0)
+    except (OSError, subprocess.TimeoutExpired):
+        return set()
+    children = {}
+    for line in result.stdout.splitlines():
+        try:
+            pid, ppid = (int(part) for part in line.split())
+        except (TypeError, ValueError):
+            continue
+        children.setdefault(ppid, set()).add(pid)
+    found, frontier = set(), [root_pid]
+    while frontier:
+        for pid in children.get(frontier.pop(), ()):
+            if pid not in found:
+                found.add(pid)
+                frontier.append(pid)
+    return found
+
+
+def _signal_pids(pids: set, sig: int) -> None:
+    for pid in sorted(pids, reverse=True):
+        try:
+            os.kill(pid, sig)
+        except ProcessLookupError:
+            pass
+
+
+def _run_producer(args, timeout_seconds: float) -> subprocess.CompletedProcess:
+    proc = subprocess.Popen(
+        args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+        start_new_session=True,
+    )
+    try:
+        stdout, stderr = proc.communicate(timeout=timeout_seconds)
+    except subprocess.TimeoutExpired:
+        descendants = _descendant_pids(proc.pid)
+        _signal_pids(descendants, signal.SIGTERM)
+        _kill_process_group(proc, signal.SIGTERM)
+        try:
+            proc.communicate(timeout=0.5)
+        except subprocess.TimeoutExpired:
+            _signal_pids(descendants, signal.SIGKILL)
+            _kill_process_group(proc, signal.SIGKILL)
+            proc.communicate()
+        _signal_pids(descendants, signal.SIGKILL)
+        raise
+    finally:
+        if proc.poll() is not None:
+            # A successful producer may still have left children in its process group.
+            _kill_process_group(proc, signal.SIGTERM)
+    return subprocess.CompletedProcess(args, proc.returncode, stdout, stderr)
+
+
+def _parse_aware_utc(value: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("timestamp must be a non-empty ISO-8601 string")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError(f"timestamp is not valid ISO-8601: {value!r}") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError("timestamp must include a UTC offset")
+    return parsed.astimezone(timezone.utc).replace(microsecond=0).isoformat()
+
+
 def run_cycle(target: Path, run_dir: Path, producer_cmd: str,
-              cap: int, threshold: Optional[float]) -> Tuple[int, str]:
-    if cap < 1:
+              cap: int, threshold: Optional[float],
+              producer_timeout_seconds: float = 300.0) -> Tuple[int, str]:
+    if isinstance(cap, bool) or not isinstance(cap, int) or cap < 1:
         return 2, "REFUSED: cap must be >= 1 (a capless loop is the named failure)"
-    if not target.exists():
-        return 2, f"REFUSED: target {target} does not exist"
-    run_dir.mkdir(parents=True, exist_ok=True)
+    if threshold is not None and (
+            not finite_number(threshold) or not 0.0 <= float(threshold) <= 1.0):
+        return 2, "REFUSED: threshold must be a finite number in [0,1]"
+    if not finite_number(producer_timeout_seconds) or producer_timeout_seconds <= 0:
+        return 2, "REFUSED: producer timeout must be a positive finite number"
+    try:
+        target_bytes = rlc.read_regular_bytes(target, "target scene")
+        target_scene = rlc.load_target_bytes(target_bytes)
+    except rlc.Refused as exc:
+        return 2, f"REFUSED: {exc}"
+    target_sha256 = hashlib.sha256(target_bytes).hexdigest()
+    try:
+        run_dir.parent.mkdir(parents=True, exist_ok=True)
+        run_dir.mkdir()
+    except FileExistsError:
+        return 2, (f"REFUSED: run directory {run_dir} already exists; "
+                   "run artifacts are immutable and may not reuse stale packets")
+    except OSError as exc:
+        return 2, f"REFUSED: cannot create run directory {run_dir}: {exc}"
     run_id = run_dir.name
+    target_snapshot = run_dir / "target.snapshot.json"
+    try:
+        with target_snapshot.open("xb") as fh:
+            fh.write(target_bytes)
+            fh.flush()
+            os.fsync(fh.fileno())
+    except OSError as exc:
+        return 2, f"REFUSED: cannot create target snapshot: {exc}"
 
     iterations = []
     final_status = "CAP_REACHED_FLAGGED"
     for k in range(cap):
         it_dir = run_dir / f"iter_{k}"
         render_dir, verdict_dir = it_dir / "render", it_dir / "verdict"
-        cmd = producer_cmd.format(target=str(target), render_dir=str(render_dir),
-                                  run_id=run_id, iter=k)
-        proc = subprocess.run(shlex.split(cmd), capture_output=True, text=True)
+        try:
+            cmd = producer_cmd.format(target=str(target_snapshot), render_dir=str(render_dir),
+                                      run_id=run_id, iter=k)
+            proc = _run_producer(shlex.split(cmd), float(producer_timeout_seconds))
+        except (KeyError, ValueError) as exc:
+            return 2, f"REFUSED: malformed producer command template: {exc}"
+        except subprocess.TimeoutExpired:
+            return 2, (f"REFUSED: producer timed out at iter {k} after "
+                       f"{producer_timeout_seconds:g}s")
+        except OSError as exc:
+            return 2, f"REFUSED: producer could not start at iter {k}: {exc}"
         if proc.returncode != 0:
             return 2, (f"REFUSED: producer failed at iter {k} (exit {proc.returncode}): "
                        f"{(proc.stderr or proc.stdout).strip()[:400]}")
-        code, msg = rlc.run(target, render_dir, verdict_dir, threshold)
+        try:
+            if rlc.read_regular_bytes(target_snapshot, "target snapshot") != target_bytes:
+                return 2, f"REFUSED: producer mutated target snapshot at iter {k}"
+        except rlc.Refused as exc:
+            return 2, f"REFUSED: target snapshot integrity failed at iter {k}: {exc}"
+        code, msg = rlc.run(target_snapshot, render_dir, verdict_dir, threshold,
+                            target_bytes=target_bytes)
         if code != 0:
             return 2, f"REFUSED: comparator at iter {k}: {msg}"
         v = json.loads((verdict_dir / "verdict.json").read_text(encoding="utf-8"))
+        expected_target_id = target_scene.get("image_id")
+        if v.get("run_id") != run_id or v.get("iter") != k:
+            return 2, (f"REFUSED: packet identity mismatch at iter {k}: "
+                       f"run_id={v.get('run_id')!r}, iter={v.get('iter')!r}")
+        if isinstance(expected_target_id, str) and expected_target_id and \
+                v.get("target_image_id") != expected_target_id:
+            return 2, (f"REFUSED: packet target_image_id {v.get('target_image_id')!r} "
+                       f"does not match target image_id {expected_target_id!r}")
         iterations.append({"iter": k, "score": v["discrepancy"]["score"],
                            "verdict": v["verdict"],
                            "identity_mode": v["identity"]["mode"],
@@ -97,12 +229,20 @@ def run_cycle(target: Path, run_dir: Path, producer_cmd: str,
 
     summary = {
         "run_id": run_id, "contract_version": rlc.CONTRACT_VERSION,
-        "target": target.name, "cap": cap, "threshold": threshold,
+        "target": target.name, "target_snapshot": target_snapshot.name,
+        "target_sha256": target_sha256,
+        "producer_cmd_sha256": sha256_text(producer_cmd),
+        "producer_timeout_seconds": float(producer_timeout_seconds),
+        "cap": cap, "threshold": threshold,
         "iterations": iterations, "final_status": final_status,
         "adjuster": "none_v0 (producer does not yet consume prior verdicts — open work)",
         "note": "scores are exploratory_uncalibrated; acceptance is a human act (hitl)",
     }
-    (run_dir / "run_summary.json").write_text(canonical(summary), encoding="utf-8")
+    summary_path = run_dir / "run_summary.json"
+    with summary_path.open("x", encoding="utf-8") as fh:
+        fh.write(canonical(summary))
+        fh.flush()
+        os.fsync(fh.fileno())
     if final_status == "STOPPED_BELOW_THRESHOLD":
         return 0, (f"run {run_id}: STOPPED_BELOW_THRESHOLD at iter "
                    f"{iterations[-1]['iter']} score={iterations[-1]['score']}")
@@ -113,25 +253,90 @@ def run_cycle(target: Path, run_dir: Path, producer_cmd: str,
 def record_hitl(run_dir: Path, verdict: str, who: str, note: str,
                 when_utc: Optional[str]) -> Tuple[int, str]:
     summary_path = run_dir / "run_summary.json"
-    if not summary_path.exists():
-        return 2, "REFUSED: no run_summary.json — HITL records attach to a completed run"
     if verdict not in ("accept", "reject"):
         return 2, "REFUSED: verdict must be accept or reject"
-    if not who.strip():
+    if not isinstance(who, str) or not who.strip():
         return 2, "REFUSED: --who is required (verdict_unprovenanced is a named failure)"
-    summary_text = summary_path.read_text(encoding="utf-8")
-    summary = json.loads(summary_text)
-    row = {
-        "run_id": summary["run_id"],
-        "iter": (summary["iterations"][-1]["iter"] if summary["iterations"] else None),
-        "final_status": summary["final_status"],
-        "verdict": verdict, "who": who.strip(), "note": note,
-        "when_utc": when_utc or datetime.now(timezone.utc)
-                                       .strftime("%Y-%m-%dT%H:%M:%S+00:00"),
-        "run_summary_sha256": sha256_text(summary_text),
-    }
-    with (run_dir / "hitl.jsonl").open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps(row, sort_keys=True) + "\n")   # append-only, never rewritten
+    try:
+        summary_text = rlc.read_regular_bytes(summary_path, "run_summary.json").decode("utf-8")
+        summary = rlc._strict_loads(summary_text, "run_summary.json")
+        if not isinstance(summary, dict) or canonical(summary) != summary_text:
+            raise ValueError("run_summary.json is not canonical")
+        iterations = summary.get("iterations")
+        cap = summary.get("cap")
+        final_status = summary.get("final_status")
+        if summary.get("run_id") != run_dir.name or \
+                summary.get("contract_version") != rlc.CONTRACT_VERSION:
+            raise ValueError("run identity or contract version mismatch")
+        if isinstance(cap, bool) or not isinstance(cap, int) or cap < 1:
+            raise ValueError("invalid cap")
+        if not isinstance(iterations, list) or not iterations or len(iterations) > cap:
+            raise ValueError("completed run must contain 1..cap iterations")
+        if [item.get("iter") for item in iterations if isinstance(item, dict)] != \
+                list(range(len(iterations))):
+            raise ValueError("iterations are malformed or non-contiguous")
+        if final_status not in ("STOPPED_BELOW_THRESHOLD", "CAP_REACHED_FLAGGED"):
+            raise ValueError("invalid final_status")
+        if final_status == "STOPPED_BELOW_THRESHOLD" and \
+                iterations[-1].get("verdict") != "BELOW_THRESHOLD":
+            raise ValueError("stop status disagrees with final verdict")
+        if final_status == "CAP_REACHED_FLAGGED" and (len(iterations) != cap or any(
+                item.get("verdict") != "CONTINUE" for item in iterations)):
+            raise ValueError("cap status disagrees with iteration evidence")
+        snapshot_name = summary.get("target_snapshot")
+        if not isinstance(snapshot_name, str) or Path(snapshot_name).name != snapshot_name:
+            raise ValueError("invalid target_snapshot")
+        snapshot = rlc.read_regular_bytes(run_dir / snapshot_name, "target snapshot")
+        if hashlib.sha256(snapshot).hexdigest() != summary.get("target_sha256"):
+            raise ValueError("target snapshot hash mismatch")
+        for item in iterations:
+            vpath = run_dir / f"iter_{item['iter']}" / "verdict" / "verdict.json"
+            vtext = rlc.read_regular_bytes(vpath, f"iteration {item['iter']} verdict").decode("utf-8")
+            vobj = rlc._strict_loads(vtext, "verdict.json")
+            if canonical(vobj) != vtext or rlc.validate_verdict(vobj):
+                raise ValueError(f"iteration {item['iter']} verdict is invalid")
+            if sha256_text(vtext) != item.get("verdict_sha256") or \
+                    vobj.get("run_id") != summary["run_id"] or \
+                    vobj.get("iter") != item["iter"] or \
+                    vobj.get("verdict") != item.get("verdict"):
+                raise ValueError(f"iteration {item['iter']} provenance mismatch")
+        when = _parse_aware_utc(
+            when_utc or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00"))
+    except (OSError, UnicodeDecodeError, ValueError, TypeError, KeyError,
+            json.JSONDecodeError, rlc.Refused) as exc:
+        return 2, f"REFUSED: invalid completed run evidence: {exc}"
+
+    hitl_path = run_dir / "hitl.jsonl"
+    flags = os.O_RDWR | os.O_CREAT | os.O_APPEND | getattr(os, "O_CLOEXEC", 0)
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        fd = os.open(hitl_path, flags, 0o600)
+        with os.fdopen(fd, "r+", encoding="utf-8") as fh:
+            fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+            fh.seek(0)
+            previous = "0" * 64
+            for line_no, line in enumerate(fh, 1):
+                old = rlc._strict_loads(line, f"hitl.jsonl line {line_no}")
+                claimed = old.pop("row_sha256", None)
+                if old.get("previous_hitl_sha256") != previous or \
+                        claimed != sha256_text(canonical(old)):
+                    raise ValueError(f"broken HITL hash chain at line {line_no}")
+                previous = claimed
+            row = {
+                "run_id": summary["run_id"], "iter": iterations[-1]["iter"],
+                "final_status": final_status, "verdict": verdict,
+                "who": who.strip(), "note": str(note), "when_utc": when,
+                "run_summary_sha256": sha256_text(summary_text),
+                "previous_hitl_sha256": previous,
+            }
+            row["row_sha256"] = sha256_text(canonical(row))
+            fh.seek(0, os.SEEK_END)
+            fh.write(canonical(row))
+            fh.flush()
+            os.fsync(fh.fileno())
+    except (OSError, ValueError, TypeError, json.JSONDecodeError, rlc.Refused) as exc:
+        return 2, f"REFUSED: cannot append HITL ledger: {exc}"
     return 0, f"hitl {verdict} by {row['who']} recorded for {row['run_id']}"
 
 
@@ -145,6 +350,7 @@ def main(argv=None) -> int:
                    help="command template with {target} {render_dir} {run_id} {iter}")
     r.add_argument("--cap", type=int, default=3)
     r.add_argument("--threshold", type=float, default=None)
+    r.add_argument("--producer-timeout-seconds", type=float, default=300.0)
     h = sub.add_parser("hitl")
     h.add_argument("--run-dir", required=True)
     h.add_argument("--verdict", required=True)
@@ -154,7 +360,7 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     if a.cmd == "run":
         code, msg = run_cycle(Path(a.target), Path(a.run_dir), a.producer_cmd,
-                              a.cap, a.threshold)
+                              a.cap, a.threshold, a.producer_timeout_seconds)
     else:
         code, msg = record_hitl(Path(a.run_dir), a.verdict, a.who, a.note, a.when_utc)
     print(msg, file=sys.stderr if code == 2 else sys.stdout)
