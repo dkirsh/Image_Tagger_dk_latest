@@ -1,0 +1,94 @@
+{
+ "image_id": "Office-Grade-1-1536x838",
+ "primary_room_type": "reception",
+ "_note": "FURNITURE EVALUATION scene (David's own-eyes eval). Openings verbatim from the frozen milestone annotation (DK-critique-corrected). Objects drafted by Claude (Cowork) from the photograph, then CORRECTED BY TANISHQ on visual inspection (2026-08-28): o1 tightened to the desk itself; o2 shifted right toward the window wall; o3 renamed round_table (small round table, not a generic side table); o4 renamed shelving (open shelving with plants, not a bookcase); o5 kept with an occlusion note. bbox format [cx, cy, w, h] normalized.",
+ "openings": [
+  {
+   "kind": "glazed_wall",
+   "zone": "right_mid",
+   "bbox_xywh": [
+    0.86,
+    0.5,
+    0.26,
+    0.92
+   ]
+  },
+  {
+   "kind": "door",
+   "zone": "center_mid",
+   "bbox_xywh": [
+    0.5,
+    0.55,
+    0.06,
+    0.35
+   ]
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "category": "reception_desk",
+   "object_bbox": [
+    0.2,
+    0.7,
+    0.4,
+    0.26
+   ],
+   "evidence": {
+    "note": "marble reception counter, left of centre; box tightened to the counter itself per tanishq"
+   }
+  },
+  {
+   "id": "o2",
+   "category": "sofa",
+   "object_bbox": [
+    0.78,
+    0.75,
+    0.36,
+    0.4
+   ],
+   "evidence": {
+    "note": "rust velvet sofa set against the window wall, right side; box shifted right per tanishq"
+   }
+  },
+  {
+   "id": "o3",
+   "category": "round_table",
+   "object_bbox": [
+    0.66,
+    0.85,
+    0.11,
+    0.22
+   ],
+   "evidence": {
+    "note": "small round terrazzo table, centre-right foreground"
+   }
+  },
+  {
+   "id": "o4",
+   "category": "shelving",
+   "object_bbox": [
+    0.07,
+    0.33,
+    0.14,
+    0.5
+   ],
+   "evidence": {
+    "note": "open shelving holding plants, upper left wall; not a bookcase per tanishq"
+   }
+  },
+  {
+   "id": "o5",
+   "category": "divider",
+   "object_bbox": [
+    0.38,
+    0.37,
+    0.3,
+    0.7
+   ],
+   "evidence": {
+    "note": "wood-slat partition BEHIND the reception desk (o1). Its base/floor contact is occluded by o1, and the pipeline derives depth from the bbox BOTTOM via floor projection, so the derived depth for this object is expected to be UNRELIABLE. The annotation format has no occlusion or depth-order field \u2014 recorded as a known limitation for the evaluation, not corrected around."
+   }
+  }
+ ]
+}
