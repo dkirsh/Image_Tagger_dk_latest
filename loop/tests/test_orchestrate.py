@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import signal
 import sys
 import time
 from pathlib import Path
@@ -255,6 +256,157 @@ def test_summary_deterministic_across_reruns(tmp_path):
 
 
 # ------------------------------------------------------------------ stdlib runner
+
+# --- v0.8 regression tests (claims C1, C2, C3: docs/LOOP_V08_CLAIM_2026-08-31.md) ---
+
+def test_timeout_reports_timed_out_even_when_killpg_is_denied(tmp_path):
+    """C1: an EPERM from killpg must not displace the diagnosis or abort the sweep.
+
+    Records every killpg attempt while denying all of them, which is what a sandbox that
+    refuses to signal a new-session process looks like from inside the orchestrator.
+    """
+    import os as _os
+    attempts = []
+    original_killpg = _os.killpg
+
+    def denying_killpg(pgid, sig):
+        attempts.append(sig)
+        raise PermissionError(1, "Operation not permitted")
+
+    _os.killpg = denying_killpg
+    try:
+        sleeper = tmp_path / "sleep.py"
+        sleeper.write_text("import time\ntime.sleep(5)\n", encoding="utf-8")
+        code, msg = orchestrate.run_cycle(
+            write_target(tmp_path), tmp_path / "eperm-run",
+            f"{sys.executable} {sleeper}", cap=1, threshold=0.0,
+            producer_timeout_seconds=0.05)
+    finally:
+        _os.killpg = original_killpg
+    assert code == 2, msg
+    assert "timed out" in msg, f"diagnosis was displaced: {msg}"
+    assert "could not start" not in msg, f"timeout misreported as a start failure: {msg}"
+    # Every killpg raised, yet the escalation continued to the final SIGKILL.
+    assert signal.SIGTERM in attempts, f"SIGTERM stage skipped; attempts={attempts}"
+    assert signal.SIGKILL in attempts, \
+        f"final SIGKILL sweep did not run after EPERM; attempts={attempts}"
+
+
+def test_mid_run_foreign_summary_refuses_with_exit_2(tmp_path):
+    """C2: a run_summary.json appearing mid-run refuses cleanly, never tracebacks."""
+    # A working stub, plus one extra line that squats the summary path the orchestrator
+    # is about to write. Built by prepending to the real STUB so it stays a valid producer.
+    room_path = tmp_path / "squat_room.json"
+    room_path.write_text(json.dumps(GOOD_ROOM), encoding="utf-8")
+    body = STUB.format(room_path=str(room_path))
+    squat_line = ("\nimport pathlib as _pl\n"
+                  "_out = _pl.Path(sys.argv[sys.argv.index('--out-dir') + 1])\n"
+                  "(_out.parent.parent / 'run_summary.json').write_text('{\"squatted\": true}')\n")
+    squatter = tmp_path / "squat_producer.py"
+    squatter.write_text(body + squat_line, encoding="utf-8")
+    cmd = (f"{sys.executable} {squatter} --scene {{target}} --out-dir {{render_dir}} "
+           f"--run-id {{run_id}} --iter {{iter}}")
+    code, msg = orchestrate.run_cycle(write_target(tmp_path), tmp_path / "squat-run",
+                                      cmd, cap=1, threshold=0.0)
+    assert code == 2, f"expected refusal exit 2, got {code}: {msg}"
+    assert "run_summary.json" in msg, msg
+    assert "Traceback" not in msg
+    assert "already exists and was not written by this run" in msg, msg
+
+
+def _deny_ps(store):
+    """Deny executing `ps` only, as Codex's sandbox does, leaving every other
+    subprocess.run untouched. Appends a restore callable to `store`."""
+    import subprocess as _sp
+    original = _sp.run
+
+    def denying(args, *a, **k):
+        if args and args[0] == "ps":
+            raise PermissionError(1, "Operation not permitted", "ps")
+        return original(args, *a, **k)
+
+    _sp.run = denying
+    store.append(lambda: setattr(_sp, "run", original))
+
+
+def test_timeout_under_denied_ps_still_reports_timed_out_and_says_it_could_not_look(tmp_path):
+    """C1b(a): a denied `ps` must not displace the diagnosis or skip the SIGKILL stage,
+    and the refusal must admit that enumeration was unavailable."""
+    import os as _os
+    restores = []
+    attempts = []
+    original_killpg = _os.killpg
+
+    def recording_killpg(pgid, sig):
+        attempts.append(sig)
+        return original_killpg(pgid, sig)
+
+    _deny_ps(restores)
+    _os.killpg = recording_killpg
+    restores.append(lambda: setattr(_os, "killpg", original_killpg))
+    try:
+        sleeper = tmp_path / "sleep.py"
+        sleeper.write_text("import time\ntime.sleep(5)\n", encoding="utf-8")
+        code, msg = orchestrate.run_cycle(
+            write_target(tmp_path), tmp_path / "nops-run",
+            f"{sys.executable} {sleeper}", cap=1, threshold=0.0,
+            producer_timeout_seconds=0.05)
+    finally:
+        for undo in reversed(restores):
+            undo()
+    assert code == 2, msg
+    assert "timed out" in msg, f"diagnosis displaced by the ps failure: {msg}"
+    assert "could not start" not in msg, msg
+    assert signal.SIGKILL in attempts, f"SIGKILL stage skipped; attempts={attempts}"
+    assert "descendant enumeration unavailable" in msg, \
+        f"silent about being unable to look: {msg}"
+
+
+def test_clean_run_under_denied_ps_succeeds_and_records_enumeration_failure(tmp_path):
+    """C1b(b): a clean run under a denied `ps` still exits 0 — never 'could not start' —
+    and the summary records that enumeration failed rather than implying an empty sweep."""
+    restores = []
+    _deny_ps(restores)
+    try:
+        code, msg = orchestrate.run_cycle(
+            write_target(tmp_path), tmp_path / "nops-clean",
+            make_stub(tmp_path, GOOD_ROOM, "nops"), cap=3, threshold=0.0)
+    finally:
+        for undo in reversed(restores):
+            undo()
+    assert code == 0, f"clean run misreported under denied ps: {msg}"
+    assert "could not start" not in msg, msg
+    s = json.loads((tmp_path / "nops-clean" / "run_summary.json").read_text())
+    assert s["final_status"] == "STOPPED_BELOW_THRESHOLD"
+    assert s.get("descendant_enumeration_failed") is True, \
+        f"summary implies a clean sweep it could not perform: {sorted(s)}"
+    assert "Operation not permitted" in s.get("descendant_enumeration_error", "")
+    assert "teardown_incomplete" not in s, \
+        "must not claim an empty survivor list when enumeration failed"
+
+
+def test_orphaned_new_session_grandchild_is_reaped_or_reported(tmp_path):
+    """C1: never a silent success — either the grandchild dies or it is reported."""
+    marker = tmp_path / "orphan-survived"
+    spawner = tmp_path / "orphan.py"
+    spawner.write_text(
+        "import subprocess, sys, time\n"
+        "subprocess.Popen([sys.executable, '-c',\n"
+        "  \"import sys,time; time.sleep(.4); open(sys.argv[1],'w').write('bad')\",\n"
+        "  sys.argv[1]], start_new_session=True)\n"
+        "time.sleep(0.01)\n",            # parent exits at once, orphaning the grandchild
+        encoding="utf-8")
+    code, msg = orchestrate.run_cycle(
+        write_target(tmp_path), tmp_path / "orphan-run",
+        f"{sys.executable} {spawner} {marker}", cap=1, threshold=0.0,
+        producer_timeout_seconds=0.05)
+    time.sleep(0.6)
+    assert code == 2, msg
+    reaped = not marker.exists()
+    reported = "teardown_incomplete" in msg
+    assert reaped or reported, \
+        f"silent success: grandchild survived and was not reported. msg={msg}"
+
 
 def _run_all_without_pytest() -> int:
     import inspect
