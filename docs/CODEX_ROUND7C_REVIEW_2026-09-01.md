@@ -92,3 +92,34 @@ pytest_probe: returncode=1; `/Library/Frameworks/Python.framework/Versions/3.13/
 ```
 
 NO GO - Verified pinned 4a93b06c3d375de3a04a7cbf08bd672b5bc16b45 only: timeout diagnosis/denied-enumeration reporting, clean-run summary fields, foreign run_summary guards, denied-killpg SIGKILL attempt, comparator 44/44, and py_compile; pytest was unavailable; orchestrator suite was not verified green because it failed 18/20 and the descendant-timeout isolation run failed 20/20.
+
+## Round 7d - 2026-09-01
+
+Pinned commit reviewed: `a5a57305b6a79d4ca638c60bd2cce48f523c40e0` in detached worktree `/tmp/review_v7d`. `git -C /tmp/review_v7d rev-parse HEAD` returned exactly that SHA.
+
+Code byte-identity check against `4a93b06c3d375de3a04a7cbf08bd672b5bc16b45` passed. Blob IDs matched exactly:
+
+```text
+loop/orchestrate.py:     b3997daead12ba06d4b3a20b29030da25383b02d == b3997daead12ba06d4b3a20b29030da25383b02d
+loop/run_loop_compare.py: 17965301f78b3d7540a3f1c13feb105f06f759cd == 17965301f78b3d7540a3f1c13feb105f06f759cd
+```
+
+Path-limited diff check showed only `docs/LOOP_V08_CLAIM_2026-08-31.md` and `loop/tests/test_orchestrate.py` changed in this review scope. The test diff adds `re`, `_no_false_clean_sweep_claim`, amends `test_timeout_terminates_producer_descendants`, amends `test_orphaned_new_session_grandchild_is_reaped_or_reported`, and adds `test_fast_escape_before_first_poll_is_the_documented_limitation`. I found no weakened assertions outside those teardown tests. The working-enumeration arms remain strong: `test_timeout_terminates_producer_descendants` still requires `assert not marker.exists()` when enumeration was not reported unavailable, and the orphan strong arm still requires `reaped or reported` after making the grandchild observable by keeping the intermediate alive for 0.5s against the 20ms poll.
+
+Normal-environment execution evidence from `/tmp/review_v7d`:
+
+```text
+PYTHONPATH=. python3 loop/tests/test_orchestrate.py
+returncode=0; tail includes `21/21 passed`
+
+PYTHONPATH=. python3 loop/tests/test_run_loop_compare.py
+returncode=0; tail includes `44/44 passed`
+
+20x isolated test_timeout_terminates_producer_descendants: 20 passed, 0 failed
+20x isolated test_orphaned_new_session_grandchild_is_reaped_or_reported: 20 passed, 0 failed
+20x isolated test_fast_escape_before_first_poll_is_the_documented_limitation: 20 passed, 0 failed
+```
+
+Fast-escape honesty probe: I monkeypatched `orchestrate.run_cycle` under `test_fast_escape_before_first_poll_is_the_documented_limitation` with adversarial outcomes. A crash raised `RuntimeError` and failed the test. `could not start`, traceback-bearing output, an empty `teardown_incomplete` survivor list, exit code 0, and a 5.05s slow return all failed. A valid contract-shaped result, `(2, "producer timed out at iter 0 after 0.05s")`, passed. The probe reported `all_matched_expectation: true`, confirming the limitation test is not green on crash, wrong diagnosis, false clean-sweep text, wrong exit code, or unbounded return.
+
+GO - Verified a5a57305b6a79d4ca638c60bd2cce48f523c40e0 only: code files are byte-identical to 4a93b06c, the amended tests preserve the working-enumeration strong arm, orchestrator is 21/21, comparator is 44/44, all three teardown tests passed 20/20 in isolation, and the fast-escape limitation test rejects crash and wrong-diagnosis shapes.
