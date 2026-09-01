@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import signal
 import sys
 import time
@@ -142,7 +143,19 @@ def test_producer_timeout_is_bounded(tmp_path):
     assert code == 2 and "timed out" in msg
 
 
+def _no_false_clean_sweep_claim(msg: str) -> bool:
+    """teardown_incomplete is only ever emitted with at least one pid. An empty listing
+    would be a claim of a clean sweep, which is what C3c forbids."""
+    marker_text = "teardown_incomplete: pids still alive after SIGKILL sweep: "
+    if marker_text not in msg:
+        return True
+    return bool(re.search(re.escape(marker_text) + r"\d", msg))
+
+
 def test_timeout_terminates_producer_descendants(tmp_path):
+    """C3c: assert exactly the contract disjunction — bounded return, plus reaped OR
+    reported. Where ancestry enumeration works the strong arm stands unchanged; where `ps`
+    is denied a kill cannot be promised, so the honest-report arm applies instead."""
     marker = tmp_path / "descendant-survived"
     sleeper = tmp_path / "spawn.py"
     sleeper.write_text(
@@ -151,13 +164,33 @@ def test_timeout_terminates_producer_descendants(tmp_path):
         "\"import sys,time; time.sleep(.2); open(sys.argv[1],'w').write('bad')\","
         "sys.argv[1]], start_new_session=True)\n"
         "time.sleep(5)\n", encoding="utf-8")
-    code, msg = orchestrate.run_cycle(
-        write_target(tmp_path), tmp_path / "descendant-run",
-        f"{sys.executable} {sleeper} {marker}", cap=1, threshold=0.0,
-        producer_timeout_seconds=0.05)
+    import os as _os
+    attempts = []
+    original_killpg = _os.killpg
+
+    def recording_killpg(pgid, sig):
+        attempts.append(sig)
+        return original_killpg(pgid, sig)
+
+    _os.killpg = recording_killpg
+    try:
+        code, msg = orchestrate.run_cycle(
+            write_target(tmp_path), tmp_path / "descendant-run",
+            f"{sys.executable} {sleeper} {marker}", cap=1, threshold=0.0,
+            producer_timeout_seconds=0.05)
+    finally:
+        _os.killpg = original_killpg
     time.sleep(0.3)
     assert code == 2 and "timed out" in msg
-    assert not marker.exists()
+    if "descendant enumeration unavailable" in msg:
+        # Honest-report arm. The contract promises bounded return and a truthful report,
+        # not a kill, when we could not look — so the marker is deliberately not checked.
+        assert signal.SIGKILL in attempts, \
+            f"SIGKILL stage not reached under denied enumeration; attempts={attempts}"
+        assert _no_false_clean_sweep_claim(msg), f"claimed a clean sweep it could not do: {msg}"
+    else:
+        # Strong arm, undiminished: enumeration worked, so the descendant must be dead.
+        assert not marker.exists()
 
 
 def test_producer_cannot_mutate_target_snapshot(tmp_path):
@@ -386,26 +419,87 @@ def test_clean_run_under_denied_ps_succeeds_and_records_enumeration_failure(tmp_
 
 
 def test_orphaned_new_session_grandchild_is_reaped_or_reported(tmp_path):
-    """C1: never a silent success — either the grandchild dies or it is reported."""
+    """C1/C3c: never a silent success — the grandchild dies, or the run says so. Where `ps`
+    is denied, "says so" is the enumeration-unavailable note, which is the honest report
+    available in that environment."""
     marker = tmp_path / "orphan-survived"
     spawner = tmp_path / "orphan.py"
+    # The intermediate stays alive 0.5s — far longer than the 20ms enumeration poll — so the
+    # grandchild is genuinely observable before the deadline. The sub-poll escape, which the
+    # contract documents as unobservable, is its own test below.
     spawner.write_text(
         "import subprocess, sys, time\n"
         "subprocess.Popen([sys.executable, '-c',\n"
         "  \"import sys,time; time.sleep(.4); open(sys.argv[1],'w').write('bad')\",\n"
         "  sys.argv[1]], start_new_session=True)\n"
-        "time.sleep(0.01)\n",            # parent exits at once, orphaning the grandchild
+        "time.sleep(0.5)\n",
         encoding="utf-8")
-    code, msg = orchestrate.run_cycle(
-        write_target(tmp_path), tmp_path / "orphan-run",
-        f"{sys.executable} {spawner} {marker}", cap=1, threshold=0.0,
-        producer_timeout_seconds=0.05)
+    import os as _os
+    attempts = []
+    original_killpg = _os.killpg
+
+    def recording_killpg(pgid, sig):
+        attempts.append(sig)
+        return original_killpg(pgid, sig)
+
+    _os.killpg = recording_killpg
+    try:
+        code, msg = orchestrate.run_cycle(
+            write_target(tmp_path), tmp_path / "orphan-run",
+            f"{sys.executable} {spawner} {marker}", cap=1, threshold=0.0,
+            producer_timeout_seconds=0.05)
+    finally:
+        _os.killpg = original_killpg
     time.sleep(0.6)
     assert code == 2, msg
+    assert "timed out" in msg, msg
+    if "descendant enumeration unavailable" in msg:
+        # Honest-report arm: we could not look, and the run says exactly that.
+        assert signal.SIGKILL in attempts, \
+            f"SIGKILL stage not reached under denied enumeration; attempts={attempts}"
+        assert _no_false_clean_sweep_claim(msg), f"claimed a clean sweep it could not do: {msg}"
+        return
     reaped = not marker.exists()
     reported = "teardown_incomplete" in msg
     assert reaped or reported, \
         f"silent success: grandchild survived and was not reported. msg={msg}"
+
+
+def test_fast_escape_before_first_poll_is_the_documented_limitation(tmp_path):
+    """The sub-poll escape: a producer that orphans its grandchild inside 10ms, faster than
+    the 20ms enumeration poll, so the intermediate is gone and the grandchild has reparented
+    before anything can observe it.
+
+    This asserts ONLY what the contract promises for this case — bounded return, an honest
+    timeout diagnosis, no traceback, no false claim of a clean sweep. It deliberately does
+    NOT assert that the grandchild dies or is reported, because ancestry walking cannot see
+    a process that left the graph before the first look. See the residual-limitation
+    paragraph of C1 in docs/LOOP_V08_CLAIM_2026-08-31.md, and amendment C3d, which records
+    that the committed version of the orphan test asserted this and was flaky-green at 2/20.
+    """
+    marker = tmp_path / "fast-escape-survived"
+    spawner = tmp_path / "fast_orphan.py"
+    spawner.write_text(
+        "import subprocess, sys, time\n"
+        "subprocess.Popen([sys.executable, '-c',\n"
+        "  \"import sys,time; time.sleep(.4); open(sys.argv[1],'w').write('bad')\",\n"
+        "  sys.argv[1]], start_new_session=True)\n"
+        "time.sleep(0.01)\n",          # exits inside 10ms, orphaning before the first poll
+        encoding="utf-8")
+    started = time.monotonic()
+    code, msg = orchestrate.run_cycle(
+        write_target(tmp_path), tmp_path / "fast-escape-run",
+        f"{sys.executable} {spawner} {marker}", cap=1, threshold=0.0,
+        producer_timeout_seconds=0.05)
+    elapsed = time.monotonic() - started
+    assert code == 2, msg
+    assert "timed out" in msg, f"diagnosis must stay honest: {msg}"
+    assert "could not start" not in msg, msg
+    assert "Traceback" not in msg, msg
+    assert _no_false_clean_sweep_claim(msg), f"claimed a clean sweep it could not do: {msg}"
+    # Bounded return: the 0.05s deadline plus the grace periods, generously allowed for.
+    assert elapsed < 5.0, f"return was not bounded: {elapsed:.2f}s"
+    # Whether `marker` exists is deliberately NOT asserted either way.
 
 
 def _run_all_without_pytest() -> int:
