@@ -1,0 +1,79 @@
+{
+ "calibration": "exploratory_uncalibrated",
+ "inputs": {
+  "hand_room": "room.hand_edited.json",
+  "pipeline_room": "room.json",
+  "shell_identical": true
+ },
+ "note": "placement error of the pipeline room against a hand-placed reference; planar distance in metres, matched by object id. Scores are exploratory_uncalibrated \u2014 a difference between two files, not an error rate.",
+ "objects": [
+  {
+   "category": "reception_desk",
+   "dx_m": 0.977,
+   "dy_m": -0.176,
+   "hand_x_m": -2.577,
+   "hand_y_m": -2.224,
+   "id": "o1",
+   "pipeline_x_m": -1.6,
+   "pipeline_y_m": -2.4,
+   "placement_error_m": 0.992726,
+   "status": "placed"
+  },
+  {
+   "category": "sofa",
+   "dx_m": -2.921,
+   "dy_m": 0.336,
+   "hand_x_m": 3.481,
+   "hand_y_m": -3.336,
+   "id": "o2",
+   "pipeline_x_m": 0.56,
+   "pipeline_y_m": -3.0,
+   "placement_error_m": 2.940261,
+   "status": "placed"
+  },
+  {
+   "category": "round_table",
+   "hand_x_m": 2.321,
+   "hand_y_m": -3.552,
+   "id": "o3",
+   "placement_error_m": null,
+   "status": "unplaced_by_pipeline",
+   "why": "the pipeline never placed this object, so no error is defined for it"
+  },
+  {
+   "category": "shelving",
+   "category_source": "hand reference; pipeline name differs and is given beside it",
+   "dx_m": 0.66,
+   "dy_m": 1.506,
+   "hand_x_m": -3.82,
+   "hand_y_m": -1.506,
+   "id": "o4",
+   "pipeline_category": "built_in_shelving",
+   "pipeline_x_m": -3.16,
+   "pipeline_y_m": 0.0,
+   "placement_error_m": 1.644274,
+   "status": "placed"
+  },
+  {
+   "category": "slat_divider",
+   "hand_x_m": -2.401,
+   "hand_y_m": -0.88,
+   "id": "o5",
+   "placement_error_m": null,
+   "status": "unplaced_by_pipeline",
+   "why": "the pipeline never placed this object, so no error is defined for it"
+  }
+ ],
+ "summary": {
+  "max_placement_error_m": 2.940261,
+  "mean_covers": "placed objects only; the unplaced are counted here, never averaged in as zero",
+  "mean_placement_error_m": 1.859087,
+  "objects_placed": 3,
+  "objects_total": 5,
+  "objects_unplaced_by_pipeline": 2,
+  "unplaced_ids": [
+   "o3",
+   "o5"
+  ]
+ }
+}

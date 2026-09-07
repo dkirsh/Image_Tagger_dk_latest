@@ -1,0 +1,111 @@
+{
+ "image_id": "Office-Grade-1-1536x838",
+ "primary_room_type": "reception",
+ "_note": "FURNITURE EVALUATION scene (David's own-eyes eval). Openings verbatim from the frozen milestone annotation (DK-critique-corrected). Objects drafted by Claude (Cowork) from the photograph, then CORRECTED BY TANISHQ on visual inspection (2026-08-28): o1 tightened to the desk itself; o2 shifted right toward the window wall; o3 renamed round_table (small round table, not a generic side table); o4 renamed shelving (open shelving with plants, not a bookcase); o5 kept with an occlusion note. bbox format [cx, cy, w, h] normalized.",
+ "_mapped_from": "eval_scene_draft.json (unmodified; this is the vocabulary-mapped copy)",
+ "_vocabulary_mapping": {
+  "inventory": "New_VR_Platform/constraints/element_inventory.json, 35 elements across layers ffe / fixture / finish / structural",
+  "resolver": "vr_condition_audit.inventory.resolve_category (canonical id or alias match; returns None when the name is not in the vocabulary)",
+  "placement_rule": "place_furniture places an object only when its category resolves AND the resolved element's layer is ffe or fixture; anything else is dropped by a bare continue and does NOT appear in the room's _skipped list",
+  "objects": [
+   {"id": "o1", "scene_category": "reception_desk", "resolved_to": "reception_desk", "layer": "ffe", "match": "direct id", "placed": true},
+   {"id": "o2", "scene_category": "sofa", "resolved_to": "sofa", "layer": "ffe", "match": "direct id", "placed": true},
+   {"id": "o3", "scene_category": "round_table", "resolved_to": null, "layer": null, "match": "none", "placed": false, "skipped_reason": "no prior: round_table is neither an id nor an alias in the inventory. Nearest unused candidates, NOT applied here because substituting a category would change what the evaluation is testing: coffee_table (alias low_table) and dining_table (aliases table, meeting_table).", "category_left_unchanged": true},
+   {"id": "o4", "scene_category": "shelving", "resolved_to": "built_in_shelving", "layer": "ffe", "match": "alias 'shelving' -> built_in_shelving", "placed": true, "category_rewritten": true},
+   {"id": "o5", "scene_category": "divider", "resolved_to": null, "layer": null, "match": "none", "placed": false, "skipped_reason": "no prior: divider is neither an id nor an alias. The inventory element matching the photograph's wood-slat partition is slat_divider (aliases timber_slat_wall, slat_wall, batten_screen, feature_wall), but slat_divider sits on the STRUCTURAL layer, which place_furniture excludes by design. So this object cannot be placed as furniture under any spelling. Category left unchanged so the run shows the pipeline's real behaviour.", "category_left_unchanged": true}
+  ],
+  "summary": "3 of 5 placed (o1, o2, o4); 2 skipped for want of a prior (o3, o5)."
+ },
+ "openings": [
+  {
+   "kind": "glazed_wall",
+   "zone": "right_mid",
+   "bbox_xywh": [
+    0.86,
+    0.5,
+    0.26,
+    0.92
+   ]
+  },
+  {
+   "kind": "door",
+   "zone": "center_mid",
+   "bbox_xywh": [
+    0.5,
+    0.55,
+    0.06,
+    0.35
+   ]
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "category": "reception_desk",
+   "object_bbox": [
+    0.2,
+    0.7,
+    0.4,
+    0.26
+   ],
+   "evidence": {
+    "note": "marble reception counter, left of centre; box tightened to the counter itself per tanishq"
+   }
+  },
+  {
+   "id": "o2",
+   "category": "sofa",
+   "object_bbox": [
+    0.78,
+    0.75,
+    0.36,
+    0.4
+   ],
+   "evidence": {
+    "note": "rust velvet sofa set against the window wall, right side; box shifted right per tanishq"
+   }
+  },
+  {
+   "id": "o3",
+   "category": "round_table",
+   "object_bbox": [
+    0.66,
+    0.85,
+    0.11,
+    0.22
+   ],
+   "evidence": {
+    "note": "small round terrazzo table, centre-right foreground",
+    "vocabulary": "no inventory prior for round_table; not placed"
+   }
+  },
+  {
+   "id": "o4",
+   "category": "built_in_shelving",
+   "object_bbox": [
+    0.07,
+    0.33,
+    0.14,
+    0.5
+   ],
+   "evidence": {
+    "note": "open shelving holding plants, upper left wall; not a bookcase per tanishq",
+    "vocabulary": "scene category 'shelving' rewritten to canonical id 'built_in_shelving' via inventory alias"
+   }
+  },
+  {
+   "id": "o5",
+   "category": "divider",
+   "object_bbox": [
+    0.38,
+    0.37,
+    0.3,
+    0.7
+   ],
+   "evidence": {
+    "note": "wood-slat partition BEHIND the reception desk (o1). Its base/floor contact is occluded by o1, and the pipeline derives depth from the bbox BOTTOM via floor projection, so the derived depth for this object is expected to be UNRELIABLE. The annotation format has no occlusion or depth-order field — recorded as a known limitation for the evaluation, not corrected around.",
+    "vocabulary": "no inventory prior for divider; the semantically matching element slat_divider is on the structural layer, which place_furniture excludes; not placed"
+   }
+  }
+ ]
+}
