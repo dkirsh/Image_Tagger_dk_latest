@@ -75,6 +75,25 @@ python -m pip install -r requirements-install.txt
 PYTHONPATH=. pytest tests/test_mpib_low_level.py
 ```
 
+## Tests
+
+From the repository root, run the supported cross-project suite:
+
+```bash
+python3 -m pytest -q
+```
+
+Run the production-loop suite alone with:
+
+```bash
+python3 -m pytest -q loop/tests
+```
+
+The root suite and the active web application's integration suite have different
+dependency contracts. The root suite does not replace the application's Docker-based
+tests. Their present status and the decisions needed to make them reproducible are recorded
+in [`docs/TESTING_SCOPE_AND_OPEN_DECISIONS_2026-09-08.md`](docs/TESTING_SCOPE_AND_OPEN_DECISIONS_2026-09-08.md).
+
 The backend Docker image already installs `scikit-image`. The host
 requirements also include `scikit-image` so direct local imports of `skimage`
 work during student checks.
@@ -85,4 +104,3 @@ work during student checks.
 2. `Image_Tagger_3.4.74_vlm_lab_TL_runbook_full/README_v3.md`
 3. `Image_Tagger_3.4.74_vlm_lab_TL_runbook_full/docs/STUDENT_ARCHITECTURAL_TAG_SPRINT_CONTRACTS_2026-07-07.md`
 4. `Image_Tagger_3.4.74_vlm_lab_TL_runbook_full/docs/ARCHITECTURAL_TAG_OPERATIONAL_BACKLOG_2026-07-07.md`
-
