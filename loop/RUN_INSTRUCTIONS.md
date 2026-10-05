@@ -54,12 +54,16 @@ Two repositories, because the loop spans both.
 | Orchestrator + comparator (this repo) | `Image_Tagger_dk_latest` | `main` |
 | Producer (builds the room) | `New_VR_Platform` | `main` (the file `production_loop/emit_render_packet.py`) |
 
-The producer is on `New_VR_Platform`'s `main` as of the S15 pull request of 2026-10-04,
-unchanged from the file Tanishq wrote on the branch `tanishq/production-loop` (commit
-`fb3a8738`). Until that pull request is merged, the file is on the branch
-`claude/s15-producer-2026-10-04`; before it, only on `tanishq/production-loop`. Where the loop
-lives was decided on 2026-09-09 (**S13**): orchestration and comparison stay here, the producer
-stays in the platform.
+The producer belongs on `New_VR_Platform`'s `main`, unchanged from the file Tanishq wrote on
+the branch `tanishq/production-loop` (commit `fb3a8738`). **Until the S15 pull request
+(New_VR_Platform #18, opened 2026-10-04) is merged, the file is not on `main`**: if your first
+run is refused with `can't open file ... production_loop/emit_render_packet.py`, that is why.
+Run `git checkout claude/s15-producer-2026-10-04` inside your `New_VR_Platform` clone and try
+again under a new `--run-dir`; the editable install below follows the checkout, so there is
+nothing to reinstall. `New_VR_Platform` is a private repository: you need David's invitation
+first, and `gh repo clone dkirsh/New_VR_Platform` works where a plain `git clone` may prompt
+for credentials. Where the loop lives was decided on 2026-09-09 (**S13**): orchestration and
+comparison stay here, the producer stays in the platform.
 
 ## Install
 
@@ -119,14 +123,17 @@ Exit codes are the first thing to check.
 
 | Exit | Meaning |
 |---|---|
-| `0` | The run completed. Read `final_status` to learn *how* it completed |
-| `2` | **REFUSED** — fail-closed. The run did not happen. The message begins `REFUSED:` and names the reason: cap below 1, threshold outside [0,1], run directory already exists, producer failed or timed out, producer mutated the target snapshot, packet identity mismatch, malformed input |
+| `0` | The run completed and stopped below the threshold (`final_status: STOPPED_BELOW_THRESHOLD`) |
+| `3` | The run completed but never got below the threshold and stopped at the cap (`final_status: CAP_REACHED_FLAGGED`). This is the exit the negative control below is **supposed** to produce; it is a flagged non-result, not a crash. Open `run_summary.json` exactly as for exit 0 |
+| `2` | **REFUSED** — fail-closed. The run did not happen. The message begins `REFUSED:` and names the reason: cap below 1, threshold outside [0,1], run directory already exists, producer failed or timed out, producer mutated the target snapshot, packet identity mismatch, malformed input. **A refused run still leaves `target.snapshot.json` in the run directory**, so a second attempt under the same `--run-dir` is refused as "already exists"; delete that directory or choose a new name |
 | `1` | Comparator-internal failure: a verdict failed self-validation, or a canonical round-trip diverged (`nondeterministic_run`) |
+
+(Exit codes 0 and 3, and the "refused run consumes its directory" behaviour, were confirmed by a stranger's run from clean clones on 2026-10-04.)
 
 A refusal is not a failed comparison. It means the loop declined to produce a verdict because
 a precondition was not met — which is the behaviour you want from a checker.
 
-On exit 0, open `run_summary.json` and check four fields:
+On exit 0 or 3, open `run_summary.json` and check four fields:
 
 | Field | What you want |
 |---|---|
@@ -159,8 +166,8 @@ python3 loop/orchestrate.py run \
 ```
 
 Expect it to be caught: `expected_wall=east, rendered_wall=north`, three identical iterations
-at score `0.1`, and `final_status: CAP_REACHED_FLAGGED`. If your negative control comes back
-clean, something is wrong with your setup — not with the room.
+at score `0.1`, `final_status: CAP_REACHED_FLAGGED`, and **exit code 3**. If your negative control
+comes back clean (exit 0, score 0.0), something is wrong with your setup — not with the room.
 
 ## Where things land, and where new work belongs
 
