@@ -2,8 +2,10 @@
 
 *For someone who has never opened this repository, working from a clean clone on their own
 machine. You will take one photograph of a room, have the platform build a room from it, have
-this repository compare the two, and record what you think of the result. Allow about twenty
-minutes the first time; most of that is installing dependencies.*
+this repository compare the two, and record what you think of the result. The author of this
+page, who had everything installed, took about twenty minutes. Nobody who had not has yet
+timed it; if you are the first, record how long it took you and where the time went, because
+that number is one of the things this page exists to collect.*
 
 ## Two limits, before you run anything
 
@@ -50,13 +52,14 @@ Two repositories, because the loop spans both.
 | Role | Repository | Ref to use |
 |---|---|---|
 | Orchestrator + comparator (this repo) | `Image_Tagger_dk_latest` | `main` |
-| Producer (builds the room) | `New_VR_Platform` | branch `tanishq/production-loop`, commit `d22f4557` |
+| Producer (builds the room) | `New_VR_Platform` | `main` (the file `production_loop/emit_render_packet.py`) |
 
-The producer is **not on `New_VR_Platform`'s `main`**. It lives only on
-`tanishq/production-loop`, whose server tip is `d22f45575d697e41536e0ab258533188f53c2aa3`;
-the producer file itself last changed in `fb3a8738`. Check out that branch by name — if you
-clone `main` you will not find `production_loop/` at all. (Where the loop and its producer
-finally live is an open decision, **S13** on the students' queue.)
+The producer is on `New_VR_Platform`'s `main` as of the S15 pull request of 2026-10-04,
+unchanged from the file Tanishq wrote on the branch `tanishq/production-loop` (commit
+`fb3a8738`). Until that pull request is merged, the file is on the branch
+`claude/s15-producer-2026-10-04`; before it, only on `tanishq/production-loop`. Where the loop
+lives was decided on 2026-09-09 (**S13**): orchestration and comparison stay here, the producer
+stays in the platform.
 
 ## Install
 
@@ -65,8 +68,7 @@ No environment variables are required; the loop reads none.
 ```sh
 # 1. the two repositories, side by side
 git clone https://github.com/dkirsh/Image_Tagger_dk_latest.git
-git clone https://github.com/dkirsh/New_VR_Platform.git
-cd New_VR_Platform && git checkout tanishq/production-loop && cd ..
+git clone https://github.com/dkirsh/New_VR_Platform.git      # main; no branch checkout needed
 
 # 2. a virtual environment INSIDE your Image_Tagger clone
 cd Image_Tagger_dk_latest
