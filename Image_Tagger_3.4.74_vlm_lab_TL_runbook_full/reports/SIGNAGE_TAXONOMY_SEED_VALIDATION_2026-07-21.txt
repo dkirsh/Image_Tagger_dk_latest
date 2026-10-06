@@ -1,0 +1,4 @@
+Signage taxonomy seed validation passed
+Rows: 26
+Buildings: ['airport', 'hospital', 'mall', 'museum', 'office', 'university']
+Priorities: ['critical', 'high', 'low', 'medium']
