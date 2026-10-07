@@ -2,8 +2,10 @@
 
 *For someone who has never opened this repository, working from a clean clone on their own
 machine. You will take one photograph of a room, have the platform build a room from it, have
-this repository compare the two, and record what you think of the result. Allow about twenty
-minutes the first time; most of that is installing dependencies.*
+this repository compare the two, and record what you think of the result. The author of this
+page, who had everything installed, took about twenty minutes. Nobody who had not has yet
+timed it; if you are the first, record how long it took you and where the time went, because
+that number is one of the things this page exists to collect.*
 
 ## Two limits, before you run anything
 
@@ -50,13 +52,18 @@ Two repositories, because the loop spans both.
 | Role | Repository | Ref to use |
 |---|---|---|
 | Orchestrator + comparator (this repo) | `Image_Tagger_dk_latest` | `main` |
-| Producer (builds the room) | `New_VR_Platform` | branch `tanishq/production-loop`, commit `d22f4557` |
+| Producer (builds the room) | `New_VR_Platform` | `main` (the file `production_loop/emit_render_packet.py`) |
 
-The producer is **not on `New_VR_Platform`'s `main`**. It lives only on
-`tanishq/production-loop`, whose server tip is `d22f45575d697e41536e0ab258533188f53c2aa3`;
-the producer file itself last changed in `fb3a8738`. Check out that branch by name — if you
-clone `main` you will not find `production_loop/` at all. (Where the loop and its producer
-finally live is an open decision, **S13** on the students' queue.)
+The producer belongs on `New_VR_Platform`'s `main`, unchanged from the file Tanishq wrote on
+the branch `tanishq/production-loop` (commit `fb3a8738`). **Until the S15 pull request
+(New_VR_Platform #18, opened 2026-10-04) is merged, the file is not on `main`**: if your first
+run is refused with `can't open file ... production_loop/emit_render_packet.py`, that is why.
+Run `git checkout claude/s15-producer-2026-10-04` inside your `New_VR_Platform` clone and try
+again under a new `--run-dir`; the editable install below follows the checkout, so there is
+nothing to reinstall. `New_VR_Platform` is a private repository: you need David's invitation
+first, and `gh repo clone dkirsh/New_VR_Platform` works where a plain `git clone` may prompt
+for credentials. Where the loop lives was decided on 2026-09-09 (**S13**): orchestration and
+comparison stay here, the producer stays in the platform.
 
 ## Install
 
@@ -65,8 +72,7 @@ No environment variables are required; the loop reads none.
 ```sh
 # 1. the two repositories, side by side
 git clone https://github.com/dkirsh/Image_Tagger_dk_latest.git
-git clone https://github.com/dkirsh/New_VR_Platform.git
-cd New_VR_Platform && git checkout tanishq/production-loop && cd ..
+git clone https://github.com/dkirsh/New_VR_Platform.git      # main; no branch checkout needed
 
 # 2. a virtual environment INSIDE your Image_Tagger clone
 cd Image_Tagger_dk_latest
@@ -117,14 +123,17 @@ Exit codes are the first thing to check.
 
 | Exit | Meaning |
 |---|---|
-| `0` | The run completed. Read `final_status` to learn *how* it completed |
-| `2` | **REFUSED** — fail-closed. The run did not happen. The message begins `REFUSED:` and names the reason: cap below 1, threshold outside [0,1], run directory already exists, producer failed or timed out, producer mutated the target snapshot, packet identity mismatch, malformed input |
+| `0` | The run completed and stopped below the threshold (`final_status: STOPPED_BELOW_THRESHOLD`) |
+| `3` | The run completed but never got below the threshold and stopped at the cap (`final_status: CAP_REACHED_FLAGGED`). This is the exit the negative control below is **supposed** to produce; it is a flagged non-result, not a crash. Open `run_summary.json` exactly as for exit 0 |
+| `2` | **REFUSED** — fail-closed. The run did not happen. The message begins `REFUSED:` and names the reason: cap below 1, threshold outside [0,1], run directory already exists, producer failed or timed out, producer mutated the target snapshot, packet identity mismatch, malformed input. **A refused run still leaves `target.snapshot.json` in the run directory**, so a second attempt under the same `--run-dir` is refused as "already exists"; delete that directory or choose a new name |
 | `1` | Comparator-internal failure: a verdict failed self-validation, or a canonical round-trip diverged (`nondeterministic_run`) |
+
+(Exit codes 0 and 3, and the "refused run consumes its directory" behaviour, were confirmed by a stranger's run from clean clones on 2026-10-04.)
 
 A refusal is not a failed comparison. It means the loop declined to produce a verdict because
 a precondition was not met — which is the behaviour you want from a checker.
 
-On exit 0, open `run_summary.json` and check four fields:
+On exit 0 or 3, open `run_summary.json` and check four fields:
 
 | Field | What you want |
 |---|---|
@@ -157,8 +166,8 @@ python3 loop/orchestrate.py run \
 ```
 
 Expect it to be caught: `expected_wall=east, rendered_wall=north`, three identical iterations
-at score `0.1`, and `final_status: CAP_REACHED_FLAGGED`. If your negative control comes back
-clean, something is wrong with your setup — not with the room.
+at score `0.1`, `final_status: CAP_REACHED_FLAGGED`, and **exit code 3**. If your negative control
+comes back clean (exit 0, score 0.0), something is wrong with your setup — not with the room.
 
 ## Where things land, and where new work belongs
 
