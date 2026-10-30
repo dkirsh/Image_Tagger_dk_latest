@@ -89,6 +89,15 @@ Run the production-loop suite alone with:
 python3 -m pytest -q loop/tests
 ```
 
+`vr199_checks/` holds read-only checks of COGS 199 student records in New_VR_Platform. The
+REAL-0 record checker reads a fetched ref of that repository with git, reports what the brief's
+success criteria allow a program to check, and flags what a person must decide:
+
+```bash
+python3 vr199_checks/real0_check.py --repo <New_VR_Platform clone> --ref <fetched ref>   # or --pr <N>
+python3 -m pytest -q vr199_checks/tests
+```
+
 The root suite and the active web application's integration suite have different
 dependency contracts. The root suite does not replace the application's Docker-based
 tests. Their present status and the decisions needed to make them reproducible are recorded
