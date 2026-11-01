@@ -83,6 +83,9 @@ From the repository root, run the supported cross-project suite:
 python3 -m pytest -q
 ```
 
+`vr199_checks/pixel_compare.py` compares one surface's colour between two renders of the same view and says whether
+a difference is lighting, chroma or texture (`python3 vr199_checks/pixel_compare.py --help`).
+
 Run the production-loop suite alone with:
 
 ```bash
